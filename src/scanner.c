@@ -160,6 +160,10 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
     assert(size == length);
 }
 
+static inline bool is_iden_char(char c) {
+    return memchr(&NON_IDENTIFIER_CHARS, c, sizeof(NON_IDENTIFIER_CHARS)) == NULL;
+}
+
 static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
     bool heredoc_body_start_is_valid = scanner->open_heredocs.size > 0 && !scanner->open_heredocs.contents[0].started &&
                                        valid_symbols[HEREDOC_BODY_START];
@@ -212,8 +216,34 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                 break;
             default:
                 if (crossed_newline) {
-                    if (lexer->lookahead != '.' && lexer->lookahead != '&' && lexer->lookahead != '#') {
-                        lexer->result_symbol = LINE_BREAK;
+                    if (lexer->lookahead != '.' && lexer->lookahead != '&'
+                        && lexer->lookahead != '|' && lexer->lookahead != '#') {
+                        // Check for 'or' keyword at line start → line continuation
+                        if (lexer->lookahead == 'o') {
+                            advance(lexer);
+                            if (lexer->lookahead == 'r') {
+                                advance(lexer);
+                                if (!is_iden_char((char)lexer->lookahead)) {
+                                    return false;
+                                }
+                            }
+                            lexer->result_symbol = LINE_BREAK;
+                        // Check for 'and' keyword at line start → line continuation
+                        } else if (lexer->lookahead == 'a') {
+                            advance(lexer);
+                            if (lexer->lookahead == 'n') {
+                                advance(lexer);
+                                if (lexer->lookahead == 'd') {
+                                    advance(lexer);
+                                    if (!is_iden_char((char)lexer->lookahead)) {
+                                        return false;
+                                    }
+                                }
+                            }
+                            lexer->result_symbol = LINE_BREAK;
+                        } else {
+                            lexer->result_symbol = LINE_BREAK;
+                        }
                     } else if (lexer->lookahead == '.') {
                         // Don't return LINE_BREAK for the call operator (`.`) but do return one for range
                         // operators
@@ -224,7 +254,17 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                         } else {
                             return false;
                         }
+                    } else if (lexer->lookahead == '|') {
+                        // Don't return LINE_BREAK for `||` (boolean or line continuation)
+                        // but do return one for single `|` (bitwise or)
+                        advance(lexer);
+                        if (!lexer->eof(lexer) && lexer->lookahead == '|') {
+                            return false;
+                        } else {
+                            lexer->result_symbol = LINE_BREAK;
+                        }
                     }
+                    // '&' and '#' fall through without setting LINE_BREAK
                 }
                 return true;
         }
@@ -331,10 +371,6 @@ static inline bool scan_operator(TSLexer *lexer) {
         default:
             return false;
     }
-}
-
-static inline bool is_iden_char(char c) {
-    return memchr(&NON_IDENTIFIER_CHARS, c, sizeof(NON_IDENTIFIER_CHARS)) == NULL;
 }
 
 static inline bool scan_symbol_identifier(TSLexer *lexer) {

@@ -2881,3 +2881,90 @@ multiline regex
 (program
   (regex
     (string_content)))
+
+===============================
+leading || continues line
+===============================
+
+x
+|| y
+
+---
+
+(program
+  (binary
+    (identifier)
+    (identifier)))
+
+===============================
+leading && continues line
+===============================
+
+x
+&& y
+
+---
+
+(program
+  (binary
+    (identifier)
+    (identifier)))
+
+===============================
+leading or continues line
+===============================
+
+x
+or y
+
+---
+
+(program
+  (binary
+    (identifier)
+    (identifier)))
+
+===============================
+leading and continues line
+===============================
+
+x
+and y
+
+---
+
+(program
+  (binary
+    (identifier)
+    (identifier)))
+
+===============================
+leading | does not continue line
+===============================
+
+x
+| y
+
+---
+
+(program
+  (identifier)
+  (ERROR)
+  (identifier))
+
+====================================
+it as implicit block parameter
+====================================
+
+foo { it * 2 }
+
+---
+
+(program
+  (call
+    method: (identifier)
+    block: (block
+      body: (block_body
+        (binary
+          left: (identifier)
+          right: (integer))))))
