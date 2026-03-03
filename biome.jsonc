@@ -8,11 +8,22 @@
 			// - noThenProperty: tree-sitter の文法 DSL で `then` は Ruby の
 			//   case/when/if 構文のノード名として必要
 			"includes": ["grammar.js"],
+			// フォーマッタが正規表現内の \[ を [ に戻してしまい、
+			// tree-sitter generate で "unclosed character class" エラーになるため無効化
+			"formatter": {
+				"enabled": false
+			},
 			"linter": {
 				"rules": {
 					"suspicious": {
 						"noControlCharactersInRegex": "off",
 						"noThenProperty": "off"
+					},
+					"complexity": {
+						// tree-sitter v0.26 の正規表現パーサーは文字クラス内の [ を
+						// エスケープしないと "unclosed character class" エラーになる。
+						// biome は \[ を不要なエスケープと判定して除去するため無効化
+						"noUselessEscapeInRegex": "off"
 					}
 				}
 			}
