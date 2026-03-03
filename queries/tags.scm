@@ -53,6 +53,21 @@
     ]) @definition.module
 )
 
+; Constant definitions
+
+(
+  (comment)* @doc
+  .
+  (assignment
+    left: [
+      (constant) @name
+      (scope_resolution
+        name: (constant) @name)
+    ]) @definition.constant
+  (#strip! @doc "^#\\s*")
+  (#select-adjacent! @doc @definition.constant)
+)
+
 ; Calls
 
 (call method: (identifier) @name) @reference.call
