@@ -1,7 +1,7 @@
 [package]
 name = "tree-sitter-ruby"
 description = "Ruby grammar for tree-sitter"
-version = "26.3.100"
+version = "26.3.101"
 authors = [
   "Max Brunsfeld <maxbrunsfeld@gmail.com>",
   "Amaan Qureshi <amaanq12@gmail.com>",
