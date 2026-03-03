@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (skip actual release)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      tag: ${{ steps.bump.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: bump
+        run: |
+          YEAR=$(date +%y)
+          MONTH=$(date +%-m)
+
+          CURRENT=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)"/\1/')
+          echo "Current version: ${CURRENT}"
+
+          if echo "${CURRENT}" | grep -qE '^[0-9]{2,4}\.[0-9]{1,2}\.[0-9]+$'; then
+            OLD_YEAR=$(echo "${CURRENT}" | cut -d. -f1)
+            OLD_MONTH=$(echo "${CURRENT}" | cut -d. -f2)
+            OLD_COUNTER=$(echo "${CURRENT}" | cut -d. -f3)
+            OLD_YEAR_2DIGIT=$(echo "${OLD_YEAR}" | sed 's/^20//')
+            if [ "${OLD_YEAR_2DIGIT}" = "${YEAR}" ] && [ "${OLD_MONTH}" = "${MONTH}" ]; then
+              NEW_COUNTER=$((OLD_COUNTER + 1))
+            else
+              NEW_COUNTER=100
+            fi
+          else
+            NEW_COUNTER=100
+          fi
+
+          NEW_VERSION="${YEAR}.${MONTH}.${NEW_COUNTER}"
+          echo "New version: ${NEW_VERSION}"
+
+          # Cargo.toml
+          sed -i "0,/^version = \"[^\"]*\"/s//version = \"${NEW_VERSION}\"/" Cargo.toml
+
+          # package.json
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${NEW_VERSION}\"/" package.json
+
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=v${NEW_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Commit and tag
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git add Cargo.toml package.json
+          git commit -m "Release ${{ steps.bump.outputs.tag }}"
+          git tag -a "${{ steps.bump.outputs.tag }}" -m "Release ${{ steps.bump.outputs.tag }}"
+          git push origin HEAD "${{ steps.bump.outputs.tag }}"
+
+      - name: Dry run info
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "Dry run mode - skipping commit and tag"
+          echo "Would release: ${{ steps.bump.outputs.tag }}"
+          git diff
+
+  release:
+    name: Create Release
+    needs: prepare-release
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare-release.outputs.tag }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare-release.outputs.tag }}
+          name: ${{ needs.prepare-release.outputs.tag }}
+          body: |
+            ## tree-sitter-ruby ${{ needs.prepare-release.outputs.version }}
+
+            Ruby grammar for tree-sitter with Ruby 3/4 syntax support.
+
+            ### Usage
+
+            ```toml
+            [dependencies]
+            tree-sitter-ruby = { git = "https://github.com/${{ github.repository }}.git", tag = "${{ needs.prepare-release.outputs.tag }}" }
+            ```
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
