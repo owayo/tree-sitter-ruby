@@ -1,0 +1,21 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
+	"overrides": [
+		{
+			// tree-sitter の文法定義ファイル (grammar.js) 固有の抑制
+			// - noControlCharactersInRegex: Ruby の識別子から制御文字 (\x00-\x1F) を
+			//   除外するための正規表現で意図的に使用している
+			// - noThenProperty: tree-sitter の文法 DSL で `then` は Ruby の
+			//   case/when/if 構文のノード名として必要
+			"includes": ["grammar.js"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noControlCharactersInRegex": "off",
+						"noThenProperty": "off"
+					}
+				}
+			}
+		}
+	]
+}
