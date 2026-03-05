@@ -50,11 +50,21 @@ pnpm install --ignore-scripts
 # grammar.js からパーサーを生成
 tree-sitter generate
 
-# テスト実行（コーパス、ハイライト、タグ）
-tree-sitter test
-
 # ファイルをパース
 tree-sitter parse example.rb
+```
+
+### テスト
+
+> **警告:** `tree-sitter test` は、このパーサーでは過剰なメモリを消費します（RSS 8GB+、VSIZE 400GB+）。パーサーテーブルが大きいため（parser.c 約15MB、STATE_COUNT 5989）、`test` サブコマンドが内部でパースツリー全体を S 式文字列に変換し差分比較を行うことで、大量のメモリ確保が発生します。`tree-sitter parse` は影響を受けません（約10MB RSS）。これは特定の upstream issue としては追跡されていませんが、関連するメモリ問題が [tree-sitter#1890](https://github.com/tree-sitter/tree-sitter/issues/1890)、[tree-sitter#1185](https://github.com/tree-sitter/tree-sitter/issues/1185)、[zed#47880](https://github.com/zed-industries/zed/issues/47880) で報告されています。代わりに以下のテストランナーを使用してください。
+
+```bash
+# 推奨: tree-sitter parse によるコーパステスト（低メモリ）
+python3 scripts/corpus_test.py
+
+# パーサーライブラリの事前コンパイル（parse ベーステストに必要）
+mkdir -p /tmp/ts-lib
+cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 ```
 
 ## 参考資料
