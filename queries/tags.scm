@@ -45,12 +45,16 @@
 ; Module definitions
 
 (
+  (comment)* @doc
+  .
   (module
     name: [
       (constant) @name
       (scope_resolution
         name: (_) @name)
     ]) @definition.module
+  (#strip! @doc "^#\\s*")
+  (#select-adjacent! @doc @definition.module)
 )
 
 ; Constant definitions

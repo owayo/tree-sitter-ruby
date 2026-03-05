@@ -381,6 +381,30 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
         }
     } else if (lexer->lookahead == '$') {
         advance(lexer);
+        // Handle special global variable characters that are valid after $
+        // but not recognized by is_iden_char or scan_operator.
+        // These include: $" $' $; $, $\ $$ $? $: $@ $. $=
+        switch (lexer->lookahead) {
+            case '"':
+            case '\'':
+            case ';':
+            case ',':
+            case '\\':
+            case '$':
+            case '?':
+            case ':':
+            case '@':
+                advance(lexer);
+                return true;
+            case '.':
+            case '=':
+                // Must handle before scan_operator which would over-consume
+                // (e.g., scan_operator('.') expects '..', scan_operator('=') expects '==' or '=~')
+                advance(lexer);
+                return true;
+            default:
+                break;
+        }
     }
 
     if (is_iden_char((char)lexer->lookahead)) {

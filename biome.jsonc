@@ -1,5 +1,10 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.4.5/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
 	"overrides": [
 		{
 			// tree-sitter の文法定義ファイル (grammar.js) 固有の抑制

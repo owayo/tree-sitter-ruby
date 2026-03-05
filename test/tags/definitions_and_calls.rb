@@ -1,5 +1,5 @@
-# Module definition with namespace path
-module MyApp::Feature
+# 名前空間パス付きモジュール定義
+module Admin::Feature
 #             ^ definition.module
 
   class Core::Worker
