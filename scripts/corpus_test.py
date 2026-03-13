@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Alternative corpus test runner using tree-sitter parse.
+"""tree-sitter parse ベースの低メモリなコーパステストランナー。
 
-tree-sitter test consumes excessive memory (RSS 8GB+, VSIZE 400GB+) with large
-parser tables (parser.c ~15MB). This script runs each corpus test case via
-tree-sitter parse instead, using minimal memory (~10MB RSS).
+大規模な parser テーブル（parser.c 約15MB）では `tree-sitter test` が
+過剰なメモリ（RSS 8GB+, VSIZE 400GB+）を消費するため、
+本スクリプトは各コーパステストを `tree-sitter parse` で実行する。
 
-Prerequisites:
+事前準備:
     mkdir -p /tmp/ts-lib
     cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 """
@@ -22,12 +22,7 @@ CORPUS_DIR = PROJECT_DIR / "test" / "corpus"
 
 
 def is_separator(line):
-    """Return '=' for header lines, '-' for divider lines, None otherwise.
-
-    Returns:
-        '=', '-', or None.
-
-    """
+    """区切り線を判定する。"""
     s = line.strip()
     if len(s) < 3:
         return None
@@ -39,13 +34,8 @@ def is_separator(line):
 
 
 def extract_tests(filepath):
-    """Extract test cases from a corpus file.
-
-    Returns:
-        List of (name, code, expects_error) tuples.
-
-    """
-    with open(filepath) as f:
+    """コーパスファイルからテストケースを抽出する。"""
+    with open(filepath, encoding="utf-8") as f:
         lines = f.readlines()
 
     tests = []
@@ -98,13 +88,15 @@ def extract_tests(filepath):
     return tests
 
 
+def format_failure_detail(detail):
+    """失敗理由を表示用文字列に整形する。"""
+    if isinstance(detail, int):
+        return f"{detail} errors"
+    return str(detail)
+
+
 def main():
-    """Run all corpus tests and report results.
-
-    Returns:
-        0 if all tests pass, 1 otherwise.
-
-    """
+    """全コーパステストを実行して結果を返す。"""
     total = 0
     passed = 0
     failed = 0
@@ -120,7 +112,12 @@ def main():
 
         for name, code, expects_error in tests:
             total += 1
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".rb", delete=False) as f:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                suffix=".rb",
+                delete=False,
+                encoding="utf-8",
+            ) as f:
                 f.write(code + "\n")
                 tmpfile = f.name
 
@@ -129,6 +126,8 @@ def main():
                     ["tree-sitter", "parse", tmpfile],
                     capture_output=True,
                     text=True,
+                    encoding="utf-8",
+                    errors="replace",
                     timeout=10,
                     env=env,
                 )
@@ -155,7 +154,7 @@ def main():
     if failures:
         print("\n--- Failures ---")
         for fname, name, err in failures:
-            print(f"  FAIL: {fname} :: {name} ({err} errors)")
+            print(f"  FAIL: {fname} :: {name} ({format_failure_detail(err)})")
 
     print("\n=== Results ===")
     print(f"Total: {total} | Pass: {passed} | Fail: {failed}")

@@ -50,6 +50,9 @@ pnpm install --ignore-scripts
 # grammar.js からパーサーを生成
 tree-sitter generate
 
+# grammar.js を lint
+pnpm run lint
+
 # ファイルをパース
 tree-sitter parse example.rb
 ```
@@ -60,12 +63,19 @@ tree-sitter parse example.rb
 
 ```bash
 # 推奨: tree-sitter parse によるコーパステスト（低メモリ）
-python3 scripts/corpus_test.py
+pnpm run test
+
+# scripts/corpus_test.py のユニットテスト
+pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）
 mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 ```
+
+### スキャナー
+
+外部スキャナー（`src/scanner.c`）は、`grammar.js` だけでは表現できない文脈依存トークンを処理します: heredoc、区切りリテラル（文字列、正規表現、サブシェル、シンボル/文字列配列）、改行、空白依存の演算子。`src/` 配下の他のファイルとは異なり、手動管理のため新しいトークン型を追加する際は直接編集してください。
 
 ## 参考資料
 

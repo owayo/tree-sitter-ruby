@@ -17,11 +17,14 @@
 		"src/**"
 	],
 	"devDependencies": {
+		"@biomejs/biome": "^2.4.6",
 		"tree-sitter-cli": "^0.26.6"
 	},
 	"scripts": {
 		"generate": "tree-sitter generate",
-		"test": "tree-sitter test",
+		"lint": "biome check grammar.js",
+		"test": "python3 scripts/corpus_test.py",
+		"test:unit": "python3 -m unittest discover -s scripts -p 'test_*.py'",
 		"parse": "tree-sitter parse"
 	}
 }

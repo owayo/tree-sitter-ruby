@@ -50,6 +50,9 @@ pnpm install --ignore-scripts
 # Generate parser from grammar.js
 tree-sitter generate
 
+# Lint grammar.js
+pnpm run lint
+
 # Parse a file
 tree-sitter parse example.rb
 ```
@@ -60,12 +63,19 @@ tree-sitter parse example.rb
 
 ```bash
 # Recommended: corpus tests via tree-sitter parse (low memory)
-python3 scripts/corpus_test.py
+pnpm run test
+
+# Unit tests for scripts/corpus_test.py
+pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)
 mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 ```
+
+### Scanner
+
+The external scanner (`src/scanner.c`) handles context-sensitive tokens that cannot be expressed in `grammar.js` alone: heredocs, delimited literals (strings, regexes, subshells, symbol/string arrays), line breaks, and whitespace-sensitive operators. Unlike the rest of `src/`, this file is manually maintained and should be edited directly when adding new token types.
 
 ## References
 

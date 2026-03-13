@@ -90,7 +90,7 @@ static inline void reset(Scanner *scanner) {
 static inline unsigned serialize(Scanner *scanner, char *buffer) {
     unsigned size = 0;
 
-    if (scanner->literal_stack.size * 5 + 2 >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+    if (scanner->literal_stack.size * 5 + 2 > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
         return 0;
     }
 
@@ -107,7 +107,14 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
     buffer[size++] = (char)scanner->open_heredocs.size;
     for (uint32_t i = 0; i < scanner->open_heredocs.size; i++) {
         Heredoc *heredoc = array_get(&scanner->open_heredocs, i);
-        if (size + 2 + heredoc->word.size >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+
+        if (heredoc->word.size > UINT8_MAX) {
+            return 0;
+        }
+
+        // 3 flags + 1-byte length + word bytes
+        unsigned heredoc_size = 4u + heredoc->word.size;
+        if (size + heredoc_size > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
             return 0;
         }
         buffer[size++] = (char)heredoc->end_word_indentation_allowed;

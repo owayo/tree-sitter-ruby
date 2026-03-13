@@ -1546,6 +1546,59 @@ backticks subshell with escape
     (string_content)
     (escape_sequence)))
 
+=====================================================
+percent x subshell with unbalanced delimiters
+=====================================================
+
+%x/echo hello/
+%x\echo hello\
+%x#echo hello#
+
+---
+
+(program
+  (subshell
+    (string_content))
+  (subshell
+    (string_content))
+  (subshell
+    (string_content)))
+
+=====================================================
+percent x subshell with balanced delimiters
+=====================================================
+
+%x(echo hello)
+%x{echo hello}
+%x[echo hello]
+%x<echo hello>
+
+---
+
+(program
+  (subshell
+    (string_content))
+  (subshell
+    (string_content))
+  (subshell
+    (string_content))
+  (subshell
+    (string_content)))
+
+=====================================================
+percent x subshell with interpolation
+=====================================================
+
+%x(echo #{name})
+
+---
+
+(program
+  (subshell
+    (string_content)
+    (interpolation
+      (identifier))))
+
 ===========
 empty array
 ===========
