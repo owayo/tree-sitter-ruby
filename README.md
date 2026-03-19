@@ -71,7 +71,12 @@ pnpm run test:unit
 # Pre-compile parser library (required for parse-based testing)
 mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
+
+# If pnpm blocked tree-sitter-cli's install script, download the local CLI binary
+node node_modules/tree-sitter-cli/install.js
 ```
+
+`pnpm run test` verifies `tree-sitter --version` before executing corpus cases and exits with a setup error if the CLI is missing or does not start within 10 seconds.
 
 ### Scanner
 

@@ -17,8 +17,8 @@
 		"src/**"
 	],
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.6",
-		"tree-sitter-cli": "^0.26.6"
+		"@biomejs/biome": "^2.4.8",
+		"tree-sitter-cli": "^0.26.7"
 	},
 	"scripts": {
 		"generate": "tree-sitter generate",

@@ -95,6 +95,62 @@ def format_failure_detail(detail):
     return str(detail)
 
 
+def summarize_command_failure(returncode, output):
+    """コマンド失敗時の要約を 1 行に整形する。"""
+    for line in output.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("Error:"):
+            return f"exit {returncode}: {stripped}"
+
+    for line in output.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith("at "):
+            continue
+        if stripped.startswith("Emitted 'error' event"):
+            continue
+        if stripped.startswith("Node.js v"):
+            continue
+        return f"exit {returncode}: {stripped}"
+
+    return f"exit {returncode}"
+
+
+def check_tree_sitter_cli(env):
+    """tree-sitter CLI が実行可能か事前に検証する。"""
+    try:
+        result = subprocess.run(
+            ["tree-sitter", "--version"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=10,
+            env=env,
+        )
+    except FileNotFoundError:
+        return "tree-sitter コマンドが見つかりません。tree-sitter-cli をインストールしてください。"
+    except subprocess.TimeoutExpired:
+        return (
+            "tree-sitter CLI の起動確認が 10 秒でタイムアウトしました。"
+            " CLI の実体が正常に起動できるか確認してください。"
+        )
+
+    if result.returncode == 0:
+        return None
+
+    output = result.stdout + result.stderr
+    detail = summarize_command_failure(result.returncode, output)
+    if "tree-sitter-cli/tree-sitter" in output and "ENOENT" in output:
+        return (
+            "tree-sitter CLI の実体を起動できません。"
+            f" {detail}。`node node_modules/tree-sitter-cli/install.js` を実行するか、"
+            "build script を承認して再インストールしてください。"
+        )
+    return f"tree-sitter CLI を起動できません。{detail}"
+
+
 def main():
     """全コーパステストを実行して結果を返す。"""
     total = 0
@@ -103,6 +159,11 @@ def main():
     failures = []
 
     env = {**os.environ, "TREE_SITTER_LIBDIR": "/tmp/ts-lib"}
+    setup_error = check_tree_sitter_cli(env)
+    if setup_error:
+        print("\n--- Setup Error ---")
+        print(f"  {setup_error}")
+        return 2
 
     for fname in sorted(os.listdir(CORPUS_DIR)):
         if not fname.endswith(".txt"):
@@ -144,7 +205,11 @@ def main():
                 else:
                     failed += 1
                     errs = output.count("(ERROR") + output.count("(MISSING")
-                    failures.append((fname, name, errs))
+                    if errs == 0 and result.returncode != 0:
+                        detail = summarize_command_failure(result.returncode, output)
+                    else:
+                        detail = errs
+                    failures.append((fname, name, detail))
             except subprocess.TimeoutExpired:
                 failed += 1
                 failures.append((fname, name, "TIMEOUT"))

@@ -71,7 +71,13 @@ pnpm run test:unit
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）
 mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
+
+# pnpm が tree-sitter-cli の install script を止めた場合は
+# ローカル CLI バイナリを取得する
+node node_modules/tree-sitter-cli/install.js
 ```
+
+`pnpm run test` はコーパス実行前に `tree-sitter --version` を確認し、CLI が見つからない場合や 10 秒以内に起動できない場合は setup error で終了します。
 
 ### スキャナー
 

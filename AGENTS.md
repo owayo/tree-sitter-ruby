@@ -28,7 +28,7 @@ pnpm run lint              # lint チェック（Biome）
 
 ### テスト実行
 
-**`tree-sitter test` は直接実行禁止。** tree-sitter-cli v0.26.6 は大規模パーサー（parser.c 15MB）で RSS 8GB+/VSIZE 400GB+ を消費しハングする既知の問題がある。
+**`tree-sitter test` は直接実行禁止。** tree-sitter-cli 0.26 系は大規模パーサー（parser.c 15MB）で RSS 8GB+/VSIZE 400GB+ を消費しハングする既知の問題がある。
 
 代わりに以下の方法でテストすること:
 
@@ -41,7 +41,13 @@ pnpm run test:unit
 
 # 個別ファイルのパース検証
 TREE_SITTER_LIBDIR=/tmp/ts-lib tree-sitter parse example.rb
+
+# pnpm が tree-sitter-cli の install script を止めた場合は
+# ローカル CLI バイナリを取得する
+node node_modules/tree-sitter-cli/install.js
 ```
+
+`pnpm run test` は実行前に `tree-sitter --version` を確認し、CLI が見つからない場合や 10 秒以内に起動できない場合は setup error で終了する。
 
 プリコンパイル済み dylib が `/tmp/ts-lib/ruby.dylib` に必要:
 
