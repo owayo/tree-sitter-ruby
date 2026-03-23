@@ -9,7 +9,7 @@ typedef enum {
     LINE_BREAK,
     NO_LINE_BREAK,
 
-    // Delimited literals
+    // 区切りリテラル
     SIMPLE_SYMBOL,
     STRING_START,
     SYMBOL_START,
@@ -24,7 +24,7 @@ typedef enum {
     HEREDOC_BODY_END,
     HEREDOC_START,
 
-    // Whitespace-sensitive tokens
+    // 空白に依存するトークン
     FORWARD_SLASH,
     BLOCK_AMPERSAND,
     SPLAT_STAR,
@@ -108,19 +108,15 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
     for (uint32_t i = 0; i < scanner->open_heredocs.size; i++) {
         Heredoc *heredoc = array_get(&scanner->open_heredocs, i);
 
-        if (heredoc->word.size > UINT8_MAX) {
-            return 0;
-        }
-
-        // 3 flags + 1-byte length + word bytes
-        unsigned heredoc_size = 4u + heredoc->word.size;
-        if (size + heredoc_size > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+        // フラグ 3 つと 32 ビット長、終端語本体をシリアライズする。
+        if (size + 3u + sizeof(uint32_t) + heredoc->word.size >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
             return 0;
         }
         buffer[size++] = (char)heredoc->end_word_indentation_allowed;
         buffer[size++] = (char)heredoc->allows_interpolation;
         buffer[size++] = (char)heredoc->started;
-        buffer[size++] = (char)heredoc->word.size;
+        memcpy(&buffer[size], &heredoc->word.size, sizeof(uint32_t));
+        size += sizeof(uint32_t);
         memcpy(&buffer[size], heredoc->word.contents, heredoc->word.size);
         size += heredoc->word.size;
     }
@@ -156,7 +152,9 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         heredoc.started = buffer[size++];
 
         heredoc.word = (String)array_new();
-        uint8_t word_length = buffer[size++];
+        uint32_t word_length;
+        memcpy(&word_length, &buffer[size], sizeof(uint32_t));
+        size += sizeof(uint32_t);
         array_reserve(&heredoc.word, word_length);
         memcpy(heredoc.word.contents, &buffer[size], word_length);
         heredoc.word.size = word_length;
@@ -225,7 +223,7 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                 if (crossed_newline) {
                     if (lexer->lookahead != '.' && lexer->lookahead != '&'
                         && lexer->lookahead != '|' && lexer->lookahead != '#') {
-                        // Check for 'or' keyword at line start → line continuation
+                        // 行頭の `or` キーワードは改行継続として扱う。
                         if (lexer->lookahead == 'o') {
                             advance(lexer);
                             if (lexer->lookahead == 'r') {
@@ -235,7 +233,7 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                                 }
                             }
                             lexer->result_symbol = LINE_BREAK;
-                        // Check for 'and' keyword at line start → line continuation
+                        // 行頭の `and` キーワードは改行継続として扱う。
                         } else if (lexer->lookahead == 'a') {
                             advance(lexer);
                             if (lexer->lookahead == 'n') {
@@ -252,9 +250,8 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                             lexer->result_symbol = LINE_BREAK;
                         }
                     } else if (lexer->lookahead == '.') {
-                        // Don't return LINE_BREAK for the call operator (`.`) but do return one for range
-                        // operators
-                        // (`..` and `...`)
+                        // 呼び出し演算子 (`.`) では LINE_BREAK を返さない。
+                        // ただし範囲演算子 (`..` と `...`) では返す。
                         advance(lexer);
                         if (!lexer->eof(lexer) && lexer->lookahead == '.') {
                             lexer->result_symbol = LINE_BREAK;
@@ -262,8 +259,8 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                             return false;
                         }
                     } else if (lexer->lookahead == '|') {
-                        // Don't return LINE_BREAK for `||` (boolean or line continuation)
-                        // but do return one for single `|` (bitwise or)
+                        // `||`（論理和や改行継続）では LINE_BREAK を返さない。
+                        // 単独の `|`（ビット演算子）では返す。
                         advance(lexer);
                         if (!lexer->eof(lexer) && lexer->lookahead == '|') {
                             return false;
@@ -271,7 +268,7 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                             lexer->result_symbol = LINE_BREAK;
                         }
                     }
-                    // '&' and '#' fall through without setting LINE_BREAK
+                    // `&` と `#` は LINE_BREAK を設定せずにそのまま扱う。
                 }
                 return true;
         }
@@ -388,9 +385,9 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
         }
     } else if (lexer->lookahead == '$') {
         advance(lexer);
-        // Handle special global variable characters that are valid after $
-        // but not recognized by is_iden_char or scan_operator.
-        // These include: $" $' $; $, $\ $$ $? $: $@ $. $=
+        // `$` の直後で有効だが、is_iden_char や scan_operator では
+        // 認識できない特殊グローバル変数文字を処理する。
+        // 対象: $" $' $; $, $\ $$ $? $: $@ $. $=
         switch (lexer->lookahead) {
             case '"':
             case '\'':
@@ -405,8 +402,9 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
                 return true;
             case '.':
             case '=':
-                // Must handle before scan_operator which would over-consume
-                // (e.g., scan_operator('.') expects '..', scan_operator('=') expects '==' or '=~')
+                // scan_operator より先に処理しないと過剰に読み進めてしまう。
+                // 例: scan_operator('.') は `..` を期待し、scan_operator('=')
+                // は `==` または `=~` を期待する。
                 advance(lexer);
                 return true;
             default:
@@ -606,9 +604,8 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
                 case '\n':
                 case ' ':
                 case '\t':
-                    // If the `/` operator is valid, then so is the `%` operator, which means
-                    // that a `%` followed by whitespace should be considered an operator,
-                    // not a percent string.
+                    // `/` 演算子が有効なら `%` 演算子も有効なので、
+                    // 空白が続く `%` は percent string ではなく演算子として扱う。
                     if (valid_symbols[FORWARD_SLASH]) {
                         return false;
                     }
@@ -629,10 +626,9 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
                 case ']':
                 case '}':
                 case '>':
-                // TODO: Implement %= as external rule and re-enable = as a valid
-                // unbalanced delimiter. That will be necessary due to ambiguity
-                // between &= assignment operator and %=...= as string
-                // content delimiter.
+                // TODO: `%=` を外部ルールとして実装し、`=` を不均衡な区切り文字として
+                // 再度有効にする。`&=` 代入演算子と `%=`...`=` 形式の文字列区切りが
+                // 曖昧になるため、その対応が必要。
                 // case '=':
                 case '+':
                 case '-':
@@ -904,7 +900,7 @@ static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer) {
 static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
     scanner->has_leading_whitespace = false;
 
-    // Contents of literals, which match any character except for some close delimiter
+    // 一部の閉じ区切り文字を除く任意文字に一致するリテラル内容を処理する。
     if (!valid_symbols[STRING_START]) {
         if ((valid_symbols[STRING_CONTENT] || valid_symbols[STRING_END]) && scanner->literal_stack.size > 0) {
             return scan_literal_content(scanner, lexer);
@@ -914,7 +910,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
         }
     }
 
-    // Whitespace
+    // 空白を処理する。
     lexer->result_symbol = NONE;
     if (!scan_whitespace(scanner, lexer, valid_symbols)) {
         return false;
@@ -1062,9 +1058,9 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             break;
 
         case '[':
-            // Treat a square bracket as an element reference if either:
-            // * the bracket is not preceded by any whitespace
-            // * an arbitrary expression is not valid at the current position.
+            // 次のいずれかを満たす `[` は要素参照として扱う。
+            // * 直前に空白がない
+            // * 現在位置で任意式が妥当ではない
             if (valid_symbols[ELEMENT_REFERENCE_BRACKET] &&
                 (!scanner->has_leading_whitespace || !valid_symbols[STRING_START])) {
                 advance(lexer);
@@ -1077,7 +1073,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             break;
     }
 
-    // Open delimiters for literals
+    // 識別子接尾辞やハッシュキー記法を処理する。
     if (((valid_symbols[HASH_KEY_SYMBOL] || valid_symbols[IDENTIFIER_SUFFIX]) &&
          (iswalpha(lexer->lookahead) || lexer->lookahead == '_')) ||
         (valid_symbols[CONSTANT_SUFFIX] && iswupper(lexer->lookahead))) {
@@ -1104,7 +1100,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
         return false;
     }
 
-    // Open delimiters for literals
+    // リテラル開始用の区切り文字を処理する。
     if (valid_symbols[STRING_START]) {
         Literal literal = {0};
         literal.nesting_depth = 1;

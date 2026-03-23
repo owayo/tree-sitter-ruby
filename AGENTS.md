@@ -8,7 +8,7 @@ Ruby の tree-sitter 文法パーサー。
 |------|------|
 | `grammar.js` | Ruby 文法定義（メインファイル） |
 | `src/` | tree-sitter generate で生成されるパーサーコード（手動編集不可） |
-| `src/scanner.c` | 外部スキャナー（手動管理、heredoc・リテラル・空白処理） |
+| `src/scanner.c` | 外部スキャナー（手動管理、heredoc・リテラル・空白処理・状態シリアライズ） |
 | `scripts/` | テストランナー（corpus_test.py）とユニットテスト |
 | `queries/highlights.scm` | シンタックスハイライトクエリ |
 | `queries/tags.scm` | コードナビゲーション用タグクエリ（定義・参照） |
@@ -64,4 +64,5 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `grammar.js` を変更した場合は必ず `tree-sitter generate` を実行する
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
+- `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `pnpm run test` で確認する
 - `tree-sitter test` をメモリ監視なしで実行してはならない

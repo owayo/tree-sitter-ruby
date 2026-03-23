@@ -80,7 +80,9 @@ node node_modules/tree-sitter-cli/install.js
 
 ### Scanner
 
-The external scanner (`src/scanner.c`) handles context-sensitive tokens that cannot be expressed in `grammar.js` alone: heredocs, delimited literals (strings, regexes, subshells, symbol/string arrays), line breaks, and whitespace-sensitive operators. Unlike the rest of `src/`, this file is manually maintained and should be edited directly when adding new token types.
+The external scanner (`src/scanner.c`) handles context-sensitive tokens that cannot be expressed in `grammar.js` alone: heredocs, delimited literals (strings, regexes, subshells, symbol/string arrays), line breaks, whitespace-sensitive operators, and the serialized scanner state needed to resume those constructs correctly. Unlike the rest of `src/`, this file is manually maintained and should be edited directly when adding new token types.
+
+Long heredoc terminators are covered by a dedicated regression case in `test/corpus/literals.txt`, so changes to scanner serialization should be validated with `pnpm run test`.
 
 ## References
 
