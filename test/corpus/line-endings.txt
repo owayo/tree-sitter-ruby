@@ -21,3 +21,33 @@ CRLF multiline comments
 ---
 
 (program (comment))
+
+======================
+backslash line continuation
+======================
+
+x = 1 + \
+    2
+
+---
+
+(program
+  (assignment
+    (identifier)
+    (binary
+      (integer)
+      (integer))))
+
+=====================
+dot method continuation
+=====================
+
+foo.
+  bar
+
+---
+
+(program
+  (call
+    (identifier)
+    (identifier)))

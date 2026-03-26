@@ -112,6 +112,18 @@ class CorpusTestScriptTests(unittest.TestCase):
             "TIMEOUT",
         )
 
+    def test_format_failure_detail_zero(self):
+        """エラー数 0 でも正しく整形される。"""
+        self.assertEqual(corpus_test.format_failure_detail(0), "0 errors")
+
+    def test_format_failure_detail_large_number(self):
+        """大きなエラー数も正しく整形される。"""
+        self.assertEqual(corpus_test.format_failure_detail(999), "999 errors")
+
+    def test_format_failure_detail_non_string(self):
+        """整数以外の型はそのまま文字列化される。"""
+        self.assertEqual(corpus_test.format_failure_detail(None), "None")
+
     def test_summarize_command_failure_prefers_error_line(self):
         output = textwrap.dedent(
             """\

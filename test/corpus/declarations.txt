@@ -719,3 +719,48 @@ bar
 ---
 
 (program (identifier) (end_block (identifier)) (identifier))
+
+=========================
+method with ensure clause
+=========================
+
+def foo
+  x
+ensure
+  y
+end
+
+---
+
+(program
+  (method
+    (identifier)
+    (body_statement
+      (identifier)
+      (ensure
+        (identifier)))))
+
+============================
+method with rescue and ensure
+============================
+
+def foo
+  x
+rescue
+  y
+ensure
+  z
+end
+
+---
+
+(program
+  (method
+    (identifier)
+    (body_statement
+      (identifier)
+      (rescue
+        (then
+          (identifier)))
+      (ensure
+        (identifier)))))
