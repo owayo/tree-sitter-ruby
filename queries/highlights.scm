@@ -23,6 +23,7 @@
   "next"
   "or"
   "rescue"
+  "redo"
   "retry"
   "return"
   "then"

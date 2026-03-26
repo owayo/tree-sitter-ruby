@@ -135,6 +135,8 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
 
     uint8_t literal_depth = buffer[size++];
     for (unsigned j = 0; j < literal_depth; j++) {
+        // リテラル 1 件あたり 5 バイト必要
+        if (size + 5 > length) return;
         Literal literal = {0};
         literal.type = (TokenType)(buffer[size++]);
         literal.open_delimiter = (unsigned char)buffer[size++];
@@ -144,8 +146,11 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         array_push(&scanner->literal_stack, literal);
     }
 
+    if (size >= length) return;
     uint8_t open_heredoc_count = buffer[size++];
     for (unsigned j = 0; j < open_heredoc_count; j++) {
+        // heredoc ヘッダー: フラグ 3 バイト + word_length 4 バイト = 最低 7 バイト
+        if (size + 3u + sizeof(uint32_t) > length) return;
         Heredoc heredoc = {0};
         heredoc.end_word_indentation_allowed = buffer[size++];
         heredoc.allows_interpolation = buffer[size++];
@@ -155,6 +160,8 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         uint32_t word_length;
         memcpy(&word_length, &buffer[size], sizeof(uint32_t));
         size += sizeof(uint32_t);
+        // 終端語本体がバッファ内に収まるか検証
+        if (size + word_length > length) return;
         array_reserve(&heredoc.word, word_length);
         memcpy(heredoc.word.contents, &buffer[size], word_length);
         heredoc.word.size = word_length;

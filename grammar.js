@@ -6,7 +6,7 @@ const PREC = {
 	CURLY_BLOCK: 1,
 	DO_BLOCK: -1,
 
-	AND: -2,
+	AND: -1,
 	OR: -2,
 	NOT: 5,
 	DEFINED: 10,
