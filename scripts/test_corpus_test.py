@@ -247,6 +247,54 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(len(tests), 1)
         self.assertEqual(tests[0][0], "first line second line")
 
+    def test_extract_tests_ignores_unterminated_name_section(self):
+        """閉じ区切りのないテスト名セクションは無視される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            unterminated
+            still name
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(tests, [])
+
+    def test_extract_tests_stops_code_on_next_header(self):
+        """AST 区切りがなくても次のヘッダーで前ケースを閉じる。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            first
+            =========
+            puts :ok
+            =========
+            second
+            =========
+            puts :next
+            ---
+            (program
+              (call))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(
+            tests,
+            [
+                ("first", "puts :ok", False),
+                ("second", "puts :next", False),
+            ],
+        )
+
     def test_extract_tests_strips_blank_lines_around_code(self):
         """コード前後の空行が除去される。"""
         corpus = textwrap.dedent(
@@ -332,6 +380,14 @@ class CorpusTestScriptTests(unittest.TestCase):
             "exit 2: Something went wrong",
         )
 
+    def test_summarize_command_failure_skips_blank_lines(self):
+        """先頭の空行は無視して最初の有意な行を使用する。"""
+        output = "\n\nSomething went wrong\n"
+        self.assertEqual(
+            corpus_test.summarize_command_failure(2, output),
+            "exit 2: Something went wrong",
+        )
+
     # --- check_tree_sitter_cli 追加テスト ---
 
     @patch("corpus_test.subprocess.run")
@@ -361,6 +417,20 @@ class CorpusTestScriptTests(unittest.TestCase):
         message = corpus_test.check_tree_sitter_cli({})
         self.assertIn("tree-sitter CLI の実体を起動できません", message)
         self.assertIn("install.js", message)
+
+    @patch("corpus_test.subprocess.run")
+    def test_check_tree_sitter_cli_reports_generic_failure(self, mock_run):
+        """一般的な起動失敗では要約付きメッセージを返す。"""
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=2,
+            stdout="",
+            stderr="permission denied\n",
+        )
+        self.assertEqual(
+            corpus_test.check_tree_sitter_cli({}),
+            "tree-sitter CLI を起動できません。exit 2: permission denied",
+        )
 
     # --- main 関数の追加テスト ---
 
@@ -416,6 +486,102 @@ class CorpusTestScriptTests(unittest.TestCase):
 
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.subprocess.run")
+    def test_main_skips_non_txt_and_accepts_expected_error(self, mock_run, mock_listdir):
+        """非 txt を無視し、期待どおりの ERROR は成功として扱う。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            expected error
+            =========
+            def (
+            ---
+            (program
+              (ERROR))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=1,
+            stdout="(program (ERROR))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = ["README.md", corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Pass: 1", stdout.getvalue())
+        self.assertIn("Fail: 0", stdout.getvalue())
+        self.assertEqual(mock_run.call_count, 2)
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_reports_expected_error_when_parse_succeeds(self, mock_run, mock_listdir):
+        """ERROR 期待ケースが正常終了した場合は失敗として報告する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            expected error
+            =========
+            def (
+            ---
+            (program
+              (ERROR))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (method))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("expected ERROR but parsed OK", stdout.getvalue())
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
     def test_main_with_failure(self, mock_run, mock_listdir):
         """パースエラー時に exit 1 と失敗詳細を出力する。"""
         corpus = textwrap.dedent(
@@ -461,6 +627,53 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(exit_code, 1)
         self.assertIn("FAIL:", stdout.getvalue())
         self.assertIn("Fail: 1", stdout.getvalue())
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_reports_command_failure_detail_without_error_nodes(self, mock_run, mock_listdir):
+        """非 0 終了かつ ERROR ノードなしならコマンド失敗詳細を表示する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            command failure
+            =========
+            puts :ok
+            ---
+            (program
+              (call))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=2,
+            stdout="",
+            stderr="\npermission denied\n",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("exit 2: permission denied", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.subprocess.run")

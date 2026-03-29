@@ -66,6 +66,9 @@ tree-sitter parse example.rb
 pnpm run test
 
 # Unit tests for scripts/corpus_test.py
+# - malformed corpus extraction
+# - tree-sitter CLI setup / generic failure handling
+# - expected ERROR / TIMEOUT / non-.txt branches in the runner
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)
@@ -76,7 +79,7 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 node node_modules/tree-sitter-cli/install.js
 ```
 
-`pnpm run test` verifies `tree-sitter --version` before executing corpus cases and exits with a setup error if the CLI is missing or does not start within 10 seconds.
+`pnpm run test` verifies `tree-sitter --version` before executing corpus cases and exits with a setup error if the CLI is missing or does not start within 10 seconds. The corresponding setup and failure branches are covered by `pnpm run test:unit`.
 
 ### Scanner
 

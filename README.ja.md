@@ -66,6 +66,9 @@ tree-sitter parse example.rb
 pnpm run test
 
 # scripts/corpus_test.py のユニットテスト
+# - 壊れた corpus 入力の抽出
+# - tree-sitter CLI の setup error / 一般失敗
+# - expected ERROR / TIMEOUT / 非 .txt スキップの分岐
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）
@@ -77,7 +80,7 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 node node_modules/tree-sitter-cli/install.js
 ```
 
-`pnpm run test` はコーパス実行前に `tree-sitter --version` を確認し、CLI が見つからない場合や 10 秒以内に起動できない場合は setup error で終了します。
+`pnpm run test` はコーパス実行前に `tree-sitter --version` を確認し、CLI が見つからない場合や 10 秒以内に起動できない場合は setup error で終了します。関連する setup/failure 分岐は `pnpm run test:unit` で回帰確認できます。
 
 ### スキャナー
 
