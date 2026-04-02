@@ -650,7 +650,8 @@ module.exports = grammar({
 				"unless",
 				field("condition", $._statement),
 				choice($._terminator, field("consequence", $.then)),
-				field("alternative", optional(choice($.else, $.elsif))),
+				// Ruby (MRI) では unless...elsif...end は SyntaxError のため elsif を除外
+				field("alternative", optional($.else)),
 				"end",
 			),
 
