@@ -38,11 +38,13 @@ pnpm run test
 
 # corpus_test.py のユニットテスト
 # - 壊れた corpus 入力の抽出（空ファイル、空白のみコード、:error タグ）
-# - tree-sitter CLI の setup error / 一般失敗
+# - tree-sitter CLI の setup error / 一般失敗 / PermissionError 伝播
 # - expected ERROR / TIMEOUT / 非 .txt スキップの分岐
-# - パス/失敗混在時の集計結果
+# - パス/失敗混在時の集計結果、複数ファイルまたぎの集計
 # - 区切り線検出・コマンド失敗要約の境界値テスト
 # - エッジケース: 空の AST セクション、AST なし連続テスト、空の corpus
+# - 追加カバレッジ: 空テスト名、末尾改行なし、MISSING のみ検出、
+#   bool/float/空文字列の失敗詳細、ノイズ後の有意行抽出
 pnpm run test:unit
 
 # 個別ファイルのパース検証

@@ -949,6 +949,309 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertIn("Pass: 0", stdout.getvalue())
         self.assertIn("Fail: 0", stdout.getvalue())
 
+    # --- is_separator 追加テスト ---
+
+    def test_is_separator_other_repeated_chars(self):
+        """= と - 以外の同一文字繰り返しは区切り線ではない。"""
+        self.assertIsNone(corpus_test.is_separator("***"))
+        self.assertIsNone(corpus_test.is_separator("###"))
+        self.assertIsNone(corpus_test.is_separator("~~~"))
+
+    def test_is_separator_tab_only(self):
+        """タブ文字のみの行は区切り線ではない。"""
+        self.assertIsNone(corpus_test.is_separator("\t\t\t"))
+
+    # --- extract_tests 追加テスト ---
+
+    def test_extract_tests_empty_name_section(self):
+        """名前セクションが空行のみの場合、空文字列のテスト名になる。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 1)
+        self.assertEqual(tests[0][0], "")
+
+    def test_extract_tests_file_ends_after_dash_separator(self):
+        """--- の直後にファイルが終了する場合、AST 空でテスト抽出される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            trailing dash
+            =========
+            x = 1
+            ---
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 1)
+        self.assertEqual(tests[0][0], "trailing dash")
+        self.assertFalse(tests[0][2])
+
+    def test_extract_tests_no_trailing_newline(self):
+        """ファイル末尾に改行がないケースでも正常に抽出される。"""
+        corpus = (
+            "=========\nno newline\n=========\nx = 1\n---\n(program\n  (assignment))"
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 1)
+        self.assertEqual(tests[0][0], "no newline")
+
+    def test_extract_tests_both_error_and_missing(self):
+        """AST に ERROR と MISSING が両方含まれる場合 expects_error が True になる。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            both markers
+            =========
+            def foo(
+            ---
+            (program
+              (ERROR)
+              (MISSING))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 1)
+        self.assertTrue(tests[0][2])
+
+    # --- format_failure_detail 追加テスト ---
+
+    def test_format_failure_detail_bool_is_int_subclass(self):
+        """bool は int のサブクラスなので整数分岐に入り f-string で文字列化される。"""
+        self.assertEqual(corpus_test.format_failure_detail(True), "True errors")
+        self.assertEqual(corpus_test.format_failure_detail(False), "False errors")
+
+    def test_format_failure_detail_float_uses_str(self):
+        """float は int ではないので str() で変換される。"""
+        self.assertEqual(corpus_test.format_failure_detail(1.5), "1.5")
+
+    def test_format_failure_detail_empty_string(self):
+        """空文字列はそのまま空文字列として返される。"""
+        self.assertEqual(corpus_test.format_failure_detail(""), "")
+
+    # --- summarize_command_failure 追加テスト ---
+
+    def test_summarize_command_failure_error_only_label(self):
+        """'Error:' のみの行（メッセージなし）もそのまま返される。"""
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, "Error:\n"),
+            "exit 1: Error:",
+        )
+
+    def test_summarize_command_failure_noise_then_meaningful(self):
+        """ノイズ行の後に有意な行がある場合、有意な行が返される。"""
+        output = textwrap.dedent(
+            """\
+                at ChildProcess._handle.onexit (node:internal/child_process:286:19)
+            actual error message
+            """
+        )
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, output),
+            "exit 1: actual error message",
+        )
+
+    def test_summarize_command_failure_error_mid_line_not_matched(self):
+        """Error: が行頭でない場合は Error: 優先マッチしない。"""
+        output = "Some context Error: detail\n"
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, output),
+            "exit 1: Some context Error: detail",
+        )
+
+    # --- check_tree_sitter_cli 追加テスト ---
+
+    @patch(
+        "corpus_test.subprocess.run", side_effect=PermissionError("permission denied")
+    )
+    def test_check_tree_sitter_cli_permission_error_propagates(self, mock_run):
+        """PermissionError は FileNotFoundError ではないため未キャッチで伝播する。"""
+        with self.assertRaises(PermissionError):
+            corpus_test.check_tree_sitter_cli({})
+
+    @patch("corpus_test.subprocess.run")
+    def test_check_tree_sitter_cli_partial_enoent_match(self, mock_run):
+        """tree-sitter-cli/tree-sitter は含むが ENOENT を含まない場合は一般エラー。"""
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=1,
+            stdout="",
+            stderr="Error: spawn tree-sitter-cli/tree-sitter SIGABRT\n",
+        )
+        message = corpus_test.check_tree_sitter_cli({})
+        self.assertIn("tree-sitter CLI を起動できません", message)
+        self.assertNotIn("install.js", message)
+
+    # --- main 関数の追加テスト ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_multiple_corpus_files(self, mock_run, mock_listdir):
+        """複数の corpus ファイルにまたがるテスト集計が正確であること。"""
+        corpus1 = textwrap.dedent(
+            """\
+            =========
+            file1 test
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus2 = textwrap.dedent(
+            """\
+            =========
+            file2 test
+            =========
+            y = 2
+            ---
+            (program
+              (assignment))
+            """
+        )
+        path1 = self._write_corpus(corpus1)
+        path2 = self._write_corpus(corpus2)
+        corpus_dir = os.path.dirname(path1)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_ok = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (assignment))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_ok, parse_ok]
+        mock_listdir.return_value = sorted(
+            [os.path.basename(path1), os.path.basename(path2)]
+        )
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(path1)
+            os.unlink(path2)
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Total: 2", stdout.getvalue())
+        self.assertIn("Pass: 2", stdout.getvalue())
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_missing_only_in_output(self, mock_run, mock_listdir):
+        """パース出力に MISSING のみ含まれる場合も失敗として報告する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            missing node
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (MISSING) (assignment))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("Fail: 1", stdout.getvalue())
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_txt_file_without_test_cases(self, mock_run, mock_listdir):
+        """.txt ファイルはあるがテストケースが0件の場合、0 件で成功する。"""
+        corpus_path = self._write_corpus("just text without separators\n")
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        mock_run.return_value = version_result
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Total: 0", stdout.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

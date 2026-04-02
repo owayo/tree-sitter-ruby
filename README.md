@@ -67,11 +67,13 @@ pnpm run test
 
 # Unit tests for scripts/corpus_test.py
 # - malformed corpus extraction (empty files, whitespace-only code, :error tags)
-# - tree-sitter CLI setup / generic failure handling
+# - tree-sitter CLI setup / generic failure / PermissionError propagation
 # - expected ERROR / TIMEOUT / non-.txt branches in the runner
-# - mixed pass/fail result aggregation
+# - mixed pass/fail result aggregation, multi-file corpus aggregation
 # - boundary values for separator detection and command failure summaries
 # - edge cases: empty AST sections, consecutive tests without AST, empty corpus
+# - additional coverage: empty test names, no trailing newline, MISSING-only detection,
+#   bool/float/empty-string failure details, meaningful lines after noise
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)
