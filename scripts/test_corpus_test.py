@@ -828,6 +828,127 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(exit_code, 1)
         self.assertIn("TIMEOUT", stdout.getvalue())
 
+    # --- is_separator 追加境界値テスト ---
+
+    def test_is_separator_with_trailing_whitespace(self):
+        """末尾空白付きの区切り線を正しく認識する。"""
+        self.assertEqual(corpus_test.is_separator("=====   "), "=")
+        self.assertEqual(corpus_test.is_separator("-----\t"), "-")
+
+    def test_is_separator_with_leading_whitespace(self):
+        """先頭空白付きの区切り線を正しく認識する。"""
+        self.assertEqual(corpus_test.is_separator("  ====="), "=")
+        self.assertEqual(corpus_test.is_separator("\t-----"), "-")
+
+    # --- extract_tests 追加エッジケーステスト ---
+
+    def test_extract_tests_empty_expected_ast(self):
+        """期待 AST が空でもテストとして抽出される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            empty ast
+            =========
+            x = 1
+            ---
+            =========
+            next case
+            =========
+            y = 2
+            ---
+            (program
+              (assignment))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 2)
+        self.assertEqual(tests[0][0], "empty ast")
+        self.assertFalse(tests[0][2])
+        self.assertEqual(tests[1][0], "next case")
+
+    def test_extract_tests_consecutive_tests_without_ast(self):
+        """AST なしの連続テストが正しく抽出される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            first
+            =========
+            a = 1
+            =========
+            second
+            =========
+            b = 2
+            =========
+            third
+            =========
+            c = 3
+            ---
+            (program
+              (assignment))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 3)
+        self.assertEqual(tests[0][1], "a = 1")
+        self.assertEqual(tests[1][1], "b = 2")
+        self.assertEqual(tests[2][1], "c = 3")
+
+    # --- summarize_command_failure 追加テスト ---
+
+    def test_summarize_command_failure_multiple_error_lines(self):
+        """複数の Error: 行がある場合、最初のものを使用する。"""
+        output = textwrap.dedent(
+            """\
+            Error: first error
+            Error: second error
+            """
+        )
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, output),
+            "exit 1: Error: first error",
+        )
+
+    def test_summarize_command_failure_whitespace_only_output(self):
+        """出力が空白のみの場合、終了コードのみ返す。"""
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, "   \n  \n"),
+            "exit 1",
+        )
+
+    # --- main 関数の追加テスト ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_empty_corpus_directory(self, mock_run, mock_listdir):
+        """corpus ディレクトリに .txt ファイルがない場合、0 件で成功する。"""
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        mock_run.return_value = version_result
+        mock_listdir.return_value = ["README.md", ".gitkeep"]
+
+        stdout = io.StringIO()
+        with redirect_stdout(stdout):
+            exit_code = corpus_test.main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Total: 0", stdout.getvalue())
+        self.assertIn("Pass: 0", stdout.getvalue())
+        self.assertIn("Fail: 0", stdout.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -41,6 +41,8 @@ pnpm run test
 # - tree-sitter CLI の setup error / 一般失敗
 # - expected ERROR / TIMEOUT / 非 .txt スキップの分岐
 # - パス/失敗混在時の集計結果
+# - 区切り線検出・コマンド失敗要約の境界値テスト
+# - エッジケース: 空の AST セクション、AST なし連続テスト、空の corpus
 pnpm run test:unit
 
 # 個別ファイルのパース検証

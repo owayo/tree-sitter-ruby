@@ -70,6 +70,8 @@ pnpm run test
 # - tree-sitter CLI setup / generic failure handling
 # - expected ERROR / TIMEOUT / non-.txt branches in the runner
 # - mixed pass/fail result aggregation
+# - boundary values for separator detection and command failure summaries
+# - edge cases: empty AST sections, consecutive tests without AST, empty corpus
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)
