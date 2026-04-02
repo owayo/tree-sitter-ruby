@@ -66,9 +66,10 @@ tree-sitter parse example.rb
 pnpm run test
 
 # scripts/corpus_test.py のユニットテスト
-# - 壊れた corpus 入力の抽出
+# - 壊れた corpus 入力の抽出（空ファイル、空白のみコード、:error タグ）
 # - tree-sitter CLI の setup error / 一般失敗
 # - expected ERROR / TIMEOUT / 非 .txt スキップの分岐
+# - パス/失敗混在時の集計結果
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）

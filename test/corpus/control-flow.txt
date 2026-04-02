@@ -193,6 +193,55 @@ end
     condition: (identifier)
     alternative: (else)))
 
+======================================
+unless statement with body and else
+======================================
+
+unless foo
+  bar
+else
+  baz
+end
+
+---
+
+(program
+  (unless
+    condition: (identifier)
+    consequence: (then
+      (identifier))
+    alternative: (else
+      (identifier))))
+
+======================================
+single-line unless then else statement
+======================================
+
+unless foo then bar else baz end
+
+---
+
+(program (unless (identifier) (then (identifier)) (else (identifier))))
+
+============================================
+unless with elsif is not recognized as elsif
+============================================
+
+unless foo
+elsif bar
+end
+
+---
+
+(program
+  (unless
+    condition: (identifier)
+    consequence: (then
+      (call
+        method: (identifier)
+        arguments: (argument_list
+          (identifier))))))
+
 ===
 for
 ===

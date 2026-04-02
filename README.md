@@ -66,9 +66,10 @@ tree-sitter parse example.rb
 pnpm run test
 
 # Unit tests for scripts/corpus_test.py
-# - malformed corpus extraction
+# - malformed corpus extraction (empty files, whitespace-only code, :error tags)
 # - tree-sitter CLI setup / generic failure handling
 # - expected ERROR / TIMEOUT / non-.txt branches in the runner
+# - mixed pass/fail result aggregation
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)

@@ -486,7 +486,9 @@ class CorpusTestScriptTests(unittest.TestCase):
 
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.subprocess.run")
-    def test_main_skips_non_txt_and_accepts_expected_error(self, mock_run, mock_listdir):
+    def test_main_skips_non_txt_and_accepts_expected_error(
+        self, mock_run, mock_listdir
+    ):
         """非 txt を無視し、期待どおりの ERROR は成功として扱う。"""
         corpus = textwrap.dedent(
             """\
@@ -535,7 +537,9 @@ class CorpusTestScriptTests(unittest.TestCase):
 
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.subprocess.run")
-    def test_main_reports_expected_error_when_parse_succeeds(self, mock_run, mock_listdir):
+    def test_main_reports_expected_error_when_parse_succeeds(
+        self, mock_run, mock_listdir
+    ):
         """ERROR 期待ケースが正常終了した場合は失敗として報告する。"""
         corpus = textwrap.dedent(
             """\
@@ -630,7 +634,9 @@ class CorpusTestScriptTests(unittest.TestCase):
 
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.subprocess.run")
-    def test_main_reports_command_failure_detail_without_error_nodes(self, mock_run, mock_listdir):
+    def test_main_reports_command_failure_detail_without_error_nodes(
+        self, mock_run, mock_listdir
+    ):
         """非 0 終了かつ ERROR ノードなしならコマンド失敗詳細を表示する。"""
         corpus = textwrap.dedent(
             """\
@@ -674,6 +680,109 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 1)
         self.assertIn("exit 2: permission denied", stdout.getvalue())
+
+    def test_extract_tests_skips_whitespace_only_code(self):
+        """コードが空白のみの場合テストとして抽出されない。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            blank code
+            =========
+
+            ---
+            (program)
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+        self.assertEqual(tests, [])
+
+    def test_extract_tests_error_tag_in_name(self):
+        """:error タグ付きテスト名で expects_error が True になる。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            broken syntax
+            :error
+            =========
+            def (
+            ---
+            (program
+              (ERROR))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 1)
+        self.assertTrue(tests[0][2])
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_mixed_pass_and_fail(self, mock_run, mock_listdir):
+        """複数テストで一部パス・一部失敗の集計が正確であること。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            pass case
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            =========
+            fail case
+            =========
+            y = 2
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        pass_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (assignment))\n",
+            stderr="",
+        )
+        fail_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (ERROR))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, pass_result, fail_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("Pass: 1", stdout.getvalue())
+        self.assertIn("Fail: 1", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.subprocess.run")
