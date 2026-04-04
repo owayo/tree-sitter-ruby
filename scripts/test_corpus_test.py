@@ -1514,6 +1514,214 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(exit_code, 1)
         self.assertIn("exit 1:", stdout.getvalue())
 
+    # --- extract_tests: コード内に --- が含まれる場合 ---
+
+    def test_extract_tests_dash_separator_in_code_splits_ast(self):
+        """コード内に --- があると AST 区切りとして認識される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            yaml heredoc
+            =========
+            x = <<~YAML
+            ---
+            key: value
+            YAML
+            ---
+            (program
+              (assignment))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        # 最初の --- でコード/AST が分割される
+        self.assertEqual(len(tests), 1)
+        self.assertEqual(tests[0][1], "x = <<~YAML")
+
+    # --- extract_tests: 末尾が === で終わる場合 ---
+
+    def test_extract_tests_file_ends_with_header_separator(self):
+        """ファイルが === で終わる場合、前のテストが正しく抽出される。"""
+        corpus = "=========\nfirst\n=========\nx = 1\n========="
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        # 最初のテストは === でコードが区切られ、2番目は名前未完了で無視
+        self.assertEqual(len(tests), 1)
+        self.assertEqual(tests[0][0], "first")
+        self.assertEqual(tests[0][1], "x = 1")
+
+    # --- summarize_command_failure: 特殊な出力パターン ---
+
+    def test_summarize_command_failure_error_prefix_with_indentation(self):
+        """インデントされた Error: 行が正しく検出される。"""
+        output = "    Error: indented error message\n"
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, output),
+            "exit 1: Error: indented error message",
+        )
+
+    def test_summarize_command_failure_only_blank_and_node_version(self):
+        """空行と Node.js バージョンのみの場合、終了コードのみ返す。"""
+        output = "\n\nNode.js v22.0.0\n"
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, output),
+            "exit 1",
+        )
+
+    # --- main: stderr のみにエラー出力がある場合 ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_error_in_stderr_only(self, mock_run, mock_listdir):
+        """stdout は空で stderr に ERROR がある場合、失敗として検出される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            stderr error
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=1,
+            stdout="",
+            stderr="(program (ERROR))\n",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("Fail: 1", stdout.getvalue())
+
+    # --- is_separator: 長い区切り線 ---
+
+    def test_is_separator_very_long_line(self):
+        """非常に長い区切り線も正しく認識する。"""
+        self.assertEqual(corpus_test.is_separator("=" * 1000), "=")
+        self.assertEqual(corpus_test.is_separator("-" * 500), "-")
+
+    # --- extract_tests: 複数の :error タグ付きテスト ---
+
+    def test_extract_tests_multiple_tests_with_error_tags(self):
+        """複数のテストケースでそれぞれ正しく expects_error が設定される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            normal
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            =========
+            error1
+            =========
+            def (
+            ---
+            (program
+              (ERROR))
+            =========
+            error2
+            =========
+            class (
+            ---
+            (program
+              (MISSING))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 3)
+        self.assertFalse(tests[0][2])  # normal
+        self.assertTrue(tests[1][2])  # ERROR
+        self.assertTrue(tests[2][2])  # MISSING
+
+    # --- main: 期待 ERROR で MISSING のみ検出される場合 ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_expected_error_matched_by_missing(self, mock_run, mock_listdir):
+        """期待 AST に ERROR があり、パース結果に MISSING がある場合は成功。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            error via missing
+            =========
+            def foo(
+            ---
+            (program
+              (ERROR))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=1,
+            stdout="(program (MISSING))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        # MISSING も ERROR 系として扱うので成功
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Pass: 1", stdout.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -78,6 +78,9 @@ pnpm run test
 #   パース中 PermissionError 伝播
 # - __main__ ガード呼び出し、期待 ERROR だがパース成功、
 #   非ゼロ終了でエラーノードなし
+# - コード内 --- 区切り、ヘッダー区切りでファイル終端、
+#   インデント付き Error: 行、stderr のみのエラー、長い区切り線、
+#   複数 error タグテスト、期待 ERROR が MISSING で一致
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）

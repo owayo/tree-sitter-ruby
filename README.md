@@ -78,6 +78,9 @@ pnpm run test
 #   multiple ERROR/MISSING node counting, PermissionError during parse
 # - __main__ guard invocation, expected ERROR but parsed OK,
 #   non-zero exit without error nodes
+# - dash separator in code, file ending with header separator,
+#   indented Error: lines, stderr-only errors, very long separators,
+#   multiple error tag tests, expected ERROR matched by MISSING
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)
