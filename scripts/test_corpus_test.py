@@ -1252,6 +1252,159 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Total: 0", stdout.getvalue())
 
+    # --- extract_tests: :error タグの動作テスト ---
+
+    def test_extract_tests_error_tag_without_error_in_ast(self):
+        """:error タグがテスト名にあるが AST に ERROR がない場合、expects_error は False になる。
+
+        現在の実装は :error タグを解釈しないため、AST のみで判定する。
+        """
+        corpus = textwrap.dedent(
+            """\
+            =========
+            broken syntax
+            :error
+            =========
+            def (
+            ---
+            (program
+              (method))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 1)
+        # :error タグは未実装のため expects_error は False
+        self.assertFalse(tests[0][2])
+
+    # --- extract_tests: コード内に区切り線に似た行がある場合 ---
+
+    def test_extract_tests_code_with_separator_like_line(self):
+        """コード内に区切り線として認識される行があると、そこでコードが区切られる。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            separator in code
+            =========
+            x = 1
+            =========
+            next test
+            =========
+            y = 2
+            ---
+            (program
+              (assignment))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        # "=====" がコード区切りとして扱われ、2つのテストに分割される
+        self.assertEqual(len(tests), 2)
+        self.assertEqual(tests[0][1], "x = 1")
+        self.assertEqual(tests[1][1], "y = 2")
+
+    # --- main: 複数 ERROR/MISSING ノードのカウント ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_counts_multiple_error_nodes(self, mock_run, mock_listdir):
+        """パース出力に複数の ERROR/MISSING がある場合、合計数が報告される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            multi error
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (ERROR) (assignment (MISSING)) (ERROR))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 1)
+        # ERROR 2件 + MISSING 1件 = 3件
+        self.assertIn("3 errors", stdout.getvalue())
+
+    # --- main: パース中の PermissionError ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_permission_error_during_parse_propagates(
+        self, mock_run, mock_listdir
+    ):
+        """パース実行中の PermissionError は未キャッチで伝播する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            perm error
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        mock_run.side_effect = [
+            version_result,
+            PermissionError("permission denied"),
+        ]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            with (
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+                self.assertRaises(PermissionError),
+            ):
+                corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
 
 if __name__ == "__main__":
     unittest.main()

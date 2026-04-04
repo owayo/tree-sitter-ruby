@@ -74,6 +74,8 @@ pnpm run test
 # - edge cases: empty AST sections, consecutive tests without AST, empty corpus
 # - additional coverage: empty test names, no trailing newline, MISSING-only detection,
 #   bool/float/empty-string failure details, meaningful lines after noise
+# - :error tag behavior without ERROR in AST, separator-like lines in code,
+#   multiple ERROR/MISSING node counting, PermissionError during parse
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)

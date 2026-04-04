@@ -45,6 +45,8 @@ pnpm run test
 # - エッジケース: 空の AST セクション、AST なし連続テスト、空の corpus
 # - 追加カバレッジ: 空テスト名、末尾改行なし、MISSING のみ検出、
 #   bool/float/空文字列の失敗詳細、ノイズ後の有意行抽出
+# - :error タグ単独動作、コード内区切り線、複数 ERROR/MISSING カウント、
+#   パース中 PermissionError 伝播
 pnpm run test:unit
 
 # 個別ファイルのパース検証
