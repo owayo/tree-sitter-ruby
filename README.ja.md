@@ -76,6 +76,8 @@ pnpm run test
 #   bool/float/空文字列の失敗詳細、ノイズ後の有意行抽出
 # - :error タグ単独動作、コード内区切り線、複数 ERROR/MISSING カウント、
 #   パース中 PermissionError 伝播
+# - __main__ ガード呼び出し、期待 ERROR だがパース成功、
+#   非ゼロ終了でエラーノードなし
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）

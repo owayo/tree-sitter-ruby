@@ -76,6 +76,8 @@ pnpm run test
 #   bool/float/empty-string failure details, meaningful lines after noise
 # - :error tag behavior without ERROR in AST, separator-like lines in code,
 #   multiple ERROR/MISSING node counting, PermissionError during parse
+# - __main__ guard invocation, expected ERROR but parsed OK,
+#   non-zero exit without error nodes
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)

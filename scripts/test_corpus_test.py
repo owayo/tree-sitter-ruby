@@ -1405,6 +1405,115 @@ class CorpusTestScriptTests(unittest.TestCase):
         finally:
             os.unlink(corpus_path)
 
+    # --- __main__ ガードのテスト ---
+
+    @patch("corpus_test.main", return_value=0)
+    def test_main_guard_calls_sys_exit(self, mock_main):
+        """__main__ ガードが sys.exit(main()) を呼ぶことを検証する。"""
+        with self.assertRaises(SystemExit) as cm:
+            runpy = __import__("runpy")
+            runpy.run_module("corpus_test", run_name="__main__", alter_sys=True)
+        self.assertEqual(cm.exception.code, 0)
+
+    # --- main: expected ERROR だがパース成功の場合 ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_expected_error_but_parsed_ok(self, mock_run, mock_listdir):
+        """期待 AST に ERROR があるがパースが成功した場合、失敗として報告する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            should error
+            =========
+            def (
+            ---
+            (program
+              (ERROR))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        # パース結果にエラーなし = 期待と不一致
+        parse_ok = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (method))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_ok]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("expected ERROR but parsed OK", stdout.getvalue())
+
+    # --- main: 非ゼロ終了コードでエラーノードなし ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_nonzero_exit_without_error_nodes(self, mock_run, mock_listdir):
+        """tree-sitter parse が非ゼロで終了しエラーノードもない場合、コマンド失敗として報告する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            cmd fail
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_fail = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=1,
+            stdout="",
+            stderr="Error: some internal error\n",
+        )
+        mock_run.side_effect = [version_result, parse_fail]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("exit 1:", stdout.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()
