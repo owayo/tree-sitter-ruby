@@ -161,7 +161,10 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         memcpy(&word_length, &buffer[size], sizeof(uint32_t));
         size += sizeof(uint32_t);
         // 終端語本体がバッファ内に収まるか検証
-        if (size + word_length > length) return;
+        if (size + word_length > length) {
+            array_delete(&heredoc.word);
+            return;
+        }
         array_reserve(&heredoc.word, word_length);
         memcpy(heredoc.word.contents, &buffer[size], word_length);
         heredoc.word.size = word_length;
