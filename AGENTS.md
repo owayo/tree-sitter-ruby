@@ -55,6 +55,8 @@ pnpm run test
 # - CLI タイムアウト直接テスト、複数空行名前セクション、
 #   KeyboardInterrupt 伝播、Emitted 'error' event のみ出力、
 #   コード末尾空白トリム、空コードテストのスキップ確認
+# - corpus ディレクトリ不在時の setup error、
+#   一時ファイル作成失敗時の OSError 伝播（UnboundLocalError 防止）
 pnpm run test:unit
 
 # 個別ファイルのパース検証

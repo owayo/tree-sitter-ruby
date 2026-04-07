@@ -700,8 +700,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             os.unlink(path)
         self.assertEqual(tests, [])
 
-    def test_extract_tests_error_tag_in_name(self):
-        """:error タグ付きテスト名で expects_error が True になる。"""
+    def test_extract_tests_error_tag_in_name_with_error_in_ast(self):
+        """AST に ERROR が含まれる場合 expects_error が True になる（:error タグではなく AST で判定）。"""
         corpus = textwrap.dedent(
             """\
             =========
@@ -1890,6 +1890,75 @@ class CorpusTestScriptTests(unittest.TestCase):
         # 空コードはスキップされるので Total: 1
         self.assertEqual(exit_code, 0)
         self.assertIn("Total: 1", stdout.getvalue())
+
+    # --- main: CORPUS_DIR が存在しない場合 ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_missing_corpus_dir(self, mock_run, mock_listdir):
+        """corpus ディレクトリが存在しない場合、setup error で終了する。"""
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        mock_run.return_value = version_result
+
+        stdout = io.StringIO()
+        with (
+            redirect_stdout(stdout),
+            patch.object(corpus_test, "CORPUS_DIR", "/nonexistent/path"),
+        ):
+            exit_code = corpus_test.main()
+
+        self.assertEqual(exit_code, 2)
+        mock_listdir.assert_not_called()
+        self.assertIn("--- Setup Error ---", stdout.getvalue())
+        self.assertIn("corpus ディレクトリが見つかりません", stdout.getvalue())
+
+    # --- main: NamedTemporaryFile 失敗時に UnboundLocalError にならない ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_tempfile_creation_failure_propagates(self, mock_run, mock_listdir):
+        """一時ファイル作成失敗時に UnboundLocalError ではなく OSError が伝播する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            tempfail
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        mock_run.return_value = version_result
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            with (
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+                patch(
+                    "corpus_test.tempfile.NamedTemporaryFile",
+                    side_effect=OSError("disk full"),
+                ),
+                self.assertRaises(OSError, msg="disk full"),
+            ):
+                corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
 
 
 if __name__ == "__main__":

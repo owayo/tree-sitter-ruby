@@ -84,6 +84,8 @@ pnpm run test
 # - CLI timeout direct test, multi-blank-line name sections,
 #   KeyboardInterrupt propagation, Emitted 'error' event only output,
 #   code trailing whitespace trimming, empty code test skipping
+# - missing corpus directory setup error,
+#   OSError propagation on temp file creation failure (UnboundLocalError prevention)
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)

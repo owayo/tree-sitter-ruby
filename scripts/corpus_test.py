@@ -165,6 +165,11 @@ def main():
         print(f"  {setup_error}")
         return 2
 
+    if not os.path.isdir(CORPUS_DIR):
+        print("\n--- Setup Error ---")
+        print(f"  corpus ディレクトリが見つかりません: {CORPUS_DIR}")
+        return 2
+
     for fname in sorted(os.listdir(CORPUS_DIR)):
         if not fname.endswith(".txt"):
             continue
@@ -173,16 +178,17 @@ def main():
 
         for name, code, expects_error in tests:
             total += 1
-            with tempfile.NamedTemporaryFile(
-                mode="w",
-                suffix=".rb",
-                delete=False,
-                encoding="utf-8",
-            ) as f:
-                f.write(code + "\n")
-                tmpfile = f.name
-
+            tmpfile = None
             try:
+                with tempfile.NamedTemporaryFile(
+                    mode="w",
+                    suffix=".rb",
+                    delete=False,
+                    encoding="utf-8",
+                ) as f:
+                    f.write(code + "\n")
+                    tmpfile = f.name
+
                 result = subprocess.run(
                     ["tree-sitter", "parse", tmpfile],
                     capture_output=True,
@@ -214,7 +220,8 @@ def main():
                 failed += 1
                 failures.append((fname, name, "TIMEOUT"))
             finally:
-                os.unlink(tmpfile)
+                if tmpfile is not None:
+                    os.unlink(tmpfile)
 
     if failures:
         print("\n--- Failures ---")
