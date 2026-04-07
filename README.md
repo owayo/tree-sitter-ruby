@@ -81,6 +81,9 @@ pnpm run test
 # - dash separator in code, file ending with header separator,
 #   indented Error: lines, stderr-only errors, very long separators,
 #   multiple error tag tests, expected ERROR matched by MISSING
+# - CLI timeout direct test, multi-blank-line name sections,
+#   KeyboardInterrupt propagation, Emitted 'error' event only output,
+#   code trailing whitespace trimming, empty code test skipping
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)

@@ -1722,6 +1722,175 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Pass: 1", stdout.getvalue())
 
+    # --- check_tree_sitter_cli: タイムアウトの直接テスト ---
+
+    @patch(
+        "corpus_test.subprocess.run",
+        side_effect=subprocess.TimeoutExpired(["tree-sitter", "--version"], timeout=10),
+    )
+    def test_check_tree_sitter_cli_timeout(self, mock_run):
+        """CLI 起動確認がタイムアウトした場合にタイムアウトメッセージを返す。"""
+        message = corpus_test.check_tree_sitter_cli({})
+        self.assertIn("10 秒でタイムアウト", message)
+        mock_run.assert_called_once()
+
+    # --- extract_tests: 複数の空行名前セクション ---
+
+    def test_extract_tests_name_with_only_blank_lines(self):
+        """名前セクションが複数の空行のみの場合でも空名前でテストが抽出される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+
+
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(len(tests), 1)
+        self.assertEqual(tests[0][0], "")
+        self.assertEqual(tests[0][1], "x = 1")
+
+    # --- main: KeyboardInterrupt がパース中に発生した場合 ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_keyboard_interrupt_during_parse_propagates(
+        self, mock_run, mock_listdir
+    ):
+        """パース実行中の KeyboardInterrupt は未キャッチで伝播する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            interrupt
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, KeyboardInterrupt()]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            with (
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+                self.assertRaises(KeyboardInterrupt),
+            ):
+                corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+    # --- summarize_command_failure: Emitted 'error' event のみ ---
+
+    def test_summarize_command_failure_only_emitted_error(self):
+        """Emitted 'error' event のみの場合、終了コードのみ返す。"""
+        output = "Emitted 'error' event on ChildProcess instance\n"
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, output),
+            "exit 1",
+        )
+
+    # --- extract_tests: コード末尾の空白がトリムされる ---
+
+    def test_extract_tests_code_trailing_whitespace_lines_trimmed(self):
+        """コード末尾に空白のみの行があっても除去される。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            trailing ws
+            =========
+            x = 1
+               \t
+            ---
+            (program
+              (assignment))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(tests[0][1], "x = 1")
+
+    # --- main: 空コードのテストがスキップされる ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_empty_code_tests_not_counted(self, mock_run, mock_listdir):
+        """コードが空のテストケースは extract_tests でスキップされ集計に含まれない。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            empty code
+            =========
+
+            ---
+            (program)
+            =========
+            valid code
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_ok = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (assignment))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_ok]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        # 空コードはスキップされるので Total: 1
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Total: 1", stdout.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

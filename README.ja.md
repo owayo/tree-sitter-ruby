@@ -81,6 +81,9 @@ pnpm run test
 # - コード内 --- 区切り、ヘッダー区切りでファイル終端、
 #   インデント付き Error: 行、stderr のみのエラー、長い区切り線、
 #   複数 error タグテスト、期待 ERROR が MISSING で一致
+# - CLI タイムアウト直接テスト、複数空行名前セクション、
+#   KeyboardInterrupt 伝播、Emitted 'error' event のみ出力、
+#   コード末尾空白トリム、空コードテストのスキップ確認
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）
