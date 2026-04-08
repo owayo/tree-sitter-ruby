@@ -37,10 +37,24 @@ jobs:
       - name: Set up examples
         run: |
           git clone https://github.com/ruby/spec examples/ruby_spec --single-branch --depth=1 --filter=blob:none
-      - name: Run tests
-        uses: tree-sitter/parser-test-action@v2
-        with:
-          test-rust: true
+      - name: Build shared library
+        shell: bash
+        run: |
+          mkdir -p /tmp/ts-lib
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            gcc -shared -O0 -o /tmp/ts-lib/ruby.dll -I src src/parser.c src/scanner.c
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
+          else
+            cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.so -I src src/parser.c src/scanner.c
+          fi
+      - name: Run corpus tests
+        shell: bash
+        run: python3 scripts/corpus_test.py
+      - name: Run Rust tests
+        if: runner.os != 'Windows'
+        shell: bash
+        run: cargo test
       - name: Parse examples
         uses: tree-sitter/parse-action@v4
         with:
