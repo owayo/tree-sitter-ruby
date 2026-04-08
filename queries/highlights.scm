@@ -39,7 +39,7 @@
 
 (constant) @constructor
 
-; Function calls
+; 関数呼び出し
 
 "defined?" @function.method.builtin
 
@@ -49,14 +49,14 @@
 ((identifier) @function.method.builtin
  (#eq? @function.method.builtin "require"))
 
-; Function definitions
+; 関数定義
 
 (alias (identifier) @function.method)
 (setter (identifier) @function.method)
 (method name: [(identifier) (constant)] @function.method)
 (singleton_method name: [(identifier) (constant)] @function.method)
 
-; Identifiers
+; 識別子
 
 [
   (class_variable)
@@ -92,7 +92,7 @@
 (keyword_parameter name: (identifier) @variable.parameter)
 (optional_parameter name: (identifier) @variable.parameter)
 
-; Literals
+; リテラル
 
 [
   (string)
@@ -129,7 +129,7 @@
 
 (comment) @comment
 
-; Operators
+; 演算子
 
 [
 "="

@@ -42,7 +42,7 @@ module.exports = grammar({
 		$._line_break,
 		$._no_line_break,
 
-		// Delimited literals
+		// 区切りリテラル
 		$.simple_symbol,
 		$._string_start,
 		$._symbol_start,
@@ -57,7 +57,7 @@ module.exports = grammar({
 		$.heredoc_end,
 		$.heredoc_beginning,
 
-		// Tokens that require lookahead
+		// 先読みが必要なトークン
 		"/",
 		$._block_ampersand,
 		$._splat_star,
@@ -209,7 +209,7 @@ module.exports = grammar({
 			seq(
 				"|",
 				seq(commaSep($._formal_parameter), optional(",")),
-				optional(seq(";", sep1(field("locals", $.identifier), ","))), // Block shadow args e.g. {|; a, b| ...}
+				optional(seq(";", sep1(field("locals", $.identifier), ","))), // ブロックシャドウ引数 例: {|; a, b| ...}
 				"|",
 			),
 
@@ -699,21 +699,17 @@ module.exports = grammar({
 				),
 			),
 
-		// Method calls without parentheses (aka "command calls") are only allowed
-		// in certain positions, like the top-level of a statement, the condition
-		// of a postfix control-flow operator like `if`, or as the value of a
-		// control-flow statement like `return`. In many other places, they're not
-		// allowed.
+		// 括弧なしのメソッド呼び出し（コマンド呼び出し）は、文のトップレベル、
+		// `if` などの後置制御フロー演算子の条件部、`return` の値など
+		// 限られた位置でのみ許可される。
 		//
-		// Because of this distinction, a lot of rules have two variants: the
-		// normal variant, which can appear anywhere that an expression is valid,
-		// and the "command" varaint, which is only valid in a more limited set of
-		// positions, because it can contain "command calls".
+		// この区別のため、多くのルールに通常版と "command" 版の 2 種類がある。
+		// 通常版は式が有効な場所ならどこでも使えるが、command 版はコマンド呼び出しを
+		// 含めるためより限定的な位置でのみ有効。
 		//
-		// The `_expression` rule can appear in relatively few places, but can
-		// contain command calls. The `_arg` rule can appear in many more places,
-		// but cannot contain command calls (unless they are wrapped in parens).
-		// This naming convention is based on Ruby's standard grammar.
+		// `_expression` は使用箇所が少ないがコマンド呼び出しを含められる。
+		// `_arg` はより多くの場所で使えるが、括弧で囲まない限りコマンド呼び出しは
+		// 含められない。この命名規則は Ruby の標準文法に準拠している。
 		_expression: ($) =>
 			choice(
 				alias($.command_binary, $.binary),
@@ -1447,11 +1443,11 @@ module.exports = grammar({
 				seq(
 					"\\",
 					choice(
-						/[^ux0-7]/, // single character
-						/x[0-9a-fA-F]{1,2}/, // hex code
-						/[0-7]{1,3}/, // octal
-						/u[0-9a-fA-F]{4}/, // single unicode
-						/u\{[0-9a-fA-F ]+\}/, // multiple unicode
+						/[^ux0-7]/, // 単一文字
+						/x[0-9a-fA-F]{1,2}/, // 16 進数
+						/[0-7]{1,3}/, // 8 進数
+						/u[0-9a-fA-F]{4}/, // 単一 Unicode
+						/u\{[0-9a-fA-F ]+\}/, // 複数 Unicode
 					),
 				),
 			),
@@ -1490,9 +1486,8 @@ module.exports = grammar({
 						token.immediate(":"),
 						choice(
 							field("value", optional($._arg)),
-							// This alternative never matches, because '_no_line_break' tokens do not exist.
-							// The purpose is give a hint to the scanner that it should not produce any line-break
-							// terminators at this point.
+							// この選択肢は実際にはマッチしない（'_no_line_break' トークンは存在しない）。
+							// スキャナーにこの位置で改行トークンを生成しないよう示すためのヒント。
 							$._no_line_break,
 						),
 					),
@@ -1521,7 +1516,7 @@ module.exports = grammar({
 });
 
 /**
- * Creates a rule to optionally match one or more of the rules separated by `separator`
+ * `separator` で区切られたルールの 0 回以上の繰り返しにマッチするルールを生成する
  *
  * @param {RuleOrLiteral} rule
  *
@@ -1534,7 +1529,7 @@ function sep(rule, separator) {
 }
 
 /**
- * Creates a rule to match one or more of the rules separated by `separator`
+ * `separator` で区切られたルールの 1 回以上の繰り返しにマッチするルールを生成する
  *
  * @param {RuleOrLiteral} rule
  *
@@ -1547,7 +1542,7 @@ function sep1(rule, separator) {
 }
 
 /**
- * Creates a rule to match one or more of the rules separated by a comma
+ * カンマ区切りのルールの 1 回以上の繰り返しにマッチするルールを生成する
  *
  * @param {RuleOrLiteral} rule
  *
@@ -1558,7 +1553,7 @@ function commaSep1(rule) {
 }
 
 /**
- * Creates a rule to optionally match one or more of the rules separated by a comma
+ * カンマ区切りのルールの 0 回以上の繰り返しにマッチするルールを生成する
  *
  * @param {RuleOrLiteral} rule
  *

@@ -1,4 +1,4 @@
-; Method definitions
+; メソッド定義
 
 (
   (comment)* @doc
@@ -19,7 +19,7 @@
 (setter
   (identifier) @ignore)
 
-; Class definitions
+; クラス定義
 
 (
   (comment)* @doc
@@ -42,7 +42,7 @@
   (#select-adjacent! @doc @definition.class)
 )
 
-; Module definitions
+; モジュール定義
 
 (
   (comment)* @doc
@@ -57,7 +57,7 @@
   (#select-adjacent! @doc @definition.module)
 )
 
-; Constant definitions
+; 定数定義
 
 (
   (comment)* @doc
@@ -72,7 +72,7 @@
   (#select-adjacent! @doc @definition.constant)
 )
 
-; Calls
+; 呼び出し
 
 (call method: (identifier) @name) @reference.call
 

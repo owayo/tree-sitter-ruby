@@ -59,6 +59,11 @@ pnpm run test
 #   一時ファイル作成失敗時の OSError 伝播（UnboundLocalError 防止）
 pnpm run test:unit
 
+# Rust バインディングテスト
+# - 文法ロード、基本 Ruby コードのパース、heredoc・パターンマッチング
+# - highlights/locals/tags クエリの妥当性検証、node-types.json の存在確認
+cargo test
+
 # 個別ファイルのパース検証
 TREE_SITTER_LIBDIR=/tmp/ts-lib tree-sitter parse example.rb
 

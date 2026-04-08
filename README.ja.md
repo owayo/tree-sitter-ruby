@@ -92,6 +92,9 @@ pnpm run test:unit
 mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
+# Rust バインディングテスト（文法ロード、パース、クエリ検証）
+cargo test
+
 # pnpm が tree-sitter-cli の install script を止めた場合は
 # ローカル CLI バイナリを取得する
 node node_modules/tree-sitter-cli/install.js
