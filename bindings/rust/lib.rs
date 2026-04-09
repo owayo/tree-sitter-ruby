@@ -51,6 +51,7 @@ pub const TAGS_QUERY: &str = include_str!("../../queries/tags.scm");
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tree_sitter::StreamingIterator;
 
     #[test]
     fn test_can_load_grammar() {
@@ -139,5 +140,62 @@ end
 "#;
         let tree = parser.parse(code, None).unwrap();
         assert!(!tree.root_node().has_error());
+    }
+
+    #[test]
+    fn test_locals_query_captures_singleton_method_scope() {
+        let language: tree_sitter::Language = LANGUAGE.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let query =
+            tree_sitter::Query::new(&language, LOCALS_QUERY).expect("Error loading locals query");
+
+        let code = "def self.foo\n  x = 1\nend\n";
+        let tree = parser.parse(code, None).unwrap();
+        assert!(!tree.root_node().has_error());
+
+        // singleton_method が local.scope としてキャプチャされることを検証
+        let scope_idx = query
+            .capture_names()
+            .iter()
+            .position(|n| *n == "local.scope")
+            .expect("local.scope キャプチャが見つかりません");
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+        let mut scope_nodes = Vec::new();
+        while let Some(m) = matches.next() {
+            for c in m.captures {
+                if c.index as usize == scope_idx {
+                    scope_nodes.push(c.node.kind().to_string());
+                }
+            }
+        }
+        assert!(
+            scope_nodes.iter().any(|k| k == "singleton_method"),
+            "singleton_method が local.scope に含まれていません: {:?}",
+            scope_nodes
+        );
+    }
+
+    #[test]
+    fn test_highlights_query_captures_keywords() {
+        let language: tree_sitter::Language = LANGUAGE.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let query = tree_sitter::Query::new(&language, HIGHLIGHTS_QUERY)
+            .expect("Error loading highlights query");
+
+        let code = "def foo; end\n";
+        let tree = parser.parse(code, None).unwrap();
+        assert!(!tree.root_node().has_error());
+
+        // ハイライトクエリが少なくとも1つのキャプチャを生成することを検証
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+        let mut total_captures: usize = 0;
+        while let Some(m) = matches.next() {
+            total_captures += m.captures.len();
+        }
+        assert!(total_captures > 0, "ハイライトキャプチャが0件です");
     }
 }

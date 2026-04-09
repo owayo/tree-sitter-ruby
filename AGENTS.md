@@ -57,11 +57,15 @@ pnpm run test
 #   コード末尾空白トリム、空コードテストのスキップ確認
 # - corpus ディレクトリ不在時の setup error、
 #   一時ファイル作成失敗時の OSError 伝播（UnboundLocalError 防止）
+# - CORPUS_DIR パッチによる環境非依存テスト、TREE_SITTER_LIBDIR 環境変数の伝播検証、
+#   ENOENT 部分一致の分岐テスト、隠しファイル・非 .txt ファイルのスキップ確認
 pnpm run test:unit
 
 # Rust バインディングテスト
 # - 文法ロード、基本 Ruby コードのパース、heredoc・パターンマッチング
 # - highlights/locals/tags クエリの妥当性検証、node-types.json の存在確認
+# - locals クエリの singleton_method スコープキャプチャ検証
+# - highlights クエリのキーワードキャプチャ実行検証
 cargo test
 
 # 個別ファイルのパース検証

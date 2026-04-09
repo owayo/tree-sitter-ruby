@@ -1967,6 +1967,81 @@ class CorpusTestScriptTests(unittest.TestCase):
         finally:
             os.unlink(corpus_path)
 
+    # --- check_tree_sitter_cli の追加テスト ---
+
+    @patch("corpus_test.subprocess.run")
+    def test_check_tree_sitter_cli_enoent_without_cli_path(self, mock_run):
+        """ENOENT を含むが tree-sitter-cli/tree-sitter を含まない場合は一般エラー。"""
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=1,
+            stdout="",
+            stderr="Error: ENOENT some other path\n",
+        )
+        message = corpus_test.check_tree_sitter_cli({})
+        self.assertIn("tree-sitter CLI を起動できません", message)
+        self.assertNotIn("install.js", message)
+
+    # --- main: 環境変数が正しく渡されることの検証 ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_passes_tree_sitter_libdir_env(self, mock_run, mock_listdir):
+        """main() が TREE_SITTER_LIBDIR=/tmp/ts-lib を env に含めて subprocess を呼ぶ。"""
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        mock_run.return_value = version_result
+        mock_listdir.return_value = []
+
+        corpus_dir = tempfile.mkdtemp()
+        stdout = io.StringIO()
+        try:
+            with (
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+                redirect_stdout(stdout),
+            ):
+                corpus_test.main()
+        finally:
+            os.rmdir(corpus_dir)
+
+        # 最初の subprocess.run 呼び出し (check_tree_sitter_cli) の env を検証
+        call_args = mock_run.call_args_list[0]
+        env = call_args.kwargs.get("env") or call_args[1].get("env")
+        self.assertEqual(env.get("TREE_SITTER_LIBDIR"), "/tmp/ts-lib")
+
+    # --- extract_tests: .DS_Store 等の非 .txt ファイルが混在するケース ---
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_ignores_hidden_and_non_txt_files(self, mock_run, mock_listdir):
+        """隠しファイルや非 .txt ファイルはスキップされる。"""
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        mock_run.return_value = version_result
+        mock_listdir.return_value = [".DS_Store", "notes.md", "README"]
+
+        corpus_dir = tempfile.mkdtemp()
+        stdout = io.StringIO()
+        try:
+            with (
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+                redirect_stdout(stdout),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.rmdir(corpus_dir)
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Total: 0", stdout.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()
