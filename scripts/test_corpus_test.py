@@ -940,9 +940,16 @@ class CorpusTestScriptTests(unittest.TestCase):
         mock_run.return_value = version_result
         mock_listdir.return_value = ["README.md", ".gitkeep"]
 
+        corpus_dir = tempfile.mkdtemp()
         stdout = io.StringIO()
-        with redirect_stdout(stdout):
-            exit_code = corpus_test.main()
+        try:
+            with (
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+                redirect_stdout(stdout),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.rmdir(corpus_dir)
 
         self.assertEqual(exit_code, 0)
         self.assertIn("Total: 0", stdout.getvalue())

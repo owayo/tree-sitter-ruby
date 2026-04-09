@@ -1,4 +1,7 @@
-((method) @local.scope
+([
+  (method)
+  (singleton_method)
+] @local.scope
  (#set! local.scope-inherits false))
 
 [
