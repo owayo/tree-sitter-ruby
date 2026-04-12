@@ -94,7 +94,8 @@ mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
 # Rust binding tests (grammar loading, parsing, query validation,
-# locals query captures for singleton_method/for/as_pattern)
+# locals query captures for singleton_method/for/as_pattern,
+# tags query regression for nested definitions and builtin pseudo-method filtering)
 cargo test
 
 # If pnpm blocked tree-sitter-cli's install script, download the local CLI binary
