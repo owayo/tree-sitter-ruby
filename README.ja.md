@@ -86,13 +86,15 @@ pnpm run test
 #   コード末尾空白トリム、空コードテストのスキップ確認
 # - corpus ディレクトリ不在時の setup error、
 #   一時ファイル作成失敗時の OSError 伝播（UnboundLocalError 防止）
+# - 一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）
 mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
-# Rust バインディングテスト（文法ロード、パース、クエリ検証）
+# Rust バインディングテスト（文法ロード、パース、クエリ検証、
+# locals クエリの singleton_method/for/as_pattern キャプチャ検証）
 cargo test
 
 # pnpm が tree-sitter-cli の install script を止めた場合は

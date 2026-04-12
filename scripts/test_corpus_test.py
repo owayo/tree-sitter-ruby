@@ -2042,6 +2042,57 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Total: 0", stdout.getvalue())
 
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_unlink_oserror_does_not_crash(self, mock_run, mock_listdir):
+        """一時ファイル削除時の OSError がテスト全体をクラッシュさせないことを検証する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            unlink fail
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (assignment))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with (
+                redirect_stdout(stdout),
+                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
+                patch(
+                    "corpus_test.os.unlink", side_effect=OSError("permission denied")
+                ),
+            ):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        # OSError が握りつぶされてテストは正常終了する
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Pass: 1", stdout.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

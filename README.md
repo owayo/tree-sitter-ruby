@@ -86,13 +86,15 @@ pnpm run test
 #   code trailing whitespace trimming, empty code test skipping
 # - missing corpus directory setup error,
 #   OSError propagation on temp file creation failure (UnboundLocalError prevention)
+# - OSError suppression during temp file cleanup (no crash on unlink failure)
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)
 mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
-# Rust binding tests (grammar loading, parsing, query validation)
+# Rust binding tests (grammar loading, parsing, query validation,
+# locals query captures for singleton_method/for/as_pattern)
 cargo test
 
 # If pnpm blocked tree-sitter-cli's install script, download the local CLI binary

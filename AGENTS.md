@@ -59,12 +59,14 @@ pnpm run test
 #   一時ファイル作成失敗時の OSError 伝播（UnboundLocalError 防止）
 # - CORPUS_DIR パッチによる環境非依存テスト、TREE_SITTER_LIBDIR 環境変数の伝播検証、
 #   ENOENT 部分一致の分岐テスト、隠しファイル・非 .txt ファイルのスキップ確認
+# - 一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
 pnpm run test:unit
 
 # Rust バインディングテスト
 # - 文法ロード、基本 Ruby コードのパース、heredoc・パターンマッチング
 # - highlights/locals/tags クエリの妥当性検証、node-types.json の存在確認
 # - locals クエリの singleton_method スコープキャプチャ検証
+# - locals クエリの for ループ変数・as_pattern 変数束縛の definition キャプチャ検証
 # - highlights クエリのキーワードキャプチャ実行検証
 cargo test
 
