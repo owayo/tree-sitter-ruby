@@ -178,6 +178,83 @@ end
     }
 
     #[test]
+    fn test_locals_query_captures_for_variable_definition() {
+        let language: tree_sitter::Language = LANGUAGE.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let query =
+            tree_sitter::Query::new(&language, LOCALS_QUERY).expect("Error loading locals query");
+
+        let code = "for x in [1, 2, 3]\n  puts x\nend\n";
+        let tree = parser.parse(code, None).unwrap();
+        assert!(!tree.root_node().has_error());
+
+        // for ループの変数が local.definition としてキャプチャされることを検証
+        let def_idx = query
+            .capture_names()
+            .iter()
+            .position(|n| *n == "local.definition")
+            .expect("local.definition キャプチャが見つかりません");
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+        let mut def_texts = Vec::new();
+        while let Some(m) = matches.next() {
+            for c in m.captures {
+                if c.index as usize == def_idx {
+                    let text = &code[c.node.byte_range()];
+                    def_texts.push(text.to_string());
+                }
+            }
+        }
+        assert!(
+            def_texts.contains(&"x".to_string()),
+            "for ループ変数 'x' が local.definition に含まれていません: {:?}",
+            def_texts
+        );
+    }
+
+    #[test]
+    fn test_locals_query_captures_as_pattern_definition() {
+        let language: tree_sitter::Language = LANGUAGE.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let query =
+            tree_sitter::Query::new(&language, LOCALS_QUERY).expect("Error loading locals query");
+
+        let code = "case [1, 2]\nin [Integer => n, String => s]\n  puts n\nend\n";
+        let tree = parser.parse(code, None).unwrap();
+        assert!(!tree.root_node().has_error());
+
+        // as_pattern の変数が local.definition としてキャプチャされることを検証
+        let def_idx = query
+            .capture_names()
+            .iter()
+            .position(|n| *n == "local.definition")
+            .expect("local.definition キャプチャが見つかりません");
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+        let mut def_texts = Vec::new();
+        while let Some(m) = matches.next() {
+            for c in m.captures {
+                if c.index as usize == def_idx {
+                    let text = &code[c.node.byte_range()];
+                    def_texts.push(text.to_string());
+                }
+            }
+        }
+        assert!(
+            def_texts.contains(&"n".to_string()),
+            "as_pattern 変数 'n' が local.definition に含まれていません: {:?}",
+            def_texts
+        );
+        assert!(
+            def_texts.contains(&"s".to_string()),
+            "as_pattern 変数 's' が local.definition に含まれていません: {:?}",
+            def_texts
+        );
+    }
+
+    #[test]
     fn test_highlights_query_captures_keywords() {
         let language: tree_sitter::Language = LANGUAGE.into();
         let mut parser = tree_sitter::Parser::new();

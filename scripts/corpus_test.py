@@ -221,7 +221,10 @@ def main():
                 failures.append((fname, name, "TIMEOUT"))
             finally:
                 if tmpfile is not None:
-                    os.unlink(tmpfile)
+                    try:
+                        os.unlink(tmpfile)
+                    except OSError:
+                        pass
 
     if failures:
         print("\n--- Failures ---")

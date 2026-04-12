@@ -28,3 +28,10 @@
 (left_assignment_list (identifier) @local.definition)
 (rest_assignment (identifier) @local.definition)
 (destructured_left_assignment (identifier) @local.definition)
+
+; for ループの変数束縛
+(for pattern: (identifier) @local.definition)
+(for pattern: (left_assignment_list (identifier) @local.definition))
+
+; パターンマッチングの as_pattern 変数束縛（case/in の => variable）
+(as_pattern name: (identifier) @local.definition)
