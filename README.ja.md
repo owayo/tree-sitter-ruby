@@ -94,8 +94,9 @@ mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
 # Rust バインディングテスト（文法ロード、パース、クエリ検証、
-# locals クエリの singleton_method/for/as_pattern キャプチャ検証、
-# tags クエリのネスト定義キャプチャと組み込み擬似メソッド除外の回帰検証）
+# locals クエリの singleton_method/for/as_pattern/block/do_block/lambda キャプチャ検証、
+# tags クエリのネスト定義・method/alias 定義・組み込み擬似メソッド除外の回帰検証、
+# scanner.c の特殊グローバル変数シンボル（:$" :$; :$$ 等）のパース回帰検証）
 cargo test
 
 # pnpm が tree-sitter-cli の install script を止めた場合は

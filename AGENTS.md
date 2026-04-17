@@ -67,8 +67,10 @@ pnpm run test:unit
 # - highlights/locals/tags クエリの妥当性検証、node-types.json の存在確認
 # - locals クエリの singleton_method スコープキャプチャ検証
 # - locals クエリの for ループ変数・as_pattern 変数束縛の definition キャプチャ検証
-# - tags クエリのネスト定義キャプチャと組み込み擬似メソッド除外の回帰検証
+# - locals クエリの block/do_block/lambda スコープキャプチャ検証
+# - tags クエリのネスト定義、組み込み擬似メソッド除外、method/alias 定義キャプチャ検証
 # - highlights クエリのキーワードキャプチャ実行検証
+# - scanner.c が特殊グローバル変数シンボル（$" $; $, $$ 等）を誤エラーなくパースすることの検証
 cargo test
 
 # 個別ファイルのパース検証

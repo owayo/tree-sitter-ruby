@@ -100,3 +100,30 @@ end
         "定数定義タグが不正です"
     );
 }
+
+#[test]
+fn test_tags_query_captures_method_definitions() {
+    let code = r#"
+class Example
+  def instance_method
+    :ok
+  end
+
+  def self.singleton_method
+    :ok
+  end
+
+  alias short_name instance_method
+end
+"#;
+
+    let method_defs = collect_tag_names(code, "definition.method");
+
+    for expected in ["instance_method", "singleton_method", "short_name"] {
+        assert!(
+            method_defs.iter().any(|name| name == expected),
+            "{expected} が definition.method に含まれていません: {:?}",
+            method_defs
+        );
+    }
+}

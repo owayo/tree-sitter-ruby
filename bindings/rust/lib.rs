@@ -275,4 +275,57 @@ end
         }
         assert!(total_captures > 0, "ハイライトキャプチャが0件です");
     }
+
+    #[test]
+    fn test_locals_query_captures_block_scope() {
+        let language: tree_sitter::Language = LANGUAGE.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let query =
+            tree_sitter::Query::new(&language, LOCALS_QUERY).expect("Error loading locals query");
+
+        // block / do_block / lambda がスコープとして捕捉されることを確認
+        let code = "items.each { |n| n }\nitems.each do |n| n end\n->(x) { x }\n";
+        let tree = parser.parse(code, None).unwrap();
+        assert!(!tree.root_node().has_error());
+
+        let scope_idx = query
+            .capture_names()
+            .iter()
+            .position(|n| *n == "local.scope")
+            .expect("local.scope キャプチャが見つかりません");
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+        let mut scope_kinds: Vec<String> = Vec::new();
+        while let Some(m) = matches.next() {
+            for c in m.captures {
+                if c.index as usize == scope_idx {
+                    scope_kinds.push(c.node.kind().to_string());
+                }
+            }
+        }
+        for expected in ["block", "do_block", "lambda"] {
+            assert!(
+                scope_kinds.iter().any(|k| k == expected),
+                "{expected} が local.scope に含まれていません: {:?}",
+                scope_kinds
+            );
+        }
+    }
+
+    #[test]
+    fn test_can_parse_symbol_with_special_global_variable() {
+        // scanner.c の scan_symbol_identifier で処理される
+        // 特殊グローバル変数シンボルを構文エラーなくパースできることを検証
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&LANGUAGE.into())
+            .expect("Error loading Ruby parser");
+        let code = ":$\"\n:$;\n:$,\n:$$\n:$?\n:$:\n:$@\n:$.\n:$=\n";
+        let tree = parser.parse(code, None).unwrap();
+        assert!(
+            !tree.root_node().has_error(),
+            "特殊グローバル変数シンボルのパースに失敗しました"
+        );
+    }
 }

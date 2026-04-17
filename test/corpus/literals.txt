@@ -46,10 +46,12 @@ symbol with special global variable chars
 :$@
 :$.
 :$=
+:$$
 
 ---
 
 (program
+  (simple_symbol)
   (simple_symbol)
   (simple_symbol)
   (simple_symbol)
