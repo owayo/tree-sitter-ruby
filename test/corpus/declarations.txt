@@ -263,6 +263,10 @@ end
 def foo(&)
 end
 
+def forward_all(*, **, &)
+  target(*, **, &)
+end
+
 def foo(...)
   super(...)
 end
@@ -294,6 +298,9 @@ end
   (method (identifier) (method_parameters (identifier) (hash_splat_nil)))
   (method (identifier) (method_parameters (block_parameter (identifier))))
   (method (identifier) (method_parameters (block_parameter)))
+  (method (identifier) (method_parameters (splat_parameter) (hash_splat_parameter) (block_parameter))
+    (body_statement (call (identifier) (argument_list (splat_argument) (hash_splat_argument) (block_argument))))
+  )
   (method (identifier) (method_parameters (forward_parameter))
     (body_statement (call (super) (argument_list (forward_argument))))
   )

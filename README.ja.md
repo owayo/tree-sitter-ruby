@@ -63,6 +63,7 @@ tree-sitter parse example.rb
 
 ```bash
 # 推奨: tree-sitter parse によるコーパステスト（低メモリ）
+# - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
 pnpm run test
 
 # scripts/corpus_test.py のユニットテスト

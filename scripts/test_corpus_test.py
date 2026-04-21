@@ -8,7 +8,7 @@ import sys
 import tempfile
 import textwrap
 import unittest
-from contextlib import redirect_stdout
+from contextlib import contextmanager, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -27,6 +27,17 @@ class CorpusTestScriptTests(unittest.TestCase):
         ) as f:
             f.write(body)
             return f.name
+
+    @contextmanager
+    def _with_corpus_dir(self, corpus_dir):
+        with patch.object(corpus_test, "CORPUS_DIR", corpus_dir):
+            yield
+
+    @contextmanager
+    def _capture_stdout_with_corpus_dir(self, corpus_dir, stdout):
+        with self._with_corpus_dir(corpus_dir):
+            with redirect_stdout(stdout):
+                yield
 
     def test_is_separator(self):
         self.assertEqual(corpus_test.is_separator("=====\n"), "=")
@@ -472,10 +483,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -522,10 +530,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -573,10 +578,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -620,10 +622,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -670,10 +669,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -772,10 +768,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -817,10 +810,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -943,10 +933,7 @@ class CorpusTestScriptTests(unittest.TestCase):
         corpus_dir = tempfile.mkdtemp()
         stdout = io.StringIO()
         try:
-            with (
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-                redirect_stdout(stdout),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.rmdir(corpus_dir)
@@ -1169,10 +1156,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(path1)
@@ -1218,10 +1202,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -1248,10 +1229,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -1356,10 +1334,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -1404,9 +1379,8 @@ class CorpusTestScriptTests(unittest.TestCase):
         mock_listdir.return_value = [corpus_fname]
 
         try:
-            with (
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-                self.assertRaises(PermissionError),
+            with self._with_corpus_dir(corpus_dir), self.assertRaises(
+                PermissionError
             ):
                 corpus_test.main()
         finally:
@@ -1461,10 +1435,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -1510,10 +1481,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -1621,10 +1589,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -1717,10 +1682,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -1800,9 +1762,8 @@ class CorpusTestScriptTests(unittest.TestCase):
         mock_listdir.return_value = [corpus_fname]
 
         try:
-            with (
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-                self.assertRaises(KeyboardInterrupt),
+            with self._with_corpus_dir(corpus_dir), self.assertRaises(
+                KeyboardInterrupt
             ):
                 corpus_test.main()
         finally:
@@ -1886,10 +1847,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
@@ -1913,10 +1871,7 @@ class CorpusTestScriptTests(unittest.TestCase):
         mock_run.return_value = version_result
 
         stdout = io.StringIO()
-        with (
-            redirect_stdout(stdout),
-            patch.object(corpus_test, "CORPUS_DIR", "/nonexistent/path"),
-        ):
+        with self._capture_stdout_with_corpus_dir("/nonexistent/path", stdout):
             exit_code = corpus_test.main()
 
         self.assertEqual(exit_code, 2)
@@ -1955,15 +1910,12 @@ class CorpusTestScriptTests(unittest.TestCase):
         mock_listdir.return_value = [corpus_fname]
 
         try:
-            with (
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-                patch(
+            with self._with_corpus_dir(corpus_dir):
+                with patch(
                     "corpus_test.tempfile.NamedTemporaryFile",
                     side_effect=OSError("disk full"),
-                ),
-                self.assertRaises(OSError, msg="disk full"),
-            ):
-                corpus_test.main()
+                ), self.assertRaises(OSError, msg="disk full"):
+                    corpus_test.main()
         finally:
             os.unlink(corpus_path)
 
@@ -2000,17 +1952,14 @@ class CorpusTestScriptTests(unittest.TestCase):
         corpus_dir = tempfile.mkdtemp()
         stdout = io.StringIO()
         try:
-            with (
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-                redirect_stdout(stdout),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 corpus_test.main()
         finally:
             os.rmdir(corpus_dir)
 
         # 最初の subprocess.run 呼び出し (check_tree_sitter_cli) の env を検証
-        call_args = mock_run.call_args_list[0]
-        env = call_args.kwargs.get("env") or call_args[1].get("env")
+        _, call_kwargs = mock_run.call_args_list[0]
+        env = call_kwargs["env"]
         self.assertEqual(env.get("TREE_SITTER_LIBDIR"), "/tmp/ts-lib")
 
     # --- extract_tests: .DS_Store 等の非 .txt ファイルが混在するケース ---
@@ -2031,10 +1980,7 @@ class CorpusTestScriptTests(unittest.TestCase):
         corpus_dir = tempfile.mkdtemp()
         stdout = io.StringIO()
         try:
-            with (
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-                redirect_stdout(stdout),
-            ):
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
                 exit_code = corpus_test.main()
         finally:
             os.rmdir(corpus_dir)
@@ -2078,14 +2024,11 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         try:
             stdout = io.StringIO()
-            with (
-                redirect_stdout(stdout),
-                patch.object(corpus_test, "CORPUS_DIR", corpus_dir),
-                patch(
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
+                with patch(
                     "corpus_test.os.unlink", side_effect=OSError("permission denied")
-                ),
-            ):
-                exit_code = corpus_test.main()
+                ):
+                    exit_code = corpus_test.main()
         finally:
             os.unlink(corpus_path)
 

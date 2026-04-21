@@ -63,6 +63,7 @@ tree-sitter parse example.rb
 
 ```bash
 # Recommended: corpus tests via tree-sitter parse (low memory)
+# - covers recent Ruby syntax regressions such as anonymous *, **, & forwarding
 pnpm run test
 
 # Unit tests for scripts/corpus_test.py
