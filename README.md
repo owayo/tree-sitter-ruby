@@ -64,6 +64,7 @@ tree-sitter parse example.rb
 ```bash
 # Recommended: corpus tests via tree-sitter parse (low memory)
 # - covers recent Ruby syntax regressions such as anonymous *, **, & forwarding
+# - covers scanner line-continuation boundaries (leading `and`/`or` keywords vs identifiers, leading `..`)
 pnpm run test
 
 # Unit tests for scripts/corpus_test.py
@@ -88,6 +89,7 @@ pnpm run test
 # - missing corpus directory setup error,
 #   OSError propagation on temp file creation failure (UnboundLocalError prevention)
 # - OSError suppression during temp file cleanup (no crash on unlink failure)
+# - summarize_command_failure returning exit code only for empty / fully-filtered output
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)
@@ -96,6 +98,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
 # Rust binding tests (grammar loading, parsing, query validation,
 # locals query captures for singleton_method/for/as_pattern/block/do_block/lambda,
+# locals query captures for keyword/optional/splat/hash_splat/block/destructured
+# parameter identifiers,
 # tags query regression for nested definitions, method/alias definitions,
 # and builtin pseudo-method filtering; scanner regression for special
 # global-variable symbols like :$", :$;, :$$ and friends)

@@ -2968,3 +2968,43 @@ foo { it * 2 }
         (binary
           left: (identifier)
           right: (integer))))))
+
+===============================
+leading orxxx does not continue line
+===============================
+
+x
+orxxx
+
+---
+
+(program
+  (identifier)
+  (identifier))
+
+===============================
+leading andxxx does not continue line
+===============================
+
+x
+andxxx
+
+---
+
+(program
+  (identifier)
+  (identifier))
+
+===============================
+leading .. does not continue line
+===============================
+
+x
+..y
+
+---
+
+(program
+  (identifier)
+  (range
+    end: (identifier)))

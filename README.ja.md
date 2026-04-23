@@ -64,6 +64,7 @@ tree-sitter parse example.rb
 ```bash
 # 推奨: tree-sitter parse によるコーパステスト（低メモリ）
 # - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
+# - scanner.c の行継続判定（行頭 `and` / `or` キーワードと識別子、行頭 `..`）の回帰もここで確認する
 pnpm run test
 
 # scripts/corpus_test.py のユニットテスト
@@ -88,6 +89,7 @@ pnpm run test
 # - corpus ディレクトリ不在時の setup error、
 #   一時ファイル作成失敗時の OSError 伝播（UnboundLocalError 防止）
 # - 一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
+# - summarize_command_failure の空 output / 全フィルター行のみの場合に exit code のみ返すことの検証
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）
@@ -96,6 +98,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
 # Rust バインディングテスト（文法ロード、パース、クエリ検証、
 # locals クエリの singleton_method/for/as_pattern/block/do_block/lambda キャプチャ検証、
+# locals クエリの keyword/optional/splat/hash_splat/block/destructured
+# パラメータの definition キャプチャ検証、
 # tags クエリのネスト定義・method/alias 定義・組み込み擬似メソッド除外の回帰検証、
 # scanner.c の特殊グローバル変数シンボル（:$" :$; :$$ 等）のパース回帰検証）
 cargo test

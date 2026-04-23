@@ -1,0 +1,5 @@
+# Python 3.7 互換を維持するための ruff 設定。
+# scripts/ 配下のユニットテストは corpus_test_v3.py のランナーと同じ
+# 最低動作環境（Python 3.7）で実行できるよう、parenthesized context
+# manager などの新しい構文に自動書き換えされないようターゲットを固定する。
+target-version = "py37"

@@ -35,6 +35,7 @@ pnpm run lint              # lint チェック（Biome）
 ```bash
 # コーパステスト（推奨）— tree-sitter parse ベース、低メモリ
 # - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
+# - scanner.c の行継続判定（`and` / `or` / `..` キーワード分岐）の回帰もここで確認する
 pnpm run test
 
 # corpus_test.py のユニットテスト
@@ -61,6 +62,7 @@ pnpm run test
 # - CORPUS_DIR パッチによる環境非依存テスト、TREE_SITTER_LIBDIR 環境変数の伝播検証、
 #   ENOENT 部分一致の分岐テスト、隠しファイル・非 .txt ファイルのスキップ確認
 # - 一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
+# - summarize_command_failure の空 output / 全フィルター対象行のみケースが exit code だけを返すこと
 pnpm run test:unit
 
 # Rust バインディングテスト
@@ -69,6 +71,10 @@ pnpm run test:unit
 # - locals クエリの singleton_method スコープキャプチャ検証
 # - locals クエリの for ループ変数・as_pattern 変数束縛の definition キャプチャ検証
 # - locals クエリの block/do_block/lambda スコープキャプチャ検証
+# - locals クエリの keyword_parameter / optional_parameter の definition キャプチャ検証
+# - locals クエリの splat_parameter / hash_splat_parameter / block_parameter の
+#   definition キャプチャ検証
+# - locals クエリの destructured_parameter の definition キャプチャ検証
 # - tags クエリのネスト定義、組み込み擬似メソッド除外、method/alias 定義キャプチャ検証
 # - highlights クエリのキーワードキャプチャ実行検証
 # - scanner.c が特殊グローバル変数シンボル（$" $; $, $$ 等）を誤エラーなくパースすることの検証
@@ -102,3 +108,4 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `pnpm run test` で確認する
 - `src/scanner.c` の `deserialize()` はバッファ境界チェックを行うため、新しいフィールドを追加する際は対応する境界チェックも追加すること
 - `tree-sitter test` をメモリ監視なしで実行してはならない
+- `scripts/` 配下の Python コードは Python 3.7 互換を維持するため、`ruff.toml` で `target-version = "py37"` を指定している。parenthesized context manager などの新しい構文を自動書き換えされないよう、新規コードでも Python 3.7 互換を崩さないこと

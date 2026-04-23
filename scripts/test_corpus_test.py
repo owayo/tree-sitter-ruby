@@ -150,6 +150,27 @@ class CorpusTestScriptTests(unittest.TestCase):
             "exit 1: Error: spawn /tmp/tree-sitter ENOENT",
         )
 
+    def test_summarize_command_failure_empty_output(self):
+        """空の output では returncode のみを返す。"""
+        self.assertEqual(
+            corpus_test.summarize_command_failure(3, ""),
+            "exit 3",
+        )
+
+    def test_summarize_command_failure_only_filtered_lines(self):
+        """すべての行がフィルター対象の場合は returncode のみを返す。"""
+        output = textwrap.dedent(
+            """\
+                at ChildProcess._handle.onexit (node:internal/child_process:286:19)
+            Emitted 'error' event on ChildProcess instance
+            Node.js v24.12.0
+            """
+        )
+        self.assertEqual(
+            corpus_test.summarize_command_failure(42, output),
+            "exit 42",
+        )
+
     @patch("corpus_test.subprocess.run", side_effect=FileNotFoundError)
     def test_check_tree_sitter_cli_reports_missing_command(self, mock_run):
         message = corpus_test.check_tree_sitter_cli({})
@@ -1379,9 +1400,7 @@ class CorpusTestScriptTests(unittest.TestCase):
         mock_listdir.return_value = [corpus_fname]
 
         try:
-            with self._with_corpus_dir(corpus_dir), self.assertRaises(
-                PermissionError
-            ):
+            with self._with_corpus_dir(corpus_dir), self.assertRaises(PermissionError):
                 corpus_test.main()
         finally:
             os.unlink(corpus_path)

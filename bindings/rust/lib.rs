@@ -328,4 +328,78 @@ end
             "特殊グローバル変数シンボルのパースに失敗しました"
         );
     }
+
+    // locals.scm の @local.definition を captures から抽出するユーティリティ
+    fn collect_local_definitions(code: &str) -> Vec<String> {
+        let language: tree_sitter::Language = LANGUAGE.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let query =
+            tree_sitter::Query::new(&language, LOCALS_QUERY).expect("Error loading locals query");
+        let tree = parser.parse(code, None).unwrap();
+        assert!(
+            !tree.root_node().has_error(),
+            "コードのパースに失敗しました: {code}"
+        );
+
+        let def_idx = query
+            .capture_names()
+            .iter()
+            .position(|n| *n == "local.definition")
+            .expect("local.definition キャプチャが見つかりません");
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+        let mut defs = Vec::new();
+        while let Some(m) = matches.next() {
+            for c in m.captures {
+                if c.index as usize == def_idx {
+                    defs.push(code[c.node.byte_range()].to_string());
+                }
+            }
+        }
+        defs
+    }
+
+    #[test]
+    fn test_locals_query_captures_keyword_and_optional_parameters() {
+        // keyword_parameter / optional_parameter の識別子が local.definition に捕捉されること
+        let code = "def foo(a: 1, b: nil, c = 10)\n  a + b.to_s.size + c\nend\n";
+        let defs = collect_local_definitions(code);
+        for expected in ["a", "b", "c"] {
+            assert!(
+                defs.contains(&expected.to_string()),
+                "{expected} が local.definition に含まれていません: {:?}",
+                defs
+            );
+        }
+    }
+
+    #[test]
+    fn test_locals_query_captures_splat_parameters() {
+        // splat_parameter / hash_splat_parameter / block_parameter の
+        // 識別子が local.definition に捕捉されること
+        let code = "def foo(*args, **opts, &blk)\n  args\nend\n";
+        let defs = collect_local_definitions(code);
+        for expected in ["args", "opts", "blk"] {
+            assert!(
+                defs.contains(&expected.to_string()),
+                "{expected} が local.definition に含まれていません: {:?}",
+                defs
+            );
+        }
+    }
+
+    #[test]
+    fn test_locals_query_captures_destructured_parameter() {
+        // block パラメータの分解代入 (|a, (b, c)|) も local.definition として捕捉されること
+        let code = "[[1, [2, 3]]].each { |a, (b, c)| a + b + c }\n";
+        let defs = collect_local_definitions(code);
+        for expected in ["a", "b", "c"] {
+            assert!(
+                defs.contains(&expected.to_string()),
+                "{expected} が local.definition に含まれていません: {:?}",
+                defs
+            );
+        }
+    }
 }
