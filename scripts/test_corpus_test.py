@@ -150,7 +150,7 @@ class CorpusTestScriptTests(unittest.TestCase):
             "exit 1: Error: spawn /tmp/tree-sitter ENOENT",
         )
 
-    def test_summarize_command_failure_empty_output(self):
+    def test_summarize_command_failure_empty_output_uses_returncode(self):
         """空の output では returncode のみを返す。"""
         self.assertEqual(
             corpus_test.summarize_command_failure(3, ""),

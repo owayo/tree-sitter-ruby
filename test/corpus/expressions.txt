@@ -2938,6 +2938,43 @@ and y
     (identifier)
     (identifier)))
 
+=============================================
+leading logical operators continue if condition
+=============================================
+
+if condition1
+  && condition2
+  || condition3
+end
+
+---
+
+(program
+  (if
+    condition: (binary
+      left: (binary
+        left: (identifier)
+        right: (identifier))
+      right: (identifier))))
+
+====================================================
+leading and/or prefixes do not continue line
+====================================================
+
+x
+android
+
+x
+order
+
+---
+
+(program
+  (identifier)
+  (identifier)
+  (identifier)
+  (identifier))
+
 ===============================
 leading | does not continue line
 ===============================
