@@ -103,8 +103,10 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # locals query captures for keyword/optional/splat/hash_splat/block/destructured
 # parameter identifiers,
 # tags query regression for nested definitions, method/alias definitions,
-# and builtin pseudo-method filtering; scanner regression for special
-# global-variable symbols like :$", :$;, :$$ and friends)
+# builtin pseudo-method filtering, and pseudo-constant filtering for
+# __FILE__/__LINE__/__ENCODING__ in reference.call captures;
+# scanner regression for special global-variable symbols like
+# :$", :$;, :$$ and friends)
 cargo test
 
 # If pnpm blocked tree-sitter-cli's install script, download the local CLI binary

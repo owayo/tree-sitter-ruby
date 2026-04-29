@@ -78,6 +78,7 @@ pnpm run test:unit
 #   definition キャプチャ検証
 # - locals クエリの destructured_parameter の definition キャプチャ検証
 # - tags クエリのネスト定義、組み込み擬似メソッド除外、method/alias 定義キャプチャ検証
+# - tags クエリの擬似定数（`__FILE__` / `__LINE__` / `__ENCODING__`）reference.call 除外検証
 # - highlights クエリのキーワードキャプチャ実行検証
 # - scanner.c が特殊グローバル変数シンボル（$" $; $, $$ 等）を誤エラーなくパースすることの検証
 cargo test

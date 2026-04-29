@@ -77,11 +77,11 @@
 (
   (call method: (identifier) @name) @reference.call
   ; 組み込みの擬似メソッドはタグ参照としては扱わない。
-  (#not-match? @name "^(lambda|load|require|require_relative|__FILE__|__LINE__)$")
+  (#not-match? @name "^(lambda|load|require|require_relative|__FILE__|__LINE__|__ENCODING__)$")
 )
 
 (
   [(identifier) (constant)] @name @reference.call
   (#is-not? local)
-  (#not-match? @name "^(lambda|load|require|require_relative|__FILE__|__LINE__)$")
+  (#not-match? @name "^(lambda|load|require|require_relative|__FILE__|__LINE__|__ENCODING__)$")
 )

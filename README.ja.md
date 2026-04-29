@@ -103,6 +103,7 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # locals クエリの keyword/optional/splat/hash_splat/block/destructured
 # パラメータの definition キャプチャ検証、
 # tags クエリのネスト定義・method/alias 定義・組み込み擬似メソッド除外の回帰検証、
+# tags クエリの擬似定数（__FILE__/__LINE__/__ENCODING__）の reference.call 除外検証、
 # scanner.c の特殊グローバル変数シンボル（:$" :$; :$$ 等）のパース回帰検証）
 cargo test
 

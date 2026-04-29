@@ -78,6 +78,30 @@ end
 }
 
 #[test]
+fn test_tags_query_filters_pseudo_constants() {
+    // __FILE__ / __LINE__ / __ENCODING__ は擬似定数で、メソッド呼び出しでは
+    // ないため reference.call に含めない。highlights.scm の取り扱いと
+    // 一致させるため、tags クエリ側でもまとめて除外する。
+    let code = r#"
+def report_origin
+  puts __FILE__
+  puts __LINE__
+  puts __ENCODING__
+end
+"#;
+
+    let reference_calls = collect_tag_names(code, "reference.call");
+
+    for builtin in ["__FILE__", "__LINE__", "__ENCODING__"] {
+        assert!(
+            !reference_calls.iter().any(|name| name == builtin),
+            "擬似定数 {builtin} がタグ参照に含まれています: {:?}",
+            reference_calls
+        );
+    }
+}
+
+#[test]
 fn test_tags_query_captures_nested_definitions() {
     let code = r#"
 module Admin::Feature
