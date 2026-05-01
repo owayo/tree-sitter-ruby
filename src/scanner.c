@@ -277,8 +277,17 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                         } else {
                             lexer->result_symbol = LINE_BREAK;
                         }
+                    } else if (lexer->lookahead == '&') {
+                        // `&&` と `&.` では LINE_BREAK を返さない。
+                        // 単独の `&`（ビット演算子）では返す。
+                        advance(lexer);
+                        if (!lexer->eof(lexer) && (lexer->lookahead == '&' || lexer->lookahead == '.')) {
+                            return false;
+                        } else {
+                            lexer->result_symbol = LINE_BREAK;
+                        }
                     }
-                    // `&` と `#` は LINE_BREAK を設定せずにそのまま扱う。
+                    // `#` は LINE_BREAK を設定せずにそのまま扱う。
                 }
                 return true;
         }

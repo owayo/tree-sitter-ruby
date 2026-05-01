@@ -2910,6 +2910,20 @@ x
     (identifier)
     (identifier)))
 
+====================================
+leading single & does not continue line
+====================================
+
+x
+& y
+
+---
+
+(program
+  (identifier)
+  (ERROR)
+  (identifier))
+
 ===============================
 leading or continues line
 ===============================

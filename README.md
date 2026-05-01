@@ -66,7 +66,7 @@ tree-sitter parse example.rb
 # - covers recent Ruby syntax regressions such as anonymous *, **, & forwarding
 # - covers Ruby 4.0 leading logical-operator continuations in expressions and if conditions
 # - covers scanner line-continuation boundaries (leading `and`/`or` keywords vs identifiers,
-#   leading `||`/`&&` operators, leading `..`)
+#   leading `||`/`&&` operators, non-continuing single `&`, leading `..`)
 pnpm run test
 
 # Unit tests for scripts/corpus_test.py
