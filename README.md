@@ -67,6 +67,8 @@ tree-sitter parse example.rb
 # - covers Ruby 4.0 leading logical-operator continuations in expressions and if conditions
 # - covers scanner line-continuation boundaries (leading `and`/`or` keywords vs identifiers,
 #   leading `||`/`&&` operators, non-continuing single `&`, leading `..`)
+# - compares normalized AST output from `tree-sitter parse --no-ranges`
+# - preserves single CR characters in corpus source sections
 pnpm run test
 
 # Unit tests for scripts/corpus_test.py
@@ -90,6 +92,8 @@ pnpm run test
 #   code trailing whitespace trimming, empty code test skipping
 # - missing corpus directory setup error,
 #   OSError propagation on temp file creation failure (UnboundLocalError prevention)
+# - tree-sitter CLI resolution (TREE_SITTER_CLI override, local native binary,
+#   local shim, PATH fallback), AST normalization, and single-CR preservation
 # - OSError suppression during temp file cleanup (no crash on unlink failure)
 # - summarize_command_failure returning exit code only for empty / fully-filtered output
 pnpm run test:unit
@@ -114,6 +118,11 @@ node node_modules/tree-sitter-cli/install.js
 ```
 
 `pnpm run test` verifies `tree-sitter --version` before executing corpus cases and exits with a setup error if the CLI is missing or does not start within 10 seconds. The corresponding setup and failure branches are covered by `pnpm run test:unit`.
+
+When `scripts/corpus_test.py` is run directly, it resolves the CLI in this order:
+`TREE_SITTER_CLI`, `node_modules/tree-sitter-cli/tree-sitter`, `node_modules/.bin/tree-sitter`,
+then `tree-sitter` from `PATH`. This keeps direct `python3 scripts/corpus_test.py` runs aligned
+with the project-pinned CLI when dependencies are installed.
 
 ### Scanner
 

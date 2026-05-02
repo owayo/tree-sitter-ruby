@@ -11,6 +11,7 @@
 """
 
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -19,6 +20,27 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
 CORPUS_DIR = PROJECT_DIR / "test" / "corpus"
+
+
+def tree_sitter_command(env=None):
+    """実行する tree-sitter CLI のパスを返す。"""
+    if env is None:
+        env = os.environ
+    override = env.get("TREE_SITTER_CLI")
+    if override:
+        return override
+
+    native_executable = "tree-sitter.exe" if os.name == "nt" else "tree-sitter"
+    native_cli = PROJECT_DIR / "node_modules" / "tree-sitter-cli" / native_executable
+    if native_cli.is_file():
+        return str(native_cli)
+
+    shim_executable = "tree-sitter.cmd" if os.name == "nt" else "tree-sitter"
+    local_cli = PROJECT_DIR / "node_modules" / ".bin" / shim_executable
+    if local_cli.is_file():
+        return str(local_cli)
+
+    return "tree-sitter"
 
 
 def is_separator(line):
@@ -33,9 +55,30 @@ def is_separator(line):
     return None
 
 
-def extract_tests(filepath):
+def strip_line_ending(text):
+    """末尾の 1 行分の改行だけを取り除く。"""
+    if text.endswith("\r\n"):
+        return text[:-2]
+    if text.endswith("\n") or text.endswith("\r"):
+        return text[:-1]
+    return text
+
+
+def normalize_tree(tree):
+    """AST 比較用に空白・フィールド名・parse 統計行を正規化する。"""
+    ast_lines = []
+    for line in tree.splitlines():
+        if "\tParse:" in line:
+            continue
+        ast_lines.append(line)
+    ast = "\n".join(ast_lines)
+    ast = re.sub(r"\b[A-Za-z_][A-Za-z0-9_]*:\s*", "", ast)
+    return re.sub(r"\s+", "", ast)
+
+
+def extract_tests(filepath, include_expected_ast=False):
     """コーパスファイルからテストケースを抽出する。"""
-    with open(filepath, encoding="utf-8") as f:
+    with open(filepath, encoding="utf-8", newline="") as f:
         lines = f.readlines()
 
     tests = []
@@ -60,7 +103,7 @@ def extract_tests(filepath):
                     break
                 if is_separator(lines[i]) == "=":
                     break
-                code_lines.append(lines[i].rstrip("\n"))
+                code_lines.append(lines[i])
                 i += 1
 
             ast_lines = []
@@ -69,7 +112,7 @@ def extract_tests(filepath):
                 while i < len(lines):
                     if is_separator(lines[i]) == "=":
                         break
-                    ast_lines.append(lines[i].rstrip("\n"))
+                    ast_lines.append(strip_line_ending(lines[i]))
                     i += 1
 
             while code_lines and not code_lines[0].strip():
@@ -77,11 +120,14 @@ def extract_tests(filepath):
             while code_lines and not code_lines[-1].strip():
                 code_lines.pop()
 
-            code = "\n".join(code_lines)
+            code = strip_line_ending("".join(code_lines))
             expected_ast = "\n".join(ast_lines)
             expects_error = "(ERROR" in expected_ast or "(MISSING" in expected_ast
             if code.strip():
-                tests.append((name, code, expects_error))
+                if include_expected_ast:
+                    tests.append((name, code, expected_ast, expects_error))
+                else:
+                    tests.append((name, code, expects_error))
         else:
             i += 1
 
@@ -117,11 +163,13 @@ def summarize_command_failure(returncode, output):
     return f"exit {returncode}"
 
 
-def check_tree_sitter_cli(env):
+def check_tree_sitter_cli(env, command=None):
     """tree-sitter CLI が実行可能か事前に検証する。"""
+    if command is None:
+        command = tree_sitter_command(env)
     try:
         result = subprocess.run(
-            ["tree-sitter", "--version"],
+            [command, "--version"],
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -159,7 +207,8 @@ def main():
     failures = []
 
     env = {**os.environ, "TREE_SITTER_LIBDIR": "/tmp/ts-lib"}
-    setup_error = check_tree_sitter_cli(env)
+    command = tree_sitter_command(env)
+    setup_error = check_tree_sitter_cli(env, command)
     if setup_error:
         print("\n--- Setup Error ---")
         print(f"  {setup_error}")
@@ -174,9 +223,9 @@ def main():
         if not fname.endswith(".txt"):
             continue
         filepath = os.path.join(CORPUS_DIR, fname)
-        tests = extract_tests(filepath)
+        tests = extract_tests(filepath, include_expected_ast=True)
 
-        for name, code, expects_error in tests:
+        for name, code, expected_ast, expects_error in tests:
             total += 1
             tmpfile = None
             try:
@@ -190,7 +239,7 @@ def main():
                     tmpfile = f.name
 
                 result = subprocess.run(
-                    ["tree-sitter", "parse", tmpfile],
+                    [command, "parse", "--no-ranges", tmpfile],
                     capture_output=True,
                     text=True,
                     encoding="utf-8",
@@ -200,19 +249,22 @@ def main():
                 )
                 output = result.stdout + result.stderr
                 has_error = "(ERROR" in output or "(MISSING" in output
+                ast_matches = not expected_ast.strip() or normalize_tree(output) == normalize_tree(expected_ast)
                 if expects_error:
                     if has_error:
                         passed += 1
                     else:
                         failed += 1
                         failures.append((fname, name, "expected ERROR but parsed OK"))
-                elif not has_error and result.returncode == 0:
+                elif not has_error and result.returncode == 0 and ast_matches:
                     passed += 1
                 else:
                     failed += 1
                     errs = output.count("(ERROR") + output.count("(MISSING")
                     if errs == 0 and result.returncode != 0:
                         detail = summarize_command_failure(result.returncode, output)
+                    elif errs == 0 and not ast_matches:
+                        detail = "AST mismatch"
                     else:
                         detail = errs
                     failures.append((fname, name, detail))
@@ -236,5 +288,10 @@ def main():
     return 0 if failed == 0 else 1
 
 
-if __name__ == "__main__":
+def run():
+    """CLI エントリーポイントとして main() の終了コードで終了する。"""
     sys.exit(main())
+
+
+if __name__ == "__main__":
+    run()

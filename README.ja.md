@@ -67,6 +67,8 @@ tree-sitter parse example.rb
 # - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する
 # - scanner.c の行継続判定（行頭 `and` / `or` キーワードと識別子、
 #   行頭 `||` / `&&` 演算子、継続しない単独 `&`、行頭 `..`）の回帰もここで確認する
+# - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
+# - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
 pnpm run test
 
 # scripts/corpus_test.py のユニットテスト
@@ -90,6 +92,8 @@ pnpm run test
 #   コード末尾空白トリム、空コードテストのスキップ確認
 # - corpus ディレクトリ不在時の setup error、
 #   一時ファイル作成失敗時の OSError 伝播（UnboundLocalError 防止）
+# - tree-sitter CLI 解決（TREE_SITTER_CLI 上書き、ローカルネイティブバイナリ、
+#   ローカル shim、PATH フォールバック）、AST 正規化、単独 CR 保持の検証
 # - 一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
 # - summarize_command_failure の空 output / 全フィルター行のみの場合に exit code のみ返すことの検証
 pnpm run test:unit
@@ -113,6 +117,11 @@ node node_modules/tree-sitter-cli/install.js
 ```
 
 `pnpm run test` はコーパス実行前に `tree-sitter --version` を確認し、CLI が見つからない場合や 10 秒以内に起動できない場合は setup error で終了します。関連する setup/failure 分岐は `pnpm run test:unit` で回帰確認できます。
+
+`scripts/corpus_test.py` を直接実行する場合、CLI は
+`TREE_SITTER_CLI`、`node_modules/tree-sitter-cli/tree-sitter`、`node_modules/.bin/tree-sitter`、
+PATH 上の `tree-sitter` の順に解決します。依存関係をインストール済みの環境では、
+`python3 scripts/corpus_test.py` の直接実行でもプロジェクトで固定した CLI を使います。
 
 ### スキャナー
 

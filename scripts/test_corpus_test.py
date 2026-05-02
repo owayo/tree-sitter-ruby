@@ -73,6 +73,54 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(tests[0], ("normal case", 'puts "ok"', False))
         self.assertEqual(tests[1], ("error case", "p(", True))
 
+    def test_extract_tests_can_include_expected_ast(self):
+        """main() 用に期待 AST を含めて抽出できる。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            normal case
+            =========
+            puts "ok"
+            ---
+            (program
+              (call))
+            """
+        )
+        path = self._write_corpus(corpus)
+        try:
+            tests = corpus_test.extract_tests(path, include_expected_ast=True)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(
+            tests[0],
+            ("normal case", 'puts "ok"', "(program\n  (call))", False),
+        )
+
+    def test_extract_tests_preserves_single_cr_in_code(self):
+        """コード内の単独 CR を LF に正規化せず保持する。"""
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            suffix=".txt",
+            delete=False,
+        ) as f:
+            f.write(
+                b"=========\n"
+                b"cr case\n"
+                b"=========\n"
+                b"puts\r\r\"hi\"\n"
+                b"---\n"
+                b"(program)\n"
+            )
+            path = f.name
+
+        try:
+            tests = corpus_test.extract_tests(path, include_expected_ast=True)
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(tests[0][1], 'puts\r\r"hi"')
+
     def test_extract_tests_works_under_ascii_locale(self):
         corpus = textwrap.dedent(
             """\
@@ -134,6 +182,77 @@ class CorpusTestScriptTests(unittest.TestCase):
     def test_format_failure_detail_non_string(self):
         """整数以外の型はそのまま文字列化される。"""
         self.assertEqual(corpus_test.format_failure_detail(None), "None")
+
+    def test_tree_sitter_command_uses_env_override(self):
+        """TREE_SITTER_CLI が指定されていれば最優先で使う。"""
+        self.assertEqual(
+            corpus_test.tree_sitter_command({"TREE_SITTER_CLI": "/custom/tree-sitter"}),
+            "/custom/tree-sitter",
+        )
+
+    def test_tree_sitter_command_prefers_project_local_cli(self):
+        """node_modules/.bin のローカル CLI を PATH より優先する。"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_dir = Path(tmpdir)
+            bin_dir = project_dir / "node_modules" / ".bin"
+            bin_dir.mkdir(parents=True)
+            executable = "tree-sitter.cmd" if os.name == "nt" else "tree-sitter"
+            cli = bin_dir / executable
+            cli.write_text("#!/bin/sh\n", encoding="utf-8")
+
+            with patch.object(corpus_test, "PROJECT_DIR", project_dir):
+                self.assertEqual(corpus_test.tree_sitter_command({}), str(cli))
+
+    def test_tree_sitter_command_prefers_native_package_binary(self):
+        """tree-sitter-cli パッケージ内のネイティブバイナリを shim より優先する。"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_dir = Path(tmpdir)
+            package_dir = project_dir / "node_modules" / "tree-sitter-cli"
+            package_dir.mkdir(parents=True)
+            native_executable = "tree-sitter.exe" if os.name == "nt" else "tree-sitter"
+            native_cli = package_dir / native_executable
+            native_cli.write_text("#!/bin/sh\n", encoding="utf-8")
+
+            bin_dir = project_dir / "node_modules" / ".bin"
+            bin_dir.mkdir(parents=True)
+            shim_executable = "tree-sitter.cmd" if os.name == "nt" else "tree-sitter"
+            shim_cli = bin_dir / shim_executable
+            shim_cli.write_text("#!/bin/sh\n", encoding="utf-8")
+
+            with patch.object(corpus_test, "PROJECT_DIR", project_dir):
+                self.assertEqual(corpus_test.tree_sitter_command({}), str(native_cli))
+
+    def test_tree_sitter_command_falls_back_to_path(self):
+        """ローカル CLI がなければ PATH 上の tree-sitter にフォールバックする。"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch.object(corpus_test, "PROJECT_DIR", Path(tmpdir)):
+                self.assertEqual(corpus_test.tree_sitter_command({}), "tree-sitter")
+
+    def test_strip_line_ending_removes_one_line_ending(self):
+        """末尾の改行だけを除去し、本文中の CR は残す。"""
+        self.assertEqual(corpus_test.strip_line_ending("x\n"), "x")
+        self.assertEqual(corpus_test.strip_line_ending("x\r\n"), "x")
+        self.assertEqual(corpus_test.strip_line_ending("x\r"), "x")
+        self.assertEqual(corpus_test.strip_line_ending("x\r\r"), "x\r")
+
+    def test_normalize_tree_ignores_fields_whitespace_and_parse_stats(self):
+        """AST 比較ではフィールド名・空白・parse 統計行を無視する。"""
+        actual = textwrap.dedent(
+            """\
+            (program
+              (call
+                method: (identifier)
+                arguments: (argument_list
+                  (string))))
+            /tmp/example.rb\tParse: 0.01 ms\t(ERROR [0, 0] - [0, 1])
+            """
+        )
+        expected = "(program (call (identifier) (argument_list (string))))"
+
+        self.assertEqual(
+            corpus_test.normalize_tree(actual),
+            corpus_test.normalize_tree(expected),
+        )
 
     def test_summarize_command_failure_prefers_error_line(self):
         output = textwrap.dedent(
@@ -697,6 +816,50 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 1)
         self.assertIn("exit 2: permission denied", stdout.getvalue())
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_reports_ast_mismatch(self, mock_run, mock_listdir):
+        """構文エラーがなくても期待 AST と違えば失敗として報告する。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            wrong ast
+            =========
+            x = 1
+            ---
+            (program
+              (method))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.8\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (assignment))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
+                exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("AST mismatch", stdout.getvalue())
 
     def test_extract_tests_skips_whitespace_only_code(self):
         """コードが空白のみの場合テストとして抽出されない。"""
@@ -1409,11 +1572,11 @@ class CorpusTestScriptTests(unittest.TestCase):
 
     @patch("corpus_test.main", return_value=0)
     def test_main_guard_calls_sys_exit(self, mock_main):
-        """__main__ ガードが sys.exit(main()) を呼ぶことを検証する。"""
+        """CLI エントリーポイントが sys.exit(main()) を呼ぶことを検証する。"""
         with self.assertRaises(SystemExit) as cm:
-            runpy = __import__("runpy")
-            runpy.run_module("corpus_test", run_name="__main__", alter_sys=True)
+            corpus_test.run()
         self.assertEqual(cm.exception.code, 0)
+        mock_main.assert_called_once_with()
 
     # --- main: expected ERROR だがパース成功の場合 ---
 
@@ -1980,6 +2143,57 @@ class CorpusTestScriptTests(unittest.TestCase):
         _, call_kwargs = mock_run.call_args_list[0]
         env = call_kwargs["env"]
         self.assertEqual(env.get("TREE_SITTER_LIBDIR"), "/tmp/ts-lib")
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.subprocess.run")
+    def test_main_uses_resolved_tree_sitter_command(self, mock_run, mock_listdir):
+        """main() の起動確認と parse が同じ CLI パスを使う。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            simple
+            =========
+            x = 1
+            ---
+            (program
+              (assignment))
+            """
+        )
+        corpus_path = self._write_corpus(corpus)
+        corpus_fname = os.path.basename(corpus_path)
+        corpus_dir = os.path.dirname(corpus_path)
+
+        version_result = subprocess.CompletedProcess(
+            args=["/custom/tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.8\n",
+            stderr="",
+        )
+        parse_result = subprocess.CompletedProcess(
+            args=["/custom/tree-sitter", "parse"],
+            returncode=0,
+            stdout="(program (assignment))\n",
+            stderr="",
+        )
+        mock_run.side_effect = [version_result, parse_result]
+        mock_listdir.return_value = [corpus_fname]
+
+        try:
+            stdout = io.StringIO()
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
+                with patch(
+                    "corpus_test.tree_sitter_command",
+                    return_value="/custom/tree-sitter",
+                ):
+                    exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        self.assertEqual(exit_code, 0)
+        first_cmd = mock_run.call_args_list[0][0][0]
+        second_cmd = mock_run.call_args_list[1][0][0]
+        self.assertEqual(first_cmd[:2], ["/custom/tree-sitter", "--version"])
+        self.assertEqual(second_cmd[:3], ["/custom/tree-sitter", "parse", "--no-ranges"])
 
     # --- extract_tests: .DS_Store 等の非 .txt ファイルが混在するケース ---
 
