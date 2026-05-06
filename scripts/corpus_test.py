@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
+# ruff: noqa: DOC201, DOC501
 """tree-sitter parse ベースの低メモリなコーパステストランナー。
 
 大規模な parser テーブル（parser.c 約15MB）では `tree-sitter test` が
 過剰なメモリ（RSS 8GB+, VSIZE 400GB+）を消費するため、
 本スクリプトは各コーパステストを `tree-sitter parse` で実行する。
+
+子プロセスはプロセスグループ単位で起動し、5 秒ごとに RSS を観測する。
+閾値 (TS_MEMORY_LIMIT_MB、既定 1024MB) を超過したら即座に SIGKILL して
+PC のハングを防ぐ。tree-sitter 側にも `--timeout` (µs) を渡し、
+内部 wallclock タイマーで暴走パースを未然に止める。
 
 事前準備:
     mkdir -p /tmp/ts-lib
@@ -12,14 +18,20 @@
 
 import os
 import re
+import signal
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = SCRIPT_DIR.parent
 CORPUS_DIR = PROJECT_DIR / "test" / "corpus"
+
+DEFAULT_MEMORY_LIMIT_MB = 1024.0
+PARSE_TIMEOUT_SECONDS = 10
+POLL_INTERVAL_SECONDS = 5.0
 
 
 def tree_sitter_command(env=None):
@@ -163,6 +175,171 @@ def summarize_command_failure(returncode, output):
     return f"exit {returncode}"
 
 
+class _GuardedResult:
+    """run_with_memory_guard の戻り値。
+
+    subprocess.CompletedProcess 互換 (returncode/stdout/stderr) に
+    kill_reason 属性を追加した薄いオブジェクト。kill_reason が文字列のときに
+    タイムアウト/メモリ超過などの強制終了を表す。
+    """
+
+    __slots__ = ("kill_reason", "returncode", "stderr", "stdout")
+
+    def __init__(self, returncode, stdout, stderr, kill_reason=None):
+        """戻り値オブジェクトを構築する。"""
+        self.returncode = returncode
+        self.stdout = stdout
+        self.stderr = stderr
+        self.kill_reason = kill_reason
+
+
+def _resolve_memory_limit_mb(env=None):
+    """環境変数 TS_MEMORY_LIMIT_MB から RSS 上限値 (MB) を解決する。"""
+    src = env if env is not None else os.environ
+    raw = src.get("TS_MEMORY_LIMIT_MB", "").strip()
+    if not raw:
+        return DEFAULT_MEMORY_LIMIT_MB
+    try:
+        value = float(raw)
+    except ValueError:
+        return DEFAULT_MEMORY_LIMIT_MB
+    if value <= 0:
+        return DEFAULT_MEMORY_LIMIT_MB
+    return value
+
+
+def _get_rss_mb(pid):
+    """指定 PID の RSS を MB 単位で返す。取得不可なら None。"""
+    if sys.platform == "win32":
+        try:
+            result = subprocess.run(
+                ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=2,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return None
+        if result.returncode != 0:
+            return None
+        for line in result.stdout.splitlines():
+            parts = [p.strip().strip('"') for p in line.split(",")]
+            if len(parts) >= 5 and parts[1] == str(pid):
+                mem = parts[4].replace(",", "").replace(" K", "").strip()
+                try:
+                    return int(mem) / 1024.0
+                except ValueError:
+                    return None
+        return None
+
+    try:
+        result = subprocess.run(
+            ["ps", "-o", "rss=", "-p", str(pid)],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+    text = result.stdout.strip()
+    if not text:
+        return None
+    try:
+        return int(text) / 1024.0
+    except ValueError:
+        return None
+
+
+def _kill_process_tree(proc):
+    """プロセス（およびプロセスグループ）を強制終了する。"""
+    if sys.platform == "win32":
+        try:
+            proc.kill()
+        except OSError:
+            pass
+        return
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+    except (OSError, ProcessLookupError):
+        try:
+            proc.kill()
+        except OSError:
+            pass
+
+
+def run_with_memory_guard(
+    cmd,
+    *,
+    timeout,
+    memory_limit_mb,
+    env,
+    poll_interval=POLL_INTERVAL_SECONDS,
+):
+    """tree-sitter コマンドをメモリ監視付きで実行する。
+
+    poll_interval 秒ごとに RSS を確認し、memory_limit_mb (MB) を超過したら
+    プロセスグループごと SIGKILL する。timeout 秒を超えても強制終了する。
+    """
+    popen_kwargs = {
+        "stdout": subprocess.PIPE,
+        "stderr": subprocess.PIPE,
+        "text": True,
+        "encoding": "utf-8",
+        "errors": "replace",
+        "env": env,
+    }
+    if sys.platform != "win32":
+        popen_kwargs["start_new_session"] = True
+    proc = subprocess.Popen(cmd, **popen_kwargs)
+
+    start = time.monotonic()
+    kill_reason = None
+
+    while True:
+        elapsed = time.monotonic() - start
+        remaining = timeout - elapsed
+        if remaining <= 0:
+            kill_reason = f"TIMEOUT ({timeout:.0f}s)"
+            break
+
+        wait = min(poll_interval, remaining)
+        try:
+            proc.wait(timeout=wait)
+            break
+        except subprocess.TimeoutExpired:
+            pass
+
+        rss_mb = _get_rss_mb(proc.pid)
+        if rss_mb is not None and rss_mb > memory_limit_mb:
+            kill_reason = f"MEMORY_KILL: {rss_mb:.0f}MB > {memory_limit_mb:.0f}MB"
+            break
+
+    if kill_reason is not None:
+        _kill_process_tree(proc)
+
+    try:
+        stdout, stderr = proc.communicate(timeout=10)
+    except subprocess.TimeoutExpired:
+        _kill_process_tree(proc)
+        try:
+            stdout, stderr = proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            stdout, stderr = "", ""
+
+    return _GuardedResult(proc.returncode, stdout or "", stderr or "", kill_reason)
+
+
+def _parse_timeout_micros():
+    """tree-sitter parse に渡す内部 wallclock タイムアウト (µs) を返す。"""
+    return int(PARSE_TIMEOUT_SECONDS * 1_000_000 * 0.8)
+
+
 def check_tree_sitter_cli(env, command=None):
     """tree-sitter CLI が実行可能か事前に検証する。"""
     if command is None:
@@ -178,7 +355,7 @@ def check_tree_sitter_cli(env, command=None):
             env=env,
         )
     except FileNotFoundError:
-        return "tree-sitter コマンドが見つかりません。tree-sitter-cli をインストールしてください。"
+        return "tree-sitter コマンドが見つかりません。tree-sitter-cli をインストールしてください。"  # noqa: E501
     except subprocess.TimeoutExpired:
         return (
             "tree-sitter CLI の起動確認が 10 秒でタイムアウトしました。"
@@ -219,6 +396,9 @@ def main():
         print(f"  corpus ディレクトリが見つかりません: {CORPUS_DIR}")
         return 2
 
+    memory_limit_mb = _resolve_memory_limit_mb(env)
+    parse_timeout_arg = f"--timeout={_parse_timeout_micros()}"
+
     for fname in sorted(os.listdir(CORPUS_DIR)):
         if not fname.endswith(".txt"):
             continue
@@ -238,18 +418,26 @@ def main():
                     f.write(code + "\n")
                     tmpfile = f.name
 
-                result = subprocess.run(
-                    [command, "parse", "--no-ranges", tmpfile],
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
-                    errors="replace",
-                    timeout=10,
+                result = run_with_memory_guard(
+                    [command, "parse", "--no-ranges", parse_timeout_arg, tmpfile],
+                    timeout=PARSE_TIMEOUT_SECONDS,
+                    memory_limit_mb=memory_limit_mb,
                     env=env,
                 )
-                output = result.stdout + result.stderr
+
+                kill_reason = getattr(result, "kill_reason", None)
+                if isinstance(kill_reason, str):
+                    failed += 1
+                    failures.append((fname, name, kill_reason))
+                    continue
+
+                stdout = result.stdout or ""
+                stderr = result.stderr or ""
+                output = stdout + stderr
                 has_error = "(ERROR" in output or "(MISSING" in output
-                ast_matches = not expected_ast.strip() or normalize_tree(output) == normalize_tree(expected_ast)
+                expected_norm = normalize_tree(expected_ast)
+                actual_norm = normalize_tree(output)
+                ast_matches = not expected_ast.strip() or actual_norm == expected_norm
                 if expects_error:
                     if has_error:
                         passed += 1
@@ -268,9 +456,6 @@ def main():
                     else:
                         detail = errs
                     failures.append((fname, name, detail))
-            except subprocess.TimeoutExpired:
-                failed += 1
-                failures.append((fname, name, "TIMEOUT"))
             finally:
                 if tmpfile is not None:
                     try:

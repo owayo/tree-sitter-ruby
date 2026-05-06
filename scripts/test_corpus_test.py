@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: D100, D101, D102, D103, D403, DOC201, DOC501, E501
 """scripts/corpus_test.py のユニットテスト。"""
 
 import io
@@ -301,8 +302,9 @@ class CorpusTestScriptTests(unittest.TestCase):
         mock_run.assert_called_once()
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_reports_tree_sitter_setup_error(self, mock_run, mock_listdir):
+    def test_main_reports_tree_sitter_setup_error(self, mock_run, mock_guard, mock_listdir):
         mock_run.return_value = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
             returncode=1,
@@ -586,8 +588,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main 関数の追加テスト ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_all_tests_pass(self, mock_run, mock_listdir):
+    def test_main_all_tests_pass(self, mock_run, mock_guard, mock_listdir):
         """全テスト通過時に exit 0 を返す。"""
         corpus = textwrap.dedent(
             """\
@@ -605,20 +608,19 @@ class CorpusTestScriptTests(unittest.TestCase):
         corpus_dir = os.path.dirname(corpus_path)
 
         # tree-sitter --version の呼び出し
-        version_result = subprocess.CompletedProcess(
+        mock_run.return_value = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
             returncode=0,
             stdout="tree-sitter 0.26.7\n",
             stderr="",
         )
         # tree-sitter parse の呼び出し（エラーなし）
-        parse_result = subprocess.CompletedProcess(
+        mock_guard.return_value = subprocess.CompletedProcess(
             args=["tree-sitter", "parse"],
             returncode=0,
             stdout="(program (assignment))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -633,9 +635,10 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertIn("Fail: 0", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
     def test_main_skips_non_txt_and_accepts_expected_error(
-        self, mock_run, mock_listdir
+        self, mock_run, mock_guard, mock_listdir
     ):
         """非 txt を無視し、期待どおりの ERROR は成功として扱う。"""
         corpus = textwrap.dedent(
@@ -653,19 +656,18 @@ class CorpusTestScriptTests(unittest.TestCase):
         corpus_fname = os.path.basename(corpus_path)
         corpus_dir = os.path.dirname(corpus_path)
 
-        version_result = subprocess.CompletedProcess(
+        mock_run.return_value = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
             returncode=0,
             stdout="tree-sitter 0.26.7\n",
             stderr="",
         )
-        parse_result = subprocess.CompletedProcess(
+        mock_guard.return_value = subprocess.CompletedProcess(
             args=["tree-sitter", "parse"],
             returncode=1,
             stdout="(program (ERROR))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
         mock_listdir.return_value = ["README.md", corpus_fname]
 
         try:
@@ -678,12 +680,14 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Pass: 1", stdout.getvalue())
         self.assertIn("Fail: 0", stdout.getvalue())
-        self.assertEqual(mock_run.call_count, 2)
+        self.assertEqual(mock_run.call_count, 1)
+        self.assertEqual(mock_guard.call_count, 1)
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
     def test_main_reports_expected_error_when_parse_succeeds(
-        self, mock_run, mock_listdir
+        self, mock_run, mock_guard, mock_listdir
     ):
         """ERROR 期待ケースが正常終了した場合は失敗として報告する。"""
         corpus = textwrap.dedent(
@@ -701,19 +705,18 @@ class CorpusTestScriptTests(unittest.TestCase):
         corpus_fname = os.path.basename(corpus_path)
         corpus_dir = os.path.dirname(corpus_path)
 
-        version_result = subprocess.CompletedProcess(
+        mock_run.return_value = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
             returncode=0,
             stdout="tree-sitter 0.26.7\n",
             stderr="",
         )
-        parse_result = subprocess.CompletedProcess(
+        mock_guard.return_value = subprocess.CompletedProcess(
             args=["tree-sitter", "parse"],
             returncode=0,
             stdout="(program (method))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -727,8 +730,9 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertIn("expected ERROR but parsed OK", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_with_failure(self, mock_run, mock_listdir):
+    def test_main_with_failure(self, mock_run, mock_guard, mock_listdir):
         """パースエラー時に exit 1 と失敗詳細を出力する。"""
         corpus = textwrap.dedent(
             """\
@@ -757,7 +761,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (ERROR))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_result
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -772,9 +777,10 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertIn("Fail: 1", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
     def test_main_reports_command_failure_detail_without_error_nodes(
-        self, mock_run, mock_listdir
+        self, mock_run, mock_guard, mock_listdir
     ):
         """非 0 終了かつ ERROR ノードなしならコマンド失敗詳細を表示する。"""
         corpus = textwrap.dedent(
@@ -804,7 +810,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="",
             stderr="\npermission denied\n",
         )
-        mock_run.side_effect = [version_result, parse_result]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_result
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -818,8 +825,9 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertIn("exit 2: permission denied", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_reports_ast_mismatch(self, mock_run, mock_listdir):
+    def test_main_reports_ast_mismatch(self, mock_run, mock_guard, mock_listdir):
         """構文エラーがなくても期待 AST と違えば失敗として報告する。"""
         corpus = textwrap.dedent(
             """\
@@ -848,7 +856,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (assignment))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_result
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -904,8 +913,9 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertTrue(tests[0][2])
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_mixed_pass_and_fail(self, mock_run, mock_listdir):
+    def test_main_mixed_pass_and_fail(self, mock_run, mock_guard, mock_listdir):
         """複数テストで一部パス・一部失敗の集計が正確であること。"""
         corpus = textwrap.dedent(
             """\
@@ -947,7 +957,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (ERROR))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, pass_result, fail_result]
+        mock_run.return_value = version_result
+        mock_guard.side_effect = [pass_result, fail_result]
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -962,8 +973,9 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertIn("Fail: 1", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_parse_timeout(self, mock_run, mock_listdir):
+    def test_main_parse_timeout(self, mock_run, mock_guard, mock_listdir):
         """パース時のタイムアウトが TIMEOUT として記録される。"""
         corpus = textwrap.dedent(
             """\
@@ -986,10 +998,10 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="tree-sitter 0.26.7\n",
             stderr="",
         )
-        mock_run.side_effect = [
-            version_result,
-            subprocess.TimeoutExpired(["tree-sitter", "parse"], timeout=10),
-        ]
+        mock_run.return_value = version_result
+        mock_guard.return_value = corpus_test._GuardedResult(
+            None, "", "", "TIMEOUT (10s)"
+        )
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -1102,8 +1114,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main 関数の追加テスト ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_empty_corpus_directory(self, mock_run, mock_listdir):
+    def test_main_empty_corpus_directory(self, mock_run, mock_guard, mock_listdir):
         """corpus ディレクトリに .txt ファイルがない場合、0 件で成功する。"""
         version_result = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
@@ -1292,8 +1305,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main 関数の追加テスト ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_multiple_corpus_files(self, mock_run, mock_listdir):
+    def test_main_multiple_corpus_files(self, mock_run, mock_guard, mock_listdir):
         """複数の corpus ファイルにまたがるテスト集計が正確であること。"""
         corpus1 = textwrap.dedent(
             """\
@@ -1333,7 +1347,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (assignment))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_ok, parse_ok]
+        mock_run.return_value = version_result
+        mock_guard.side_effect = [parse_ok, parse_ok]
         mock_listdir.return_value = sorted(
             [os.path.basename(path1), os.path.basename(path2)]
         )
@@ -1351,8 +1366,9 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertIn("Pass: 2", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_missing_only_in_output(self, mock_run, mock_listdir):
+    def test_main_missing_only_in_output(self, mock_run, mock_guard, mock_listdir):
         """パース出力に MISSING のみ含まれる場合も失敗として報告する。"""
         corpus = textwrap.dedent(
             """\
@@ -1381,7 +1397,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (MISSING) (assignment))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_result
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -1395,8 +1412,9 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertIn("Fail: 1", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_txt_file_without_test_cases(self, mock_run, mock_listdir):
+    def test_main_txt_file_without_test_cases(self, mock_run, mock_guard, mock_listdir):
         """.txt ファイルはあるがテストケースが0件の場合、0 件で成功する。"""
         corpus_path = self._write_corpus("just text without separators\n")
         corpus_fname = os.path.basename(corpus_path)
@@ -1483,8 +1501,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: 複数 ERROR/MISSING ノードのカウント ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_counts_multiple_error_nodes(self, mock_run, mock_listdir):
+    def test_main_counts_multiple_error_nodes(self, mock_run, mock_guard, mock_listdir):
         """パース出力に複数の ERROR/MISSING がある場合、合計数が報告される。"""
         corpus = textwrap.dedent(
             """\
@@ -1513,7 +1532,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (ERROR) (assignment (MISSING)) (ERROR))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_result
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -1530,9 +1550,10 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: パース中の PermissionError ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
     def test_main_permission_error_during_parse_propagates(
-        self, mock_run, mock_listdir
+        self, mock_run, mock_guard, mock_listdir
     ):
         """パース実行中の PermissionError は未キャッチで伝播する。"""
         corpus = textwrap.dedent(
@@ -1556,10 +1577,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="tree-sitter 0.26.7\n",
             stderr="",
         )
-        mock_run.side_effect = [
-            version_result,
-            PermissionError("permission denied"),
-        ]
+        mock_run.return_value = version_result
+        mock_guard.side_effect = PermissionError("permission denied")
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -1581,8 +1600,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: expected ERROR だがパース成功の場合 ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_expected_error_but_parsed_ok(self, mock_run, mock_listdir):
+    def test_main_expected_error_but_parsed_ok(self, mock_run, mock_guard, mock_listdir):
         """期待 AST に ERROR があるがパースが成功した場合、失敗として報告する。"""
         corpus = textwrap.dedent(
             """\
@@ -1612,7 +1632,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (method))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_ok]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_ok
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -1628,8 +1649,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: 非ゼロ終了コードでエラーノードなし ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_nonzero_exit_without_error_nodes(self, mock_run, mock_listdir):
+    def test_main_nonzero_exit_without_error_nodes(self, mock_run, mock_guard, mock_listdir):
         """tree-sitter parse が非ゼロで終了しエラーノードもない場合、コマンド失敗として報告する。"""
         corpus = textwrap.dedent(
             """\
@@ -1658,7 +1680,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="",
             stderr="Error: some internal error\n",
         )
-        mock_run.side_effect = [version_result, parse_fail]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_fail
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -1736,8 +1759,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: stderr のみにエラー出力がある場合 ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_error_in_stderr_only(self, mock_run, mock_listdir):
+    def test_main_error_in_stderr_only(self, mock_run, mock_guard, mock_listdir):
         """stdout は空で stderr に ERROR がある場合、失敗として検出される。"""
         corpus = textwrap.dedent(
             """\
@@ -1766,7 +1790,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="",
             stderr="(program (ERROR))\n",
         )
-        mock_run.side_effect = [version_result, parse_result]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_result
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -1829,8 +1854,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: 期待 ERROR で MISSING のみ検出される場合 ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_expected_error_matched_by_missing(self, mock_run, mock_listdir):
+    def test_main_expected_error_matched_by_missing(self, mock_run, mock_guard, mock_listdir):
         """期待 AST に ERROR があり、パース結果に MISSING がある場合は成功。"""
         corpus = textwrap.dedent(
             """\
@@ -1859,7 +1885,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (MISSING))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_result
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -1914,9 +1941,10 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: KeyboardInterrupt がパース中に発生した場合 ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
     def test_main_keyboard_interrupt_during_parse_propagates(
-        self, mock_run, mock_listdir
+        self, mock_run, mock_guard, mock_listdir
     ):
         """パース実行中の KeyboardInterrupt は未キャッチで伝播する。"""
         corpus = textwrap.dedent(
@@ -1940,7 +1968,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="tree-sitter 0.26.7\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, KeyboardInterrupt()]
+        mock_run.return_value = version_result
+        mock_guard.side_effect = KeyboardInterrupt()
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -1988,8 +2017,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: 空コードのテストがスキップされる ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_empty_code_tests_not_counted(self, mock_run, mock_listdir):
+    def test_main_empty_code_tests_not_counted(self, mock_run, mock_guard, mock_listdir):
         """コードが空のテストケースは extract_tests でスキップされ集計に含まれない。"""
         corpus = textwrap.dedent(
             """\
@@ -2024,7 +2054,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (assignment))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_ok]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_ok
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -2041,8 +2072,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: CORPUS_DIR が存在しない場合 ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_missing_corpus_dir(self, mock_run, mock_listdir):
+    def test_main_missing_corpus_dir(self, mock_run, mock_guard, mock_listdir):
         """corpus ディレクトリが存在しない場合、setup error で終了する。"""
         version_result = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
@@ -2064,8 +2096,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: NamedTemporaryFile 失敗時に UnboundLocalError にならない ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_tempfile_creation_failure_propagates(self, mock_run, mock_listdir):
+    def test_main_tempfile_creation_failure_propagates(self, mock_run, mock_guard, mock_listdir):
         """一時ファイル作成失敗時に UnboundLocalError ではなく OSError が伝播する。"""
         corpus = textwrap.dedent(
             """\
@@ -2119,8 +2152,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     # --- main: 環境変数が正しく渡されることの検証 ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_passes_tree_sitter_libdir_env(self, mock_run, mock_listdir):
+    def test_main_passes_tree_sitter_libdir_env(self, mock_run, mock_guard, mock_listdir):
         """main() が TREE_SITTER_LIBDIR=/tmp/ts-lib を env に含めて subprocess を呼ぶ。"""
         version_result = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
@@ -2145,8 +2179,9 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(env.get("TREE_SITTER_LIBDIR"), "/tmp/ts-lib")
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_uses_resolved_tree_sitter_command(self, mock_run, mock_listdir):
+    def test_main_uses_resolved_tree_sitter_command(self, mock_run, mock_guard, mock_listdir):
         """main() の起動確認と parse が同じ CLI パスを使う。"""
         corpus = textwrap.dedent(
             """\
@@ -2175,7 +2210,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (assignment))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_result
         mock_listdir.return_value = [corpus_fname]
 
         try:
@@ -2191,15 +2227,16 @@ class CorpusTestScriptTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         first_cmd = mock_run.call_args_list[0][0][0]
-        second_cmd = mock_run.call_args_list[1][0][0]
+        second_cmd = mock_guard.call_args_list[0][0][0]
         self.assertEqual(first_cmd[:2], ["/custom/tree-sitter", "--version"])
         self.assertEqual(second_cmd[:3], ["/custom/tree-sitter", "parse", "--no-ranges"])
 
     # --- extract_tests: .DS_Store 等の非 .txt ファイルが混在するケース ---
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_ignores_hidden_and_non_txt_files(self, mock_run, mock_listdir):
+    def test_main_ignores_hidden_and_non_txt_files(self, mock_run, mock_guard, mock_listdir):
         """隠しファイルや非 .txt ファイルはスキップされる。"""
         version_result = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
@@ -2222,8 +2259,9 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertIn("Total: 0", stdout.getvalue())
 
     @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_unlink_oserror_does_not_crash(self, mock_run, mock_listdir):
+    def test_main_unlink_oserror_does_not_crash(self, mock_run, mock_guard, mock_listdir):
         """一時ファイル削除時の OSError がテスト全体をクラッシュさせないことを検証する。"""
         corpus = textwrap.dedent(
             """\
@@ -2252,7 +2290,8 @@ class CorpusTestScriptTests(unittest.TestCase):
             stdout="(program (assignment))\n",
             stderr="",
         )
-        mock_run.side_effect = [version_result, parse_result]
+        mock_run.return_value = version_result
+        mock_guard.return_value = parse_result
         mock_listdir.return_value = [corpus_fname]
 
         try:
