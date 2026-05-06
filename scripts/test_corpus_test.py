@@ -105,14 +105,7 @@ class CorpusTestScriptTests(unittest.TestCase):
             suffix=".txt",
             delete=False,
         ) as f:
-            f.write(
-                b"=========\n"
-                b"cr case\n"
-                b"=========\n"
-                b"puts\r\r\"hi\"\n"
-                b"---\n"
-                b"(program)\n"
-            )
+            f.write(b'=========\ncr case\n=========\nputs\r\r"hi"\n---\n(program)\n')
             path = f.name
 
         try:
@@ -304,7 +297,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_reports_tree_sitter_setup_error(self, mock_run, mock_guard, mock_listdir):
+    def test_main_reports_tree_sitter_setup_error(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         mock_run.return_value = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
             returncode=1,
@@ -1602,7 +1597,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_expected_error_but_parsed_ok(self, mock_run, mock_guard, mock_listdir):
+    def test_main_expected_error_but_parsed_ok(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         """期待 AST に ERROR があるがパースが成功した場合、失敗として報告する。"""
         corpus = textwrap.dedent(
             """\
@@ -1651,7 +1648,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_nonzero_exit_without_error_nodes(self, mock_run, mock_guard, mock_listdir):
+    def test_main_nonzero_exit_without_error_nodes(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         """tree-sitter parse が非ゼロで終了しエラーノードもない場合、コマンド失敗として報告する。"""
         corpus = textwrap.dedent(
             """\
@@ -1856,7 +1855,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_expected_error_matched_by_missing(self, mock_run, mock_guard, mock_listdir):
+    def test_main_expected_error_matched_by_missing(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         """期待 AST に ERROR があり、パース結果に MISSING がある場合は成功。"""
         corpus = textwrap.dedent(
             """\
@@ -2019,7 +2020,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_empty_code_tests_not_counted(self, mock_run, mock_guard, mock_listdir):
+    def test_main_empty_code_tests_not_counted(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         """コードが空のテストケースは extract_tests でスキップされ集計に含まれない。"""
         corpus = textwrap.dedent(
             """\
@@ -2098,7 +2101,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_tempfile_creation_failure_propagates(self, mock_run, mock_guard, mock_listdir):
+    def test_main_tempfile_creation_failure_propagates(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         """一時ファイル作成失敗時に UnboundLocalError ではなく OSError が伝播する。"""
         corpus = textwrap.dedent(
             """\
@@ -2154,7 +2159,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_passes_tree_sitter_libdir_env(self, mock_run, mock_guard, mock_listdir):
+    def test_main_passes_tree_sitter_libdir_env(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         """main() が TREE_SITTER_LIBDIR=/tmp/ts-lib を env に含めて subprocess を呼ぶ。"""
         version_result = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
@@ -2181,7 +2188,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_uses_resolved_tree_sitter_command(self, mock_run, mock_guard, mock_listdir):
+    def test_main_uses_resolved_tree_sitter_command(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         """main() の起動確認と parse が同じ CLI パスを使う。"""
         corpus = textwrap.dedent(
             """\
@@ -2229,14 +2238,18 @@ class CorpusTestScriptTests(unittest.TestCase):
         first_cmd = mock_run.call_args_list[0][0][0]
         second_cmd = mock_guard.call_args_list[0][0][0]
         self.assertEqual(first_cmd[:2], ["/custom/tree-sitter", "--version"])
-        self.assertEqual(second_cmd[:3], ["/custom/tree-sitter", "parse", "--no-ranges"])
+        self.assertEqual(
+            second_cmd[:3], ["/custom/tree-sitter", "parse", "--no-ranges"]
+        )
 
     # --- extract_tests: .DS_Store 等の非 .txt ファイルが混在するケース ---
 
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_ignores_hidden_and_non_txt_files(self, mock_run, mock_guard, mock_listdir):
+    def test_main_ignores_hidden_and_non_txt_files(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         """隠しファイルや非 .txt ファイルはスキップされる。"""
         version_result = subprocess.CompletedProcess(
             args=["tree-sitter", "--version"],
@@ -2261,7 +2274,9 @@ class CorpusTestScriptTests(unittest.TestCase):
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
-    def test_main_unlink_oserror_does_not_crash(self, mock_run, mock_guard, mock_listdir):
+    def test_main_unlink_oserror_does_not_crash(
+        self, mock_run, mock_guard, mock_listdir
+    ):
         """一時ファイル削除時の OSError がテスト全体をクラッシュさせないことを検証する。"""
         corpus = textwrap.dedent(
             """\
@@ -2307,6 +2322,80 @@ class CorpusTestScriptTests(unittest.TestCase):
         # OSError が握りつぶされてテストは正常終了する
         self.assertEqual(exit_code, 0)
         self.assertIn("Pass: 1", stdout.getvalue())
+
+
+class ResolveMemoryLimitTests(unittest.TestCase):
+    """`_resolve_memory_limit_mb` の環境変数解析を検証する。"""
+
+    def test_returns_default_when_unset(self):
+        """環境変数が未設定なら既定値を返す。"""
+        self.assertEqual(
+            corpus_test._resolve_memory_limit_mb({}),
+            corpus_test.DEFAULT_MEMORY_LIMIT_MB,
+        )
+
+    def test_returns_default_when_blank(self):
+        """空文字列も既定値にフォールバックする。"""
+        self.assertEqual(
+            corpus_test._resolve_memory_limit_mb({"TS_MEMORY_LIMIT_MB": "   "}),
+            corpus_test.DEFAULT_MEMORY_LIMIT_MB,
+        )
+
+    def test_returns_default_when_not_a_number(self):
+        """数値以外なら既定値にフォールバックする。"""
+        self.assertEqual(
+            corpus_test._resolve_memory_limit_mb({"TS_MEMORY_LIMIT_MB": "abc"}),
+            corpus_test.DEFAULT_MEMORY_LIMIT_MB,
+        )
+
+    def test_returns_default_when_zero_or_negative(self):
+        """0 以下の値は安全側の既定値に丸める。"""
+        for value in ("0", "-1", "-512.5"):
+            with self.subTest(value=value):
+                self.assertEqual(
+                    corpus_test._resolve_memory_limit_mb({"TS_MEMORY_LIMIT_MB": value}),
+                    corpus_test.DEFAULT_MEMORY_LIMIT_MB,
+                )
+
+    def test_returns_parsed_value_for_valid_number(self):
+        """有効な値はそのまま採用される。"""
+        self.assertAlmostEqual(
+            corpus_test._resolve_memory_limit_mb({"TS_MEMORY_LIMIT_MB": "2048.5"}),
+            2048.5,
+        )
+
+    def test_falls_back_to_environ_when_env_arg_omitted(self):
+        """env 引数を省略した場合は os.environ から解決する。"""
+        with patch.dict(os.environ, {"TS_MEMORY_LIMIT_MB": "1500"}, clear=False):
+            self.assertEqual(corpus_test._resolve_memory_limit_mb(), 1500.0)
+
+
+class RunWithMemoryGuardTests(unittest.TestCase):
+    """`run_with_memory_guard` の制御フローを検証する。"""
+
+    def test_returns_completed_command_output(self):
+        """正常終了したコマンドの stdout / returncode を返す。"""
+        result = corpus_test.run_with_memory_guard(
+            [sys.executable, "-c", "print('ok')"],
+            timeout=5,
+            memory_limit_mb=corpus_test.DEFAULT_MEMORY_LIMIT_MB,
+            env=os.environ,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout.strip(), "ok")
+        self.assertIsNone(result.kill_reason)
+
+    def test_kills_process_after_timeout(self):
+        """timeout 秒経過したらプロセスを強制終了し kill_reason を設定する。"""
+        result = corpus_test.run_with_memory_guard(
+            [sys.executable, "-c", "import time; time.sleep(10)"],
+            timeout=1,
+            memory_limit_mb=corpus_test.DEFAULT_MEMORY_LIMIT_MB,
+            env=os.environ,
+            poll_interval=0.2,
+        )
+        self.assertIsInstance(result.kill_reason, str)
+        self.assertIn("TIMEOUT", result.kill_reason)
 
 
 if __name__ == "__main__":

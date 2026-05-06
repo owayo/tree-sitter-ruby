@@ -69,6 +69,9 @@ pnpm run test
 #   ENOENT 部分一致の分岐テスト、隠しファイル・非 .txt ファイルのスキップ確認
 # - 一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
 # - summarize_command_failure の空 output / 全フィルター対象行のみケースが exit code だけを返すこと
+# - _resolve_memory_limit_mb の TS_MEMORY_LIMIT_MB 解析（未設定 / 空文字 / 数値以外 /
+#   0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
+# - run_with_memory_guard の正常終了とタイムアウト強制終了（kill_reason 設定）の検証
 pnpm run test:unit
 
 # Rust バインディングテスト
@@ -85,6 +88,8 @@ pnpm run test:unit
 # - tags クエリの擬似定数（`__FILE__` / `__LINE__` / `__ENCODING__`）reference.call 除外検証
 # - highlights クエリのキーワードキャプチャ実行検証
 # - scanner.c が特殊グローバル変数シンボル（$" $; $, $$ 等）を誤エラーなくパースすることの検証
+# - scanner.c のバックスラッシュ行継続が CRLF 改行（`\\\r\n`）でも動作することの検証
+# - scanner.c の改行判定で行頭 `&.`（safe navigation）が改行継続として扱われることの検証
 cargo test
 
 # 個別ファイルのパース検証

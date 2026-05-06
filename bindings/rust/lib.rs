@@ -402,4 +402,36 @@ end
             );
         }
     }
+
+    #[test]
+    fn test_can_parse_backslash_continuation_with_crlf() {
+        // scanner.c の `\\` 行継続処理は CRLF 改行 (\r\n) 環境でも動作する必要がある。
+        // `\\\r\n` で 2 行目に式が続く Ruby ソースを構文エラーなくパースできることを検証する。
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&LANGUAGE.into())
+            .expect("Error loading Ruby parser");
+        let code = "x = 1 + \\\r\n    2\r\n";
+        let tree = parser.parse(code, None).unwrap();
+        assert!(
+            !tree.root_node().has_error(),
+            "CRLF 改行でのバックスラッシュ行継続のパースに失敗しました"
+        );
+    }
+
+    #[test]
+    fn test_can_parse_leading_safe_navigation_continuation() {
+        // 行頭の `&.`（safe navigation）は scanner.c の改行判定で行継続として扱われる。
+        // ビット演算子 `&` 単独の場合と区別されることを検証する。
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&LANGUAGE.into())
+            .expect("Error loading Ruby parser");
+        let code = "foo\n  &.bar\n";
+        let tree = parser.parse(code, None).unwrap();
+        assert!(
+            !tree.root_node().has_error(),
+            "行頭 &. の改行継続パースに失敗しました"
+        );
+    }
 }

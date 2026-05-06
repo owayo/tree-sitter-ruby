@@ -96,6 +96,9 @@ pnpm run test
 #   ローカル shim、PATH フォールバック）、AST 正規化、単独 CR 保持の検証
 # - 一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
 # - summarize_command_failure の空 output / 全フィルター行のみの場合に exit code のみ返すことの検証
+# - _resolve_memory_limit_mb の TS_MEMORY_LIMIT_MB 解析（未設定 / 空文字 / 数値以外 /
+#   0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
+# - run_with_memory_guard の正常終了とタイムアウト強制終了（kill_reason 設定）の検証
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）
@@ -108,7 +111,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # パラメータの definition キャプチャ検証、
 # tags クエリのネスト定義・method/alias 定義・組み込み擬似メソッド除外の回帰検証、
 # tags クエリの擬似定数（__FILE__/__LINE__/__ENCODING__）の reference.call 除外検証、
-# scanner.c の特殊グローバル変数シンボル（:$" :$; :$$ 等）のパース回帰検証）
+# scanner.c の特殊グローバル変数シンボル（:$" :$; :$$ 等）のパース回帰検証、
+# scanner.c のバックスラッシュ行継続が CRLF 改行（\\\r\n）でも動作する回帰検証、
+# 行頭 `&.` （safe navigation）が改行継続として扱われる scanner.c 改行判定の回帰検証）
 cargo test
 
 # pnpm が tree-sitter-cli の install script を止めた場合は

@@ -96,6 +96,9 @@ pnpm run test
 #   local shim, PATH fallback), AST normalization, and single-CR preservation
 # - OSError suppression during temp file cleanup (no crash on unlink failure)
 # - summarize_command_failure returning exit code only for empty / fully-filtered output
+# - _resolve_memory_limit_mb parsing of TS_MEMORY_LIMIT_MB (unset / blank / non-numeric /
+#   zero-or-negative / valid / os.environ fallback) boundary cases
+# - run_with_memory_guard normal completion and timeout-triggered kill (kill_reason set)
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)
@@ -110,7 +113,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # builtin pseudo-method filtering, and pseudo-constant filtering for
 # __FILE__/__LINE__/__ENCODING__ in reference.call captures;
 # scanner regression for special global-variable symbols like
-# :$", :$;, :$$ and friends)
+# :$", :$;, :$$ and friends;
+# scanner backslash continuation across CRLF line endings (\\\r\n);
+# leading `&.` safe navigation treated as line continuation by the scanner)
 cargo test
 
 # If pnpm blocked tree-sitter-cli's install script, download the local CLI binary
