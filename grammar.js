@@ -1267,7 +1267,6 @@ module.exports = grammar({
 
 		operator: (_) =>
 			choice(
-				"..",
 				"|",
 				"^",
 				"&",

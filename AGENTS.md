@@ -35,6 +35,9 @@ pnpm run lint              # lint チェック（Biome）
 ```bash
 # コーパステスト（推奨）— tree-sitter parse ベース、低メモリ
 # - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
+# - Ruby 4.0 の `*nil` splat パースもここで確認する
+# - `%=` 文字列、空 heredoc 終端語、不正な regexp option、
+#   不正な `..` method/operator 名の scanner 回帰もここで確認する
 # - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する
 # - scanner.c の行継続判定（行頭 `and` / `or` キーワードと識別子、
 #   行頭 `||` / `&&` 演算子、継続しない単独 `&`、行頭 `..`）の回帰もここで確認する
@@ -67,11 +70,13 @@ pnpm run test
 #   ローカル shim、PATH フォールバック）、AST 正規化、単独 CR 保持の検証
 # - CORPUS_DIR パッチによる環境非依存テスト、TREE_SITTER_LIBDIR 環境変数の伝播検証、
 #   ENOENT 部分一致の分岐テスト、隠しファイル・非 .txt ファイルのスキップ確認
-# - 一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
+# - 隠し .txt / .txt ディレクトリのスキップと、
+#   一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
 # - summarize_command_failure の空 output / 全フィルター対象行のみケースが exit code だけを返すこと
 # - _resolve_memory_limit_mb の TS_MEMORY_LIMIT_MB 解析（未設定 / 空文字 / 数値以外 /
 #   0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
-# - run_with_memory_guard の正常終了とタイムアウト強制終了（kill_reason 設定）の検証
+# - run_with_memory_guard の正常終了、大きな pipe 出力での非デッドロック、
+#   子プロセス RSS 超過 kill、タイムアウト強制終了（kill_reason 設定）の検証
 pnpm run test:unit
 
 # Rust バインディングテスト
@@ -84,10 +89,14 @@ pnpm run test:unit
 # - locals クエリの splat_parameter / hash_splat_parameter / block_parameter の
 #   definition キャプチャ検証
 # - locals クエリの destructured_parameter の definition キャプチャ検証
+# - locals クエリのパターンマッチ束縛・rescue 例外変数の definition キャプチャ検証
 # - tags クエリのネスト定義、組み込み擬似メソッド除外、method/alias 定義キャプチャ検証
 # - tags クエリの擬似定数（`__FILE__` / `__LINE__` / `__ENCODING__`）reference.call 除外検証
-# - highlights クエリのキーワードキャプチャ実行検証
+# - highlights クエリのキーワード・演算子・グローバル変数キャプチャ実行検証
 # - scanner.c が特殊グローバル変数シンボル（$" $; $, $$ 等）を誤エラーなくパースすることの検証
+# - Ruby 4.0 の `*nil` splat パースの corpus 回帰検証
+# - heredoc EOF/引用/空終端語境界、深いリテラルネストのシリアライズ、
+#   長すぎる heredoc 終端語、symbol setter suffix、regexp option、`%=` 文字列の scanner 回帰検証
 # - scanner.c のバックスラッシュ行継続が CRLF 改行（`\\\r\n`）でも動作することの検証
 # - scanner.c の改行判定で行頭 `&.`（safe navigation）が改行継続として扱われることの検証
 cargo test
@@ -119,6 +128,7 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `pnpm run test` で確認する
+- tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う
 - `src/scanner.c` の `deserialize()` はバッファ境界チェックを行うため、新しいフィールドを追加する際は対応する境界チェックも追加すること
 - `tree-sitter test` をメモリ監視なしで実行してはならない
 - `scripts/` 配下の Python コードは Python 3.7 互換を維持するため、`ruff.toml` で `target-version = "py37"` を指定している。parenthesized context manager などの新しい構文を自動書き換えされないよう、新規コードでも Python 3.7 互換を崩さないこと

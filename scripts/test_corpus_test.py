@@ -2271,6 +2271,37 @@ class CorpusTestScriptTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("Total: 0", stdout.getvalue())
 
+    @patch("corpus_test.run_with_memory_guard")
+    @patch("corpus_test.subprocess.run")
+    def test_main_skips_hidden_txt_and_txt_directory(self, mock_run, mock_guard):
+        """隠し .txt ファイルや .txt ディレクトリは実行対象にしない。"""
+        version_result = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.7\n",
+            stderr="",
+        )
+        mock_run.return_value = version_result
+
+        with tempfile.TemporaryDirectory() as corpus_dir:
+            os.mkdir(os.path.join(corpus_dir, "dir.txt"))
+            with open(
+                os.path.join(corpus_dir, ".hidden.txt"),
+                "w",
+                encoding="utf-8",
+            ) as f:
+                f.write(
+                    "=========\nhidden\n=========\nx = 1\n---\n(program (assignment))\n"
+                )
+
+            stdout = io.StringIO()
+            with self._capture_stdout_with_corpus_dir(corpus_dir, stdout):
+                exit_code = corpus_test.main()
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("Total: 0", stdout.getvalue())
+        mock_guard.assert_not_called()
+
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
@@ -2396,6 +2427,54 @@ class RunWithMemoryGuardTests(unittest.TestCase):
         )
         self.assertIsInstance(result.kill_reason, str)
         self.assertIn("TIMEOUT", result.kill_reason)
+
+    def test_large_output_does_not_block_until_timeout(self):
+        """pipe バッファを超える出力でも drain しながら正常終了を待てる。"""
+        result = corpus_test.run_with_memory_guard(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "import sys; "
+                    "sys.stdout.write('x' * (1024 * 1024)); "
+                    "sys.stderr.write('e' * (128 * 1024))"
+                ),
+            ],
+            timeout=5,
+            memory_limit_mb=corpus_test.DEFAULT_MEMORY_LIMIT_MB,
+            env=os.environ,
+            poll_interval=0.1,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIsNone(result.kill_reason)
+        self.assertEqual(len(result.stdout), 1024 * 1024)
+        self.assertEqual(len(result.stderr), 128 * 1024)
+
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "POSIX のプロセスグループ RSS 合算を検証するテスト",
+    )
+    def test_kills_when_child_process_exceeds_memory_limit(self):
+        """子プロセスだけが RSS 上限を超えてもプロセスグループごと kill する。"""
+        child_code = (
+            "import time\n"
+            "chunks = [bytearray(1024 * 1024) for _ in range(80)]\n"
+            "time.sleep(10)\n"
+        )
+        parent_code = (
+            "import subprocess, sys, time\n"
+            f"subprocess.Popen([sys.executable, '-c', {child_code!r}])\n"
+            "time.sleep(10)\n"
+        )
+        result = corpus_test.run_with_memory_guard(
+            [sys.executable, "-c", parent_code],
+            timeout=5,
+            memory_limit_mb=30,
+            env=os.environ,
+            poll_interval=0.2,
+        )
+        self.assertIsInstance(result.kill_reason, str)
+        self.assertIn("MEMORY_KILL", result.kill_reason)
 
 
 if __name__ == "__main__":

@@ -816,6 +816,18 @@ percent string with unbalanced delimiters
     (string_content)))
 
 =========================================
+percent string with equals delimiter
+=========================================
+
+%=abc=
+
+---
+
+(program
+  (string
+    (string_content)))
+
+=========================================
 percent string with balanced delimiters
 =========================================
 
@@ -1080,6 +1092,28 @@ heredoc content
   (heredoc_beginning)
   (heredoc_body
     (heredoc_content)
+    (heredoc_end)))
+
+========================================
+quoted empty heredoc delimiter
+========================================
+
+x = <<""
+
+x = <<''
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_end))
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
     (heredoc_end)))
 
 ========================================
@@ -1502,8 +1536,7 @@ un-terminated heredocs
 (program
   (heredoc_beginning)
   (heredoc_body
-    (heredoc_content)
-    (heredoc_end)))
+    (ERROR)))
 
 =================================
 no interpolation or escape sequences in single quoted heredoc
@@ -2160,6 +2193,19 @@ regular expression
 (program
   (regex
     (string_content)))
+
+=============================
+regexp with invalid option
+=============================
+
+/a/z
+
+---
+
+(program
+  (regex
+    (string_content))
+  (ERROR))
 
 =====================================
 regular expression with interpolation

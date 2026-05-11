@@ -256,24 +256,15 @@ end
 
     #[test]
     fn test_highlights_query_captures_keywords() {
-        let language: tree_sitter::Language = LANGUAGE.into();
-        let mut parser = tree_sitter::Parser::new();
-        parser.set_language(&language).unwrap();
-        let query = tree_sitter::Query::new(&language, HIGHLIGHTS_QUERY)
-            .expect("Error loading highlights query");
-
         let code = "def foo; end\n";
-        let tree = parser.parse(code, None).unwrap();
-        assert!(!tree.root_node().has_error());
-
-        // ハイライトクエリが少なくとも1つのキャプチャを生成することを検証
-        let mut cursor = tree_sitter::QueryCursor::new();
-        let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
-        let mut total_captures: usize = 0;
-        while let Some(m) = matches.next() {
-            total_captures += m.captures.len();
+        let keywords = collect_highlight_captures(code, "keyword");
+        for expected in ["def", "end"] {
+            assert!(
+                keywords.contains(&expected.to_string()),
+                "{expected} が keyword に含まれていません: {:?}",
+                keywords
+            );
         }
-        assert!(total_captures > 0, "ハイライトキャプチャが0件です");
     }
 
     #[test]
@@ -360,6 +351,45 @@ end
         defs
     }
 
+    // highlights.scm の指定 capture をテキストとして抽出するユーティリティ
+    fn collect_highlight_captures(code: &str, capture_name: &str) -> Vec<String> {
+        let language: tree_sitter::Language = LANGUAGE.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let query = tree_sitter::Query::new(&language, HIGHLIGHTS_QUERY)
+            .expect("Error loading highlights query");
+        let tree = parser.parse(code, None).unwrap();
+        assert!(
+            !tree.root_node().has_error(),
+            "コードのパースに失敗しました: {code}"
+        );
+
+        let capture_idx = query
+            .capture_names()
+            .iter()
+            .position(|n| *n == capture_name)
+            .unwrap_or_else(|| panic!("{capture_name} キャプチャが見つかりません"));
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+        let mut texts = Vec::new();
+        while let Some(m) = matches.next() {
+            for c in m.captures {
+                if c.index as usize == capture_idx {
+                    texts.push(code[c.node.byte_range()].to_string());
+                }
+            }
+        }
+        texts
+    }
+
+    fn parse_has_error(code: &str) -> bool {
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&LANGUAGE.into())
+            .expect("Error loading Ruby parser");
+        parser.parse(code, None).unwrap().root_node().has_error()
+    }
+
     #[test]
     fn test_locals_query_captures_keyword_and_optional_parameters() {
         // keyword_parameter / optional_parameter の識別子が local.definition に捕捉されること
@@ -432,6 +462,123 @@ end
         assert!(
             !tree.root_node().has_error(),
             "行頭 &. の改行継続パースに失敗しました"
+        );
+    }
+
+    #[test]
+    fn test_scanner_handles_heredoc_boundaries() {
+        // 終端語がファイル末尾にあり最後の改行がなくても heredoc_end として扱う。
+        assert!(!parse_has_error("x = <<EOF\nbody\nEOF"));
+
+        // quoted な空終端語は Ruby で有効。空行が heredoc_end になる。
+        assert!(!parse_has_error("x = <<\"\"\n\n"));
+        assert!(!parse_has_error("x = <<''\n\n"));
+
+        // 終端語なし EOF や閉じ quote のない heredoc 開始は受理しない。
+        for code in [
+            "x = <<EOF\nbody",
+            "x = <<\"EOF\nbody\nEOF\n",
+            "x = <<'EOF\nbody\nEOF\n",
+            "x = <<`EOF\nbody\nEOF\n",
+        ] {
+            assert!(
+                parse_has_error(code),
+                "不正な heredoc を受理しています: {code:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_scanner_preserves_deep_literal_nesting_across_interpolation() {
+        // literal_stack の nesting_depth は 256 を超えてもシリアライズで失われない。
+        let depth = 260;
+        let code = format!(
+            "x = %Q{{{}#{{value}}{}}}",
+            "{".repeat(depth),
+            "}".repeat(depth)
+        );
+        assert!(
+            !parse_has_error(&code),
+            "深いネストを含む percent literal のパースに失敗しました"
+        );
+    }
+
+    #[test]
+    fn test_scanner_rejects_oversized_heredoc_delimiter() {
+        // シリアライズ不能な長すぎる終端語は状態喪失による誤パースではなく ERROR にする。
+        let word = "A".repeat(1100);
+        let code = format!("x = <<{word}\nbody\n{word}\n");
+        assert!(
+            parse_has_error(&code),
+            "長すぎる heredoc 終端語を誤って受理しています"
+        );
+    }
+
+    #[test]
+    fn test_scanner_symbol_regex_and_percent_equal_boundaries() {
+        assert!(!parse_has_error(":foo=\n:Foo=\n:[]=\n/a/i\n"));
+        assert!(!parse_has_error("x = %=abc=\nx %= 1\n"));
+
+        for code in [
+            ":foo?=",
+            ":foo!=",
+            ":+=",
+            ":%=",
+            ":..",
+            "def ..; end",
+            "undef ..",
+            "/a/z",
+        ] {
+            assert!(
+                parse_has_error(code),
+                "Ruby と異なる不正構文を受理しています: {code}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_highlights_query_captures_operators_and_global_variables() {
+        let code = "a == b\nx += 1\nrange = 1..2\nif $0\nend\n";
+        let operators = collect_highlight_captures(code, "operator");
+        for expected in ["==", "+=", "=", ".."] {
+            assert!(
+                operators.contains(&expected.to_string()),
+                "{expected} が operator に含まれていません: {:?}",
+                operators
+            );
+        }
+
+        let globals = collect_highlight_captures(code, "variable.builtin");
+        assert!(
+            globals.contains(&"$0".to_string()),
+            "$0 が variable.builtin に含まれていません: {:?}",
+            globals
+        );
+    }
+
+    #[test]
+    fn test_locals_query_captures_pattern_match_bindings() {
+        // case/in パターンの通常束縛は、参照ではなく local.definition として扱う。
+        let code = "case value\nin target\n  target\nin [x, y]\n  x\nin {a: z, b:}\n  z\nend\n";
+        let defs = collect_local_definitions(code);
+        for expected in ["target", "x", "y", "z", "b"] {
+            assert!(
+                defs.contains(&expected.to_string()),
+                "{expected} が local.definition に含まれていません: {:?}",
+                defs
+            );
+        }
+    }
+
+    #[test]
+    fn test_locals_query_captures_exception_variable() {
+        // rescue Error => e の e は rescue 節内で束縛されるローカル変数。
+        let code = "begin\n  work\nrescue Error => e\n  e\nend\n";
+        let defs = collect_local_definitions(code);
+        assert!(
+            defs.contains(&"e".to_string()),
+            "rescue 例外変数 e が local.definition に含まれていません: {:?}",
+            defs
         );
     }
 }

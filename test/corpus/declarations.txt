@@ -88,9 +88,6 @@ end
 def %(a)
 end
 
-def ..(a)
-end
-
 def !~(a)
 end
 
@@ -102,8 +99,21 @@ end
   (method (operator) (method_parameters (identifier)))
   (method (operator) (method_parameters (identifier)))
   (method (operator) (method_parameters (identifier)))
-  (method (operator) (method_parameters (identifier)))
   (method (operator) (method_parameters (identifier))))
+
+=========================================
+range operator is not a method name
+=========================================
+
+def ..(a)
+end
+
+undef ..
+
+---
+
+(program
+  (ERROR))
 
 ===================================================
 method with forward slash name and regex ambiguity

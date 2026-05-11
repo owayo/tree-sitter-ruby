@@ -35,3 +35,17 @@
 
 ; パターンマッチングの as_pattern 変数束縛（case/in の => variable）
 (as_pattern name: (identifier) @local.definition)
+
+; パターンマッチングの通常変数束縛
+(in_clause pattern: (identifier) @local.definition)
+(array_pattern (identifier) @local.definition)
+(find_pattern (identifier) @local.definition)
+(alternative_pattern (identifier) @local.definition)
+(parenthesized_pattern (identifier) @local.definition)
+(keyword_pattern value: (identifier) @local.definition)
+(keyword_pattern
+  key: (hash_key_symbol) @local.definition
+  !value)
+
+; rescue Error => e の例外変数束縛
+(exception_variable (identifier) @local.definition)

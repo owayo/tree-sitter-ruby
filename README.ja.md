@@ -59,11 +59,14 @@ tree-sitter parse example.rb
 
 ### テスト
 
-> **警告:** `tree-sitter test` は、このパーサーでは過剰なメモリを消費します（RSS 8GB+、VSIZE 400GB+）。パーサーテーブルが大きいため（parser.c 約15MB、STATE_COUNT 5989）、`test` サブコマンドが内部でパースツリー全体を S 式文字列に変換し差分比較を行うことで、大量のメモリ確保が発生します。`tree-sitter parse` は影響を受けません（約10MB RSS）。これは特定の upstream issue としては追跡されていませんが、関連するメモリ問題が [tree-sitter#1890](https://github.com/tree-sitter/tree-sitter/issues/1890)、[tree-sitter#1185](https://github.com/tree-sitter/tree-sitter/issues/1185)、[zed#47880](https://github.com/zed-industries/zed/issues/47880) で報告されています。代わりに以下のテストランナーを使用してください。
+> **警告:** `tree-sitter test` は、このパーサーでは過剰なメモリを消費します（RSS 8GB+、VSIZE 400GB+）。パーサーテーブルが大きいため（parser.c 約15MB、STATE_COUNT 6013）、`test` サブコマンドが内部でパースツリー全体を S 式文字列に変換し差分比較を行うことで、大量のメモリ確保が発生します。`tree-sitter parse` は影響を受けません（約10MB RSS）。これは特定の upstream issue としては追跡されていませんが、関連するメモリ問題が [tree-sitter#1890](https://github.com/tree-sitter/tree-sitter/issues/1890)、[tree-sitter#1185](https://github.com/tree-sitter/tree-sitter/issues/1185)、[zed#47880](https://github.com/zed-industries/zed/issues/47880) で報告されています。代わりに以下のテストランナーを使用してください。
 
 ```bash
 # 推奨: tree-sitter parse によるコーパステスト（低メモリ）
 # - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
+# - Ruby 4.0 の `*nil` splat パースもここで確認する
+# - `%=` 文字列、空 heredoc 終端語、不正な regexp option、
+#   不正な `..` method/operator 名の scanner 回帰もここで確認する
 # - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する
 # - scanner.c の行継続判定（行頭 `and` / `or` キーワードと識別子、
 #   行頭 `||` / `&&` 演算子、継続しない単独 `&`、行頭 `..`）の回帰もここで確認する
@@ -94,11 +97,13 @@ pnpm run test
 #   一時ファイル作成失敗時の OSError 伝播（UnboundLocalError 防止）
 # - tree-sitter CLI 解決（TREE_SITTER_CLI 上書き、ローカルネイティブバイナリ、
 #   ローカル shim、PATH フォールバック）、AST 正規化、単独 CR 保持の検証
-# - 一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
+# - 隠し .txt / .txt ディレクトリのスキップと、
+#   一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
 # - summarize_command_failure の空 output / 全フィルター行のみの場合に exit code のみ返すことの検証
 # - _resolve_memory_limit_mb の TS_MEMORY_LIMIT_MB 解析（未設定 / 空文字 / 数値以外 /
 #   0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
-# - run_with_memory_guard の正常終了とタイムアウト強制終了（kill_reason 設定）の検証
+# - run_with_memory_guard の正常終了、大きな pipe 出力での非デッドロック、
+#   子プロセス RSS 超過 kill、タイムアウト強制終了（kill_reason 設定）の検証
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）
@@ -108,10 +113,14 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # Rust バインディングテスト（文法ロード、パース、クエリ検証、
 # locals クエリの singleton_method/for/as_pattern/block/do_block/lambda キャプチャ検証、
 # locals クエリの keyword/optional/splat/hash_splat/block/destructured
-# パラメータの definition キャプチャ検証、
+# パラメータ、パターンマッチ束縛、rescue 例外変数の definition キャプチャ検証、
+# highlights クエリのキーワード・演算子・グローバル変数キャプチャ検証、
 # tags クエリのネスト定義・method/alias 定義・組み込み擬似メソッド除外の回帰検証、
 # tags クエリの擬似定数（__FILE__/__LINE__/__ENCODING__）の reference.call 除外検証、
 # scanner.c の特殊グローバル変数シンボル（:$" :$; :$$ 等）のパース回帰検証、
+# Ruby 4.0 の `*nil` splat パースの corpus 回帰検証、
+# heredoc EOF/引用/空終端語境界、深いリテラルネストのシリアライズ、
+# 長すぎる heredoc 終端語、symbol setter suffix、regexp option、`%=` 文字列の scanner 回帰検証、
 # scanner.c のバックスラッシュ行継続が CRLF 改行（\\\r\n）でも動作する回帰検証、
 # 行頭 `&.` （safe navigation）が改行継続として扱われる scanner.c 改行判定の回帰検証）
 cargo test
@@ -132,7 +141,7 @@ PATH 上の `tree-sitter` の順に解決します。依存関係をインスト
 
 外部スキャナー（`src/scanner.c`）は、`grammar.js` だけでは表現できない文脈依存トークンを処理します: heredoc、区切りリテラル（文字列、正規表現、サブシェル、シンボル/文字列配列）、改行、空白依存の演算子、およびそれらを正しく再開するためのスキャナー状態シリアライズです。`src/` 配下の他のファイルとは異なり、手動管理のため新しいトークン型を追加する際は直接編集してください。
 
-255 文字を超える heredoc 終端語は `test/corpus/literals.txt` の回帰ケースで検証しているため、スキャナーのシリアライズを変更した場合は `pnpm run test` で必ず確認してください。`deserialize()` 関数にはバッファ境界チェックが含まれており、切り詰められた・破損したバッファを安全に処理します。
+255 文字を超える heredoc 終端語は `test/corpus/literals.txt` の回帰ケースで検証しています。tree-sitter の scanner serialization buffer に収まらない終端語は、状態喪失による誤パースを避けるため ERROR にします。スキャナーのシリアライズを変更した場合は `pnpm run test` で必ず確認してください。`deserialize()` 関数にはバッファ境界チェックが含まれており、切り詰められた・破損したバッファを安全に処理します。
 
 ## 参考資料
 

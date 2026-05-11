@@ -6,7 +6,7 @@
 過剰なメモリ（RSS 8GB+, VSIZE 400GB+）を消費するため、
 本スクリプトは各コーパステストを `tree-sitter parse` で実行する。
 
-子プロセスはプロセスグループ単位で起動し、5 秒ごとに RSS を観測する。
+子プロセスはプロセスグループ単位で起動し、5 秒ごとに RSS 合計を観測する。
 閾値 (TS_MEMORY_LIMIT_MB、既定 1024MB) を超過したら即座に SIGKILL して
 PC のハングを防ぐ。tree-sitter 側にも `--timeout` (µs) を渡し、
 内部 wallclock タイマーで暴走パースを未然に止める。
@@ -256,6 +256,50 @@ def _get_rss_mb(pid):
         return None
 
 
+def _get_process_group_rss_mb(pid):
+    """指定 PID と同じプロセスグループの RSS 合計を MB 単位で返す。"""
+    if sys.platform == "win32":
+        return _get_rss_mb(pid)
+
+    try:
+        pgid = os.getpgid(pid)
+    except OSError:
+        return None
+
+    try:
+        result = subprocess.run(
+            ["ps", "-ax", "-o", "pgid=", "-o", "rss="],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if result.returncode != 0:
+        return None
+
+    total_kb = 0
+    found = False
+    for line in result.stdout.splitlines():
+        parts = line.split()
+        if len(parts) < 2:
+            continue
+        try:
+            process_pgid = int(parts[0])
+            rss_kb = int(parts[1])
+        except ValueError:
+            continue
+        if process_pgid == pgid:
+            total_kb += rss_kb
+            found = True
+
+    if not found:
+        return None
+    return total_kb / 1024.0
+
+
 def _kill_process_tree(proc):
     """プロセス（およびプロセスグループ）を強制終了する。"""
     if sys.platform == "win32":
@@ -300,6 +344,8 @@ def run_with_memory_guard(
 
     start = time.monotonic()
     kill_reason = None
+    stdout = ""
+    stderr = ""
 
     while True:
         elapsed = time.monotonic() - start
@@ -310,27 +356,26 @@ def run_with_memory_guard(
 
         wait = min(poll_interval, remaining)
         try:
-            proc.wait(timeout=wait)
+            stdout, stderr = proc.communicate(timeout=wait)
             break
         except subprocess.TimeoutExpired:
             pass
 
-        rss_mb = _get_rss_mb(proc.pid)
+        rss_mb = _get_process_group_rss_mb(proc.pid)
         if rss_mb is not None and rss_mb > memory_limit_mb:
             kill_reason = f"MEMORY_KILL: {rss_mb:.0f}MB > {memory_limit_mb:.0f}MB"
             break
 
     if kill_reason is not None:
         _kill_process_tree(proc)
-
-    try:
-        stdout, stderr = proc.communicate(timeout=10)
-    except subprocess.TimeoutExpired:
-        _kill_process_tree(proc)
         try:
-            stdout, stderr = proc.communicate(timeout=5)
+            stdout, stderr = proc.communicate(timeout=10)
         except subprocess.TimeoutExpired:
-            stdout, stderr = "", ""
+            _kill_process_tree(proc)
+            try:
+                stdout, stderr = proc.communicate(timeout=5)
+            except subprocess.TimeoutExpired:
+                stdout, stderr = "", ""
 
     return _GuardedResult(proc.returncode, stdout or "", stderr or "", kill_reason)
 
@@ -400,9 +445,11 @@ def main():
     parse_timeout_arg = f"--timeout={_parse_timeout_micros()}"
 
     for fname in sorted(os.listdir(CORPUS_DIR)):
-        if not fname.endswith(".txt"):
+        if fname.startswith(".") or not fname.endswith(".txt"):
             continue
         filepath = os.path.join(CORPUS_DIR, fname)
+        if not os.path.isfile(filepath):
+            continue
         tests = extract_tests(filepath, include_expected_ast=True)
 
         for name, code, expected_ast, expects_error in tests:

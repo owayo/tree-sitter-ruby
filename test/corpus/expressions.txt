@@ -3021,6 +3021,27 @@ foo { it * 2 }
           right: (integer))))))
 
 ===============================
+Ruby 4.0 *nil splat
+===============================
+
+ary = [*nil]
+call(*nil)
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (array
+      (splat_argument
+        (nil))))
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (splat_argument
+        (nil)))))
+
+===============================
 leading orxxx does not continue line
 ===============================
 

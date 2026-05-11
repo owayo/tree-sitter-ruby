@@ -59,11 +59,14 @@ tree-sitter parse example.rb
 
 ### Testing
 
-> **Warning:** `tree-sitter test` consumes excessive memory (RSS 8GB+, VSIZE 400GB+) with this parser due to the large parser table size (parser.c ~15MB, STATE_COUNT 5989). The `test` subcommand internally converts the entire parse tree to an S-expression string for diff comparison, which triggers massive memory allocation with large grammars. `tree-sitter parse` is unaffected (~10MB RSS). This is not tracked as a specific upstream issue, but related memory problems have been reported in [tree-sitter#1890](https://github.com/tree-sitter/tree-sitter/issues/1890), [tree-sitter#1185](https://github.com/tree-sitter/tree-sitter/issues/1185), and [zed#47880](https://github.com/zed-industries/zed/issues/47880). Use the alternative test runner instead.
+> **Warning:** `tree-sitter test` consumes excessive memory (RSS 8GB+, VSIZE 400GB+) with this parser due to the large parser table size (parser.c ~15MB, STATE_COUNT 6013). The `test` subcommand internally converts the entire parse tree to an S-expression string for diff comparison, which triggers massive memory allocation with large grammars. `tree-sitter parse` is unaffected (~10MB RSS). This is not tracked as a specific upstream issue, but related memory problems have been reported in [tree-sitter#1890](https://github.com/tree-sitter/tree-sitter/issues/1890), [tree-sitter#1185](https://github.com/tree-sitter/tree-sitter/issues/1185), and [zed#47880](https://github.com/zed-industries/zed/issues/47880). Use the alternative test runner instead.
 
 ```bash
 # Recommended: corpus tests via tree-sitter parse (low memory)
 # - covers recent Ruby syntax regressions such as anonymous *, **, & forwarding
+# - covers Ruby 4.0 `*nil` splat parsing
+# - covers scanner regressions for `%=` strings, empty heredoc delimiters,
+#   invalid regexp options, and invalid `..` method/operator names
 # - covers Ruby 4.0 leading logical-operator continuations in expressions and if conditions
 # - covers scanner line-continuation boundaries (leading `and`/`or` keywords vs identifiers,
 #   leading `||`/`&&` operators, non-continuing single `&`, leading `..`)
@@ -94,11 +97,12 @@ pnpm run test
 #   OSError propagation on temp file creation failure (UnboundLocalError prevention)
 # - tree-sitter CLI resolution (TREE_SITTER_CLI override, local native binary,
 #   local shim, PATH fallback), AST normalization, and single-CR preservation
-# - OSError suppression during temp file cleanup (no crash on unlink failure)
+# - hidden .txt / .txt directory skipping, and OSError suppression during temp file cleanup
 # - summarize_command_failure returning exit code only for empty / fully-filtered output
 # - _resolve_memory_limit_mb parsing of TS_MEMORY_LIMIT_MB (unset / blank / non-numeric /
 #   zero-or-negative / valid / os.environ fallback) boundary cases
-# - run_with_memory_guard normal completion and timeout-triggered kill (kill_reason set)
+# - run_with_memory_guard normal completion, large pipe output without deadlock,
+#   child-process RSS kill, and timeout-triggered kill (kill_reason set)
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)
@@ -108,12 +112,17 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # Rust binding tests (grammar loading, parsing, query validation,
 # locals query captures for singleton_method/for/as_pattern/block/do_block/lambda,
 # locals query captures for keyword/optional/splat/hash_splat/block/destructured
-# parameter identifiers,
+# parameter identifiers, pattern-match bindings, and rescue exception variables,
+# highlights query captures keywords, operators, and global variables,
 # tags query regression for nested definitions, method/alias definitions,
 # builtin pseudo-method filtering, and pseudo-constant filtering for
 # __FILE__/__LINE__/__ENCODING__ in reference.call captures;
 # scanner regression for special global-variable symbols like
 # :$", :$;, :$$ and friends;
+# corpus regression for Ruby 4.0 `*nil` splat parsing;
+# scanner regression for heredoc EOF/quote/empty-delimiter boundaries,
+# deep literal nesting serialization, oversized heredoc delimiters,
+# symbol setter suffix validation, regexp option validation, and `%=` strings;
 # scanner backslash continuation across CRLF line endings (\\\r\n);
 # leading `&.` safe navigation treated as line continuation by the scanner)
 cargo test
@@ -133,7 +142,7 @@ with the project-pinned CLI when dependencies are installed.
 
 The external scanner (`src/scanner.c`) handles context-sensitive tokens that cannot be expressed in `grammar.js` alone: heredocs, delimited literals (strings, regexes, subshells, symbol/string arrays), line breaks, whitespace-sensitive operators, and the serialized scanner state needed to resume those constructs correctly. Unlike the rest of `src/`, this file is manually maintained and should be edited directly when adding new token types.
 
-Long heredoc terminators are covered by a dedicated regression case in `test/corpus/literals.txt`, so changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers.
+Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers.
 
 ## References
 

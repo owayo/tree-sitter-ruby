@@ -67,6 +67,11 @@ typedef struct {
     Array(Heredoc) open_heredocs;
 } Scanner;
 
+enum {
+    SERIALIZED_LITERAL_SIZE = 1 + 1 + 1 + sizeof(uint32_t) + 1,
+    SERIALIZED_HEREDOC_HEADER_SIZE = 3 + sizeof(uint32_t),
+};
+
 const char NON_IDENTIFIER_CHARS[] = {
     '\0', '\n', '\r', '\t', ' ', ':', ';', '`',  '"', '\'', '@', '$', '#', '.', ',', '|', '^', '&',
     '<',  '=',  '>',  '+',  '-', '*', '/', '\\', '%', '?',  '!', '~', '(', ')', '[', ']', '{', '}',
@@ -87,10 +92,31 @@ static inline void reset(Scanner *scanner) {
     array_delete(&scanner->open_heredocs);
 }
 
+static inline bool can_serialize_heredocs_with(Scanner *scanner, const Heredoc *new_heredoc) {
+    size_t size = 2 + scanner->literal_stack.size * SERIALIZED_LITERAL_SIZE;
+    for (uint32_t i = 0; i < scanner->open_heredocs.size; i++) {
+        Heredoc *heredoc = array_get(&scanner->open_heredocs, i);
+        size += SERIALIZED_HEREDOC_HEADER_SIZE + heredoc->word.size;
+        if (size >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+            return false;
+        }
+    }
+    if (new_heredoc != NULL) {
+        size += SERIALIZED_HEREDOC_HEADER_SIZE + new_heredoc->word.size;
+        if (size >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+            return false;
+        }
+    }
+    return size <= TREE_SITTER_SERIALIZATION_BUFFER_SIZE;
+}
+
 static inline unsigned serialize(Scanner *scanner, char *buffer) {
     unsigned size = 0;
 
-    if (scanner->literal_stack.size * 5 + 2 > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+    if (scanner->literal_stack.size * SERIALIZED_LITERAL_SIZE + 2 > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+        return 0;
+    }
+    if (!can_serialize_heredocs_with(scanner, NULL)) {
         return 0;
     }
 
@@ -100,7 +126,9 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
         buffer[size++] = literal->type;
         buffer[size++] = (char)literal->open_delimiter;
         buffer[size++] = (char)literal->close_delimiter;
-        buffer[size++] = (char)literal->nesting_depth;
+        uint32_t nesting_depth = (uint32_t)literal->nesting_depth;
+        memcpy(&buffer[size], &nesting_depth, sizeof(uint32_t));
+        size += sizeof(uint32_t);
         buffer[size++] = (char)literal->allows_interpolation;
     }
 
@@ -109,7 +137,7 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
         Heredoc *heredoc = array_get(&scanner->open_heredocs, i);
 
         // フラグ 3 つと 32 ビット長、終端語本体をシリアライズする。
-        if (size + 3u + sizeof(uint32_t) + heredoc->word.size >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+        if (size + SERIALIZED_HEREDOC_HEADER_SIZE + heredoc->word.size >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
             return 0;
         }
         buffer[size++] = (char)heredoc->end_word_indentation_allowed;
@@ -135,13 +163,16 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
 
     uint8_t literal_depth = buffer[size++];
     for (unsigned j = 0; j < literal_depth; j++) {
-        // リテラル 1 件あたり 5 バイト必要
-        if (size + 5 > length) return;
+        // リテラル 1 件あたり SERIALIZED_LITERAL_SIZE バイト必要
+        if (size + SERIALIZED_LITERAL_SIZE > length) return;
         Literal literal = {0};
         literal.type = (TokenType)(buffer[size++]);
         literal.open_delimiter = (unsigned char)buffer[size++];
         literal.close_delimiter = (unsigned char)buffer[size++];
-        literal.nesting_depth = (unsigned char)buffer[size++];
+        uint32_t nesting_depth;
+        memcpy(&nesting_depth, &buffer[size], sizeof(uint32_t));
+        size += sizeof(uint32_t);
+        literal.nesting_depth = (int32_t)nesting_depth;
         literal.allows_interpolation = buffer[size++];
         array_push(&scanner->literal_stack, literal);
     }
@@ -150,7 +181,7 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
     uint8_t open_heredoc_count = buffer[size++];
     for (unsigned j = 0; j < open_heredoc_count; j++) {
         // heredoc ヘッダー: フラグ 3 バイト + word_length 4 バイト = 最低 7 バイト
-        if (size + 3u + sizeof(uint32_t) > length) return;
+        if (size + SERIALIZED_HEREDOC_HEADER_SIZE > length) return;
         Heredoc heredoc = {0};
         heredoc.end_word_indentation_allowed = buffer[size++];
         heredoc.allows_interpolation = buffer[size++];
@@ -343,15 +374,6 @@ static inline bool scan_operator(TSLexer *lexer) {
             }
             return true;
 
-        // ..
-        case '.':
-            advance(lexer);
-            if (lexer->lookahead == '.') {
-                advance(lexer);
-                return true;
-            }
-            return false;
-
         // &, ^, |, /, %`
         case '&':
         case '^':
@@ -397,12 +419,16 @@ static inline bool scan_operator(TSLexer *lexer) {
 }
 
 static inline bool scan_symbol_identifier(TSLexer *lexer) {
+    bool has_variable_prefix = false;
+    bool can_have_setter_suffix = false;
     if (lexer->lookahead == '@') {
+        has_variable_prefix = true;
         advance(lexer);
         if (lexer->lookahead == '@') {
             advance(lexer);
         }
     } else if (lexer->lookahead == '$') {
+        has_variable_prefix = true;
         advance(lexer);
         // `$` の直後で有効だが、is_iden_char や scan_operator では
         // 認識できない特殊グローバル変数文字を処理する。
@@ -432,6 +458,7 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
     }
 
     if (is_iden_char((char)lexer->lookahead)) {
+        can_have_setter_suffix = !has_variable_prefix;
         advance(lexer);
     } else if (!scan_operator(lexer)) {
         return false;
@@ -443,9 +470,10 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
 
     if (lexer->lookahead == '?' || lexer->lookahead == '!') {
         advance(lexer);
+        can_have_setter_suffix = false;
     }
 
-    if (lexer->lookahead == '=') {
+    if (can_have_setter_suffix && lexer->lookahead == '=') {
         lexer->mark_end(lexer);
         advance(lexer);
         if (lexer->lookahead != '>') {
@@ -645,10 +673,13 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
                 case ']':
                 case '}':
                 case '>':
-                // TODO: `%=` を外部ルールとして実装し、`=` を不均衡な区切り文字として
-                // 再度有効にする。`&=` 代入演算子と `%=`...`=` 形式の文字列区切りが
-                // 曖昧になるため、その対応が必要。
-                // case '=':
+                case '=':
+                    if (lexer->lookahead == '=' && valid_symbols[FORWARD_SLASH]) {
+                        return false;
+                    }
+                    literal->open_delimiter = lexer->lookahead;
+                    literal->close_delimiter = lexer->lookahead;
+                    break;
                 case '+':
                 case '-':
                 case '~':
@@ -676,7 +707,7 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
     }
 }
 
-static inline void scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
+static inline bool scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
     String word = array_new();
     int32_t quote = 0;
 
@@ -686,9 +717,14 @@ static inline void scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
         case '`':
             quote = lexer->lookahead;
             advance(lexer);
-            while (lexer->lookahead != quote && !lexer->eof(lexer)) {
+            while (lexer->lookahead != quote && lexer->lookahead != '\n' && lexer->lookahead != '\r' &&
+                   !lexer->eof(lexer)) {
                 array_push(&word, lexer->lookahead);
                 advance(lexer);
+            }
+            if (lexer->lookahead != quote) {
+                array_delete(&word);
+                return false;
             }
             advance(lexer);
             break;
@@ -701,12 +737,16 @@ static inline void scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
                     array_push(&word, lexer->lookahead);
                     advance(lexer);
                 }
+            } else {
+                array_delete(&word);
+                return false;
             }
             break;
     }
 
     heredoc->word = word;
     heredoc->allows_interpolation = quote != '\'';
+    return true;
 }
 
 static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_content, const TSSymbol content_symbol) {
@@ -760,7 +800,7 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
             while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
                 advance(lexer);
             }
-            if (lexer->lookahead == '\n' || lexer->lookahead == '\r') {
+            if (lexer->lookahead == '\n' || lexer->lookahead == '\r' || lexer->eof(lexer)) {
                 if (has_content) {
                     lexer->result_symbol = HEREDOC_CONTENT;
                 } else {
@@ -778,15 +818,14 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
             lexer->mark_end(lexer);
             if (has_content) {
                 lexer->result_symbol = HEREDOC_CONTENT;
+                return true;
             } else {
-                array_delete(&heredoc->word);
-                array_erase(&scanner->open_heredocs, 0);
-                lexer->result_symbol = HEREDOC_BODY_END;
+                return false;
             }
-            return true;
         }
 
-        if (lexer->lookahead == *array_get(&heredoc->word, position_in_word) && look_for_heredoc_end) {
+        if (heredoc->word.size > 0 && lexer->lookahead == *array_get(&heredoc->word, position_in_word) &&
+            look_for_heredoc_end) {
             advance(lexer);
             position_in_word++;
         } else {
@@ -863,7 +902,7 @@ static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer) {
                 } else {
                     advance(lexer);
                     if (literal->type == REGEX_START) {
-                        while (iswlower(lexer->lookahead)) {
+                        while (strchr("imxouesn", lexer->lookahead) != NULL) {
                             advance(lexer);
                         }
                     }
@@ -1137,8 +1176,12 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 heredoc.end_word_indentation_allowed = true;
             }
 
-            scan_heredoc_word(lexer, &heredoc);
-            if (heredoc.word.size == 0) {
+            if (!scan_heredoc_word(lexer, &heredoc)) {
+                return false;
+            }
+            // 状態に保存できない長さの終端語は、後続行を誤って通常コードとして
+            // パースしないため heredoc 開始自体を不成立にする。
+            if (!can_serialize_heredocs_with(scanner, &heredoc)) {
                 array_delete(&heredoc.word);
                 return false;
             }
