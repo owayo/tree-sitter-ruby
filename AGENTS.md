@@ -41,6 +41,9 @@ pnpm run lint              # lint チェック（Biome）
 # - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する
 # - scanner.c の行継続判定（行頭 `and` / `or` キーワードと識別子、
 #   行頭 `||` / `&&` 演算子、継続しない単独 `&`、行頭 `..`）の回帰もここで確認する
+# - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
+#   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
+#   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
 pnpm run test
@@ -99,6 +102,8 @@ pnpm run test:unit
 #   長すぎる heredoc 終端語、symbol setter suffix、regexp option、`%=` 文字列の scanner 回帰検証
 # - scanner.c のバックスラッシュ行継続が CRLF 改行（`\\\r\n`）でも動作することの検証
 # - scanner.c の改行判定で行頭 `&.`（safe navigation）が改行継続として扱われることの検証
+# - scanner.c の `is_iden_char` が ASCII 外 Unicode 識別子文字を char 切り詰めで
+#   NON_IDENTIFIER_CHARS と誤一致させない symbol パース回帰の検証
 cargo test
 
 # 個別ファイルのパース検証

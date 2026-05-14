@@ -70,6 +70,9 @@ tree-sitter parse example.rb
 # - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する
 # - scanner.c の行継続判定（行頭 `and` / `or` キーワードと識別子、
 #   行頭 `||` / `&&` 演算子、継続しない単独 `&`、行頭 `..`）の回帰もここで確認する
+# - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
+#   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
+#   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
 pnpm run test
@@ -122,7 +125,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # heredoc EOF/引用/空終端語境界、深いリテラルネストのシリアライズ、
 # 長すぎる heredoc 終端語、symbol setter suffix、regexp option、`%=` 文字列の scanner 回帰検証、
 # scanner.c のバックスラッシュ行継続が CRLF 改行（\\\r\n）でも動作する回帰検証、
-# 行頭 `&.` （safe navigation）が改行継続として扱われる scanner.c 改行判定の回帰検証）
+# 行頭 `&.` （safe navigation）が改行継続として扱われる scanner.c 改行判定の回帰検証、
+# scanner.c の `is_iden_char` が ASCII 外 Unicode 識別子文字を char 切り詰めで
+# NON_IDENTIFIER_CHARS と誤一致させない symbol パース回帰検証）
 cargo test
 
 # pnpm が tree-sitter-cli の install script を止めた場合は

@@ -31,6 +31,27 @@ symbol
   (simple_symbol)
   (simple_symbol))
 
+================================================
+symbol with non-ASCII Unicode identifier chars
+================================================
+
+:Ĩ
+:Ñ_test
+:λ_func
+:π_value
+:漢字
+:emoji_test
+
+---
+
+(program
+  (simple_symbol)
+  (simple_symbol)
+  (simple_symbol)
+  (simple_symbol)
+  (simple_symbol)
+  (simple_symbol))
+
 ==========================================
 symbol with special global variable chars
 ==========================================

@@ -70,6 +70,8 @@ tree-sitter parse example.rb
 # - covers Ruby 4.0 leading logical-operator continuations in expressions and if conditions
 # - covers scanner line-continuation boundaries (leading `and`/`or` keywords vs identifiers,
 #   leading `||`/`&&` operators, non-continuing single `&`, leading `..`)
+# - covers scanner.c `is_iden_char` regression for non-ASCII Unicode identifier symbols
+#   (e.g. `:Ĩ` U+0128 and `:漢字`) so char truncation cannot collide with NON_IDENTIFIER_CHARS
 # - compares normalized AST output from `tree-sitter parse --no-ranges`
 # - preserves single CR characters in corpus source sections
 pnpm run test
@@ -124,7 +126,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # deep literal nesting serialization, oversized heredoc delimiters,
 # symbol setter suffix validation, regexp option validation, and `%=` strings;
 # scanner backslash continuation across CRLF line endings (\\\r\n);
-# leading `&.` safe navigation treated as line continuation by the scanner)
+# leading `&.` safe navigation treated as line continuation by the scanner;
+# scanner.c `is_iden_char` accepting non-ASCII Unicode identifier symbols
+# without colliding with NON_IDENTIFIER_CHARS via char truncation)
 cargo test
 
 # If pnpm blocked tree-sitter-cli's install script, download the local CLI binary

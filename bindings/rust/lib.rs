@@ -537,6 +537,20 @@ end
     }
 
     #[test]
+    fn test_scanner_accepts_non_ascii_unicode_identifier_symbols() {
+        // is_iden_char に Unicode コードポイント（>= 0x80）が char に切り詰められて
+        // 渡されると、例えば `:Ĩ` (U+0128) は下位 8 bit が `(` (0x28) と衝突して
+        // NON_IDENTIFIER_CHARS と誤一致し、symbol が ERROR でパースされてしまう
+        // 回帰を防ぐ。Ruby は識別子に Unicode 文字を許容する。
+        for code in [":Ĩ\n", ":Ñ_test\n", ":λ_func\n", ":π_value\n", ":漢字\n"] {
+            assert!(
+                !parse_has_error(code),
+                "Unicode 識別子 symbol のパースに失敗しています: {code:?}"
+            );
+        }
+    }
+
+    #[test]
     fn test_highlights_query_captures_operators_and_global_variables() {
         let code = "a == b\nx += 1\nrange = 1..2\nif $0\nend\n";
         let operators = collect_highlight_captures(code, "operator");

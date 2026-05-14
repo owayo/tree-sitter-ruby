@@ -206,8 +206,14 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
     assert(size == length);
 }
 
-static inline bool is_iden_char(char c) {
-    return memchr(&NON_IDENTIFIER_CHARS, c, sizeof(NON_IDENTIFIER_CHARS)) == NULL;
+static inline bool is_iden_char(int32_t c) {
+    // ASCII 外（>= 0x80）は Unicode 識別子文字として常に許容する。
+    // Ruby は識別子に Unicode 文字を許容するため、char に切り詰めると
+    // 例えば `:Ĩ` (U+0128) の下位 8 bit が `(` (0x28) と衝突してしまう。
+    if (c >= 0x80) {
+        return true;
+    }
+    return memchr(&NON_IDENTIFIER_CHARS, (char)c, sizeof(NON_IDENTIFIER_CHARS)) == NULL;
 }
 
 static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
@@ -269,7 +275,7 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                             advance(lexer);
                             if (lexer->lookahead == 'r') {
                                 advance(lexer);
-                                if (!is_iden_char((char)lexer->lookahead)) {
+                                if (!is_iden_char(lexer->lookahead)) {
                                     return false;
                                 }
                             }
@@ -281,7 +287,7 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                                 advance(lexer);
                                 if (lexer->lookahead == 'd') {
                                     advance(lexer);
-                                    if (!is_iden_char((char)lexer->lookahead)) {
+                                    if (!is_iden_char(lexer->lookahead)) {
                                         return false;
                                     }
                                 }
@@ -457,14 +463,14 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
         }
     }
 
-    if (is_iden_char((char)lexer->lookahead)) {
+    if (is_iden_char(lexer->lookahead)) {
         can_have_setter_suffix = !has_variable_prefix;
         advance(lexer);
     } else if (!scan_operator(lexer)) {
         return false;
     }
 
-    while (is_iden_char((char)lexer->lookahead)) {
+    while (is_iden_char(lexer->lookahead)) {
         advance(lexer);
     }
 
@@ -775,7 +781,7 @@ static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_conte
             if (lexer->lookahead == '@') {
                 advance(lexer);
             }
-            is_short_interpolation = is_iden_char((char)lexer->lookahead) && !iswdigit(lexer->lookahead);
+            is_short_interpolation = is_iden_char(lexer->lookahead) && !iswdigit(lexer->lookahead);
         }
 
         if (is_short_interpolation) {
