@@ -65,6 +65,7 @@ tree-sitter parse example.rb
 # 推奨: tree-sitter parse によるコーパステスト（低メモリ）
 # - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
 # - Ruby 4.0 の `*nil` splat パースもここで確認する
+# - Ruby 3.4 の index assignment で keyword / block 引数を拒否する回帰もここで確認する
 # - `%=` 文字列、空 heredoc 終端語、不正な regexp option、
 #   不正な `..` method/operator 名の scanner 回帰もここで確認する
 # - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する

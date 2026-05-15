@@ -79,6 +79,13 @@ module.exports = grammar({
 
 	word: ($) => $.identifier,
 
+	conflicts: ($) => [
+		[$._assignment_lhs, $._lhs],
+		[$._argument, $._index_assignment_argument],
+		[$.element_reference, $._element_reference_assignment],
+		[$._keyword_variable, $._assignment_lhs, $._lhs],
+	],
+
 	supertypes: ($) => [
 		$._statement,
 		$._arg,
@@ -361,7 +368,7 @@ module.exports = grammar({
 		for: ($) =>
 			seq(
 				"for",
-				field("pattern", choice($._lhs, $.left_assignment_list)),
+				field("pattern", choice(prec.dynamic(1, $._lhs), $.left_assignment_list)),
 				field("value", $.in),
 				field("body", $.do),
 			),
@@ -829,6 +836,17 @@ module.exports = grammar({
 				),
 			),
 
+		_element_reference_assignment: ($) =>
+			prec.left(
+				1,
+				seq(
+					field("object", $._primary),
+					alias($._element_reference_bracket, "["),
+					optional($._index_assignment_argument_list_with_trailing_comma),
+					"]",
+				),
+			),
+
 		scope_resolution: ($) =>
 			prec.left(
 				PREC.CALL + 1,
@@ -940,6 +958,9 @@ module.exports = grammar({
 		_argument_list_with_trailing_comma: ($) =>
 			prec.right(seq(commaSep1($._argument), optional(","))),
 
+		_index_assignment_argument_list_with_trailing_comma: ($) =>
+			prec.right(seq(commaSep1($._index_assignment_argument), optional(","))),
+
 		_argument: ($) =>
 			prec.left(
 				choice(
@@ -951,6 +972,10 @@ module.exports = grammar({
 					$.pair,
 				),
 			),
+		// Ruby 3.4 以降、index assignment ではキーワード引数と
+		// block 引数が構文エラーになるため、代入左辺だけ引数種別を絞る。
+		_index_assignment_argument: ($) =>
+			prec.left(choice($._expression, $.splat_argument, $.forward_argument)),
 
 		forward_argument: (_) => "...",
 		splat_argument: ($) =>
@@ -989,7 +1014,7 @@ module.exports = grammar({
 				PREC.ASSIGN,
 				choice(
 					seq(
-						field("left", choice($._lhs, $.left_assignment_list)),
+						field("left", choice($._assignment_lhs, $.left_assignment_list)),
 						"=",
 						field(
 							"right",
@@ -1003,7 +1028,7 @@ module.exports = grammar({
 			prec.right(
 				PREC.ASSIGN,
 				seq(
-					field("left", choice($._lhs, $.left_assignment_list)),
+					field("left", choice($._assignment_lhs, $.left_assignment_list)),
 					"=",
 					field(
 						"right",
@@ -1019,7 +1044,7 @@ module.exports = grammar({
 			prec.right(
 				PREC.ASSIGN,
 				seq(
-					field("left", $._lhs),
+					field("left", $._assignment_lhs),
 					field(
 						"operator",
 						choice(
@@ -1046,7 +1071,7 @@ module.exports = grammar({
 			prec.right(
 				PREC.ASSIGN,
 				seq(
-					field("left", $._lhs),
+					field("left", $._assignment_lhs),
 					field(
 						"operator",
 						choice(
@@ -1231,14 +1256,18 @@ module.exports = grammar({
 				-1,
 				seq(
 					commaSep1(
-						choice($._lhs, $.rest_assignment, $.destructured_left_assignment),
+						choice(
+							$._assignment_lhs,
+							$.rest_assignment,
+							$.destructured_left_assignment,
+						),
 					),
 					optional(","),
 				),
 			),
 		destructured_left_assignment: ($) => prec(-1, seq("(", $._mlhs, ")")),
 
-		rest_assignment: ($) => prec(-1, seq("*", optional($._lhs))),
+		rest_assignment: ($) => prec(-1, seq("*", optional($._assignment_lhs))),
 
 		_function_identifier: ($) =>
 			choice(
@@ -1247,6 +1276,18 @@ module.exports = grammar({
 			),
 		_function_identifier_call: ($) =>
 			prec.left(field("method", $._function_identifier)),
+		_assignment_lhs: ($) =>
+			prec.left(
+				choice(
+					$._variable,
+					$.true,
+					$.false,
+					$.nil,
+					$.scope_resolution,
+					alias($._element_reference_assignment, $.element_reference),
+					alias($._call, $.call),
+				),
+			),
 		_lhs: ($) =>
 			prec.left(
 				choice(

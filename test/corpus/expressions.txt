@@ -31,6 +31,9 @@ foo[bar]
 foo[*bar]
 foo[* bar]
 foo[]
+foo[key: value]
+foo[**keywords]
+foo[&block]
 
 ---
 
@@ -47,7 +50,20 @@ foo[]
     (splat_argument
       (identifier)))
   (element_reference
-    object: (identifier)))
+    object: (identifier))
+  (element_reference
+    object: (identifier)
+    (pair
+      key: (hash_key_symbol)
+      value: (identifier)))
+  (element_reference
+    object: (identifier)
+    (hash_splat_argument
+      (identifier)))
+  (element_reference
+    object: (identifier)
+    (block_argument
+      (identifier))))
 
 ============
 element reference with string
@@ -90,6 +106,21 @@ foo[bar] = 1
       object: (identifier)
       (identifier))
     right: (integer)))
+
+======================================================
+index assignment rejects keyword and block arguments
+======================================================
+
+foo[key: value] = 1
+foo[**keywords] = 1
+foo[&block] = 1
+foo[key: value] += 1
+foo[key: value], other = 1, 2
+
+---
+
+(program
+  (ERROR))
 
 ===============
 vacuous literal

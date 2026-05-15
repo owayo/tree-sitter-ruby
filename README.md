@@ -65,6 +65,7 @@ tree-sitter parse example.rb
 # Recommended: corpus tests via tree-sitter parse (low memory)
 # - covers recent Ruby syntax regressions such as anonymous *, **, & forwarding
 # - covers Ruby 4.0 `*nil` splat parsing
+# - covers Ruby 3.4 index assignment rejecting keyword/block arguments
 # - covers scanner regressions for `%=` strings, empty heredoc delimiters,
 #   invalid regexp options, and invalid `..` method/operator names
 # - covers Ruby 4.0 leading logical-operator continuations in expressions and if conditions
