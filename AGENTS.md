@@ -105,6 +105,10 @@ pnpm run test:unit
 # - scanner.c の改行判定で行頭 `&.`（safe navigation）が改行継続として扱われることの検証
 # - scanner.c の `is_iden_char` が ASCII 外 Unicode 識別子文字を char 切り詰めで
 #   NON_IDENTIFIER_CHARS と誤一致させない symbol パース回帰の検証
+# - Ruby 3.4 の `it` ブロックパラメータ（パイプ仮引数なしブロック内）のパース検証
+# - Ruby 3.4 の index assignment（`arr[i, k: v] = x` / `arr[i, &b] = x`）拒否の検証
+# - Ruby 4.0 の `*nil` splat 引数のパース検証
+# - Ruby 4.0 の行頭論理演算子（`||` / `&&` / `and` / `or`）による行継続のパース検証
 cargo test
 
 # 個別ファイルのパース検証
@@ -136,5 +140,6 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `pnpm run test` で確認する
 - tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う
 - `src/scanner.c` の `deserialize()` はバッファ境界チェックを行うため、新しいフィールドを追加する際は対応する境界チェックも追加すること
+- `deserialize()` のバッファ境界チェックで `size + word_length > length` のような符号なし整数の和を使うと、`word_length` が極端に大きい場合に整数オーバーフローしてチェックを潜り抜けるため、`word_length > length - size` の引き算で比較すること（`size <= length` は手前のヘッダーサイズチェックで保証されている前提）
 - `tree-sitter test` をメモリ監視なしで実行してはならない
 - `scripts/` 配下の Python コードは Python 3.7 互換を維持するため、`ruff.toml` で `target-version = "py37"` を指定している。parenthesized context manager などの新しい構文を自動書き換えされないよう、新規コードでも Python 3.7 互換を崩さないこと

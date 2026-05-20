@@ -73,6 +73,7 @@ tree-sitter parse example.rb
 #   leading `||`/`&&` operators, non-continuing single `&`, leading `..`)
 # - covers scanner.c `is_iden_char` regression for non-ASCII Unicode identifier symbols
 #   (e.g. `:Ĩ` U+0128 and `:漢字`) so char truncation cannot collide with NON_IDENTIFIER_CHARS
+# - covers Ruby 3.4 `it` implicit block parameter
 # - compares normalized AST output from `tree-sitter parse --no-ranges`
 # - preserves single CR characters in corpus source sections
 pnpm run test
@@ -129,7 +130,11 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # scanner backslash continuation across CRLF line endings (\\\r\n);
 # leading `&.` safe navigation treated as line continuation by the scanner;
 # scanner.c `is_iden_char` accepting non-ASCII Unicode identifier symbols
-# without colliding with NON_IDENTIFIER_CHARS via char truncation)
+# without colliding with NON_IDENTIFIER_CHARS via char truncation;
+# Ruby 3.4 `it` implicit block parameter parsing;
+# Ruby 3.4 index assignment rejecting keyword/block arguments;
+# Ruby 4.0 `*nil` splat argument parsing;
+# Ruby 4.0 leading logical-operator (`||`, `&&`, `and`, `or`) continuations)
 cargo test
 
 # If pnpm blocked tree-sitter-cli's install script, download the local CLI binary
@@ -147,7 +152,7 @@ with the project-pinned CLI when dependencies are installed.
 
 The external scanner (`src/scanner.c`) handles context-sensitive tokens that cannot be expressed in `grammar.js` alone: heredocs, delimited literals (strings, regexes, subshells, symbol/string arrays), line breaks, whitespace-sensitive operators, and the serialized scanner state needed to resume those constructs correctly. Unlike the rest of `src/`, this file is manually maintained and should be edited directly when adding new token types.
 
-Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers.
+Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers, and uses subtraction (`word_length > length - size`) instead of addition for the word-length boundary check so that an attacker-controlled `word_length` cannot wrap around via unsigned integer overflow.
 
 ## References
 

@@ -595,4 +595,59 @@ end
             defs
         );
     }
+
+    #[test]
+    fn test_can_parse_ruby_34_it_block_parameter() {
+        // Ruby 3.4 で導入された暗黙のブロックパラメータ `it` が、
+        // パイプ仮引数なしのブロック内で識別子として正しく扱えることを検証する。
+        for code in [
+            "[1, 2, 3].each { it * 2 }\n",
+            "[1, 2, 3].map { it + 1 }\n",
+            "[1, 2, 3].select { it > 1 }\n",
+            "{a: 1, b: 2}.map { it.first }\n",
+        ] {
+            assert!(
+                !parse_has_error(code),
+                "Ruby 3.4 の it ブロックパラメータのパースに失敗しました: {code:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_can_parse_ruby_34_index_assignment_restrictions() {
+        // Ruby 3.4 では index assignment に keyword 引数 / block 引数を渡せない。
+        for code in ["arr[1, key: 2] = 3\n", "arr[1, &block] = 3\n"] {
+            assert!(
+                parse_has_error(code),
+                "Ruby 3.4 で禁止された index assignment が誤って受理されました: {code:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_can_parse_ruby_40_splat_nil() {
+        // Ruby 4.0 では `*nil` が `nil.to_a` を呼ばず、splat 展開 0 件として扱える。
+        let code = "def bar(*args); args; end\nbar(*nil)\n";
+        assert!(
+            !parse_has_error(code),
+            "Ruby 4.0 の *nil splat のパースに失敗しました"
+        );
+    }
+
+    #[test]
+    fn test_can_parse_ruby_40_leading_logical_operator_continuation() {
+        // Ruby 4.0 では行頭の論理演算子（`||`, `&&`, `and`, `or`）が
+        // 前行の継続として扱われる（fluent dot と同じ振る舞い）。
+        for code in [
+            "result = condition1\n  || condition2\n  || condition3\n",
+            "result = condition1\n  && condition2\n",
+            "result = a\n  or b\n",
+            "result = a\n  and b\n",
+        ] {
+            assert!(
+                !parse_has_error(code),
+                "行頭論理演算子による継続のパースに失敗しました: {code:?}"
+            );
+        }
+    }
 }

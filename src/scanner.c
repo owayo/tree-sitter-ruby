@@ -191,8 +191,13 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         uint32_t word_length;
         memcpy(&word_length, &buffer[size], sizeof(uint32_t));
         size += sizeof(uint32_t);
-        // 終端語本体がバッファ内に収まるか検証
-        if (size + word_length > length) {
+        // 終端語本体がバッファ内に収まるか検証する。
+        // `size + word_length > length` の形だと word_length が極端に
+        // 大きい場合に符号なし整数のオーバーフローでチェックを潜り抜けて
+        // しまうため、`length - size` の引き算で比較する。
+        // 上の SERIALIZED_HEREDOC_HEADER_SIZE チェックで size <= length が
+        // 保証されているので length - size は安全に計算できる。
+        if (word_length > length - size) {
             array_delete(&heredoc.word);
             return;
         }
