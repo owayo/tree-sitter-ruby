@@ -45,6 +45,7 @@ pnpm run lint              # lint チェック（Biome）
 # - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
 #   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
 #   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
+# - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
 pnpm run test
@@ -115,8 +116,9 @@ cargo test
 TREE_SITTER_LIBDIR=/tmp/ts-lib tree-sitter parse example.rb
 
 # pnpm が tree-sitter-cli の install script を止めた場合は
-# ローカル CLI バイナリを取得する
-node node_modules/tree-sitter-cli/install.js
+# ローカル CLI バイナリを取得する。install.js はカレントディレクトリに
+# tree-sitter を書き出すため、パッケージディレクトリで実行する。
+(cd node_modules/tree-sitter-cli && node install.js)
 ```
 
 `pnpm run test` は実行前に `tree-sitter --version` を確認し、CLI が見つからない場合や 10 秒以内に起動できない場合は setup error で終了する。関連する setup/failure 分岐は `pnpm run test:unit` で回帰確認できる。

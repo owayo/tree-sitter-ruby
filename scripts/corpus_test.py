@@ -415,7 +415,8 @@ def check_tree_sitter_cli(env, command=None):
     if "tree-sitter-cli/tree-sitter" in output and "ENOENT" in output:
         return (
             "tree-sitter CLI の実体を起動できません。"
-            f" {detail}。`node node_modules/tree-sitter-cli/install.js` を実行するか、"
+            f" {detail}。"
+            "`(cd node_modules/tree-sitter-cli && node install.js)` を実行するか、"
             "build script を承認して再インストールしてください。"
         )
     return f"tree-sitter CLI を起動できません。{detail}"

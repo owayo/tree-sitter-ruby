@@ -74,6 +74,7 @@ tree-sitter parse example.rb
 # - covers scanner.c `is_iden_char` regression for non-ASCII Unicode identifier symbols
 #   (e.g. `:Ĩ` U+0128 and `:漢字`) so char truncation cannot collide with NON_IDENTIFIER_CHARS
 # - covers Ruby 3.4 `it` implicit block parameter
+# - covers expression-based scope resolution used by Ruby Box examples (`box::Foo`)
 # - compares normalized AST output from `tree-sitter parse --no-ranges`
 # - preserves single CR characters in corpus source sections
 pnpm run test
@@ -137,8 +138,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # Ruby 4.0 leading logical-operator (`||`, `&&`, `and`, `or`) continuations)
 cargo test
 
-# If pnpm blocked tree-sitter-cli's install script, download the local CLI binary
-node node_modules/tree-sitter-cli/install.js
+# If pnpm blocked tree-sitter-cli's install script, download the local CLI binary.
+# Run from the package directory; install.js writes tree-sitter into the current directory.
+(cd node_modules/tree-sitter-cli && node install.js)
 ```
 
 `pnpm run test` verifies `tree-sitter --version` before executing corpus cases and exits with a setup error if the CLI is missing or does not start within 10 seconds. The corresponding setup and failure branches are covered by `pnpm run test:unit`.

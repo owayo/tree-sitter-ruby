@@ -23,6 +23,33 @@ puts ::Foo::Bar
           name: (constant))
         name: (constant)))))
 
+================================
+scope resolution with expression
+================================
+
+box::Foo
+box::Foo.foo
+Ruby::Box.new::Entry
+
+---
+
+(program
+  (scope_resolution
+    scope: (identifier)
+    name: (constant))
+  (call
+    receiver: (scope_resolution
+      scope: (identifier)
+      name: (constant))
+    method: (identifier))
+  (scope_resolution
+    scope: (call
+      receiver: (scope_resolution
+        scope: (constant)
+        name: (constant))
+      method: (identifier))
+    name: (constant)))
+
 ============
 element reference
 ============

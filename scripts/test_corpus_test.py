@@ -565,6 +565,7 @@ class CorpusTestScriptTests(unittest.TestCase):
         message = corpus_test.check_tree_sitter_cli({})
         self.assertIn("tree-sitter CLI の実体を起動できません", message)
         self.assertIn("install.js", message)
+        self.assertIn("cd node_modules/tree-sitter-cli", message)
 
     @patch("corpus_test.subprocess.run")
     def test_check_tree_sitter_cli_reports_generic_failure(self, mock_run):
