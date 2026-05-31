@@ -69,6 +69,7 @@ tree-sitter parse example.rb
 # - `%=` 文字列、空 heredoc 終端語、不正な regexp option、
 #   不正な `..` method/operator 名の scanner 回帰もここで確認する
 # - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する
+#   （if 条件内の `and` / `or` キーワード演算子を含む）
 # - scanner.c の行継続判定（行頭 `and` / `or` キーワードと識別子、
 #   行頭 `||` / `&&` 演算子、継続しない単独 `&`、行頭 `..`）の回帰もここで確認する
 # - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
@@ -134,7 +135,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # Ruby 3.4 の `it` 暗黙ブロックパラメータのパース検証、
 # Ruby 3.4 の index assignment（`arr[i, k: v] = x` / `arr[i, &b] = x`）拒否の検証、
 # Ruby 4.0 の `*nil` splat 引数のパース検証、
-# Ruby 4.0 の行頭論理演算子（`||` / `&&` / `and` / `or`）による行継続のパース検証）
+# Ruby 4.0 の行頭論理演算子（`||` / `&&` / `and` / `or`）による行継続のパース検証、
+# if 条件内のキーワード演算子を含む）
 cargo test
 
 # pnpm が tree-sitter-cli の install script を止めた場合は

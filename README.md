@@ -68,7 +68,8 @@ tree-sitter parse example.rb
 # - covers Ruby 3.4 index assignment rejecting keyword/block arguments
 # - covers scanner regressions for `%=` strings, empty heredoc delimiters,
 #   invalid regexp options, and invalid `..` method/operator names
-# - covers Ruby 4.0 leading logical-operator continuations in expressions and if conditions
+# - covers Ruby 4.0 leading logical-operator continuations in expressions and if conditions,
+#   including keyword operators (`and` / `or`)
 # - covers scanner line-continuation boundaries (leading `and`/`or` keywords vs identifiers,
 #   leading `||`/`&&` operators, non-continuing single `&`, leading `..`)
 # - covers scanner.c `is_iden_char` regression for non-ASCII Unicode identifier symbols
@@ -135,7 +136,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # Ruby 3.4 `it` implicit block parameter parsing;
 # Ruby 3.4 index assignment rejecting keyword/block arguments;
 # Ruby 4.0 `*nil` splat argument parsing;
-# Ruby 4.0 leading logical-operator (`||`, `&&`, `and`, `or`) continuations)
+# Ruby 4.0 leading logical-operator (`||`, `&&`, `and`, `or`) continuations,
+# including keyword operators in if conditions)
 cargo test
 
 # If pnpm blocked tree-sitter-cli's install script, download the local CLI binary.

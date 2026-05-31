@@ -643,6 +643,8 @@ end
             "result = condition1\n  && condition2\n",
             "result = a\n  or b\n",
             "result = a\n  and b\n",
+            "if condition1\n  or condition2\nend\n",
+            "if condition1\n  and condition2\nend\n",
         ] {
             assert!(
                 !parse_has_error(code),

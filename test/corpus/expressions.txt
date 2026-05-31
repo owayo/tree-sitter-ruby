@@ -3029,6 +3029,25 @@ end
         right: (identifier))
       right: (identifier))))
 
+=====================================================
+leading logical keyword operators continue if condition
+=====================================================
+
+if condition1
+  and condition2
+  or condition3
+end
+
+---
+
+(program
+  (if
+    condition: (binary
+      left: (binary
+        left: (identifier)
+        right: (identifier))
+      right: (identifier))))
+
 ====================================================
 leading and/or prefixes do not continue line
 ====================================================
