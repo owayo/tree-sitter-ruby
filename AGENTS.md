@@ -112,6 +112,9 @@ pnpm run test:unit
 # - Ruby 4.0 の `*nil` splat 引数のパース検証
 # - Ruby 4.0 の行頭論理演算子（`||` / `&&` / `and` / `or`）による行継続のパース検証
 #   （if 条件内のキーワード演算子を含む）
+# - scanner.c の正規表現オプション読み（imxouesn）が、EOF 直後で終わる正規表現
+#   （`a = /x/` など末尾に改行がない）で strchr の終端 NUL マッチによる
+#   無限ループに陥らないことの検証
 cargo test
 
 # 個別ファイルのパース検証
@@ -147,3 +150,4 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `deserialize()` のバッファ境界チェックで `size + word_length > length` のような符号なし整数の和を使うと、`word_length` が極端に大きい場合に整数オーバーフローしてチェックを潜り抜けるため、`word_length > length - size` の引き算で比較すること（`size <= length` は手前のヘッダーサイズチェックで保証されている前提）
 - `tree-sitter test` をメモリ監視なしで実行してはならない
 - `scripts/` 配下の Python コードは Python 3.7 互換を維持するため、`ruff.toml` で `target-version = "py37"` を指定している。parenthesized context manager などの新しい構文を自動書き換えされないよう、新規コードでも Python 3.7 互換を崩さないこと
+- `src/scanner.c` で `strchr(set, lexer->lookahead)` を使う場合、`lexer->lookahead == 0`（EOF）のとき strchr が終端の NUL に一致して非 NULL を返すため、`lexer->lookahead != 0` で EOF を除外すること。さもないと EOF 直後の入力（例: 末尾に改行のない `a = /x/` の正規表現オプション読み）で無限ループや誤判定になる

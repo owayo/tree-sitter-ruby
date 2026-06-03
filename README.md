@@ -137,7 +137,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # Ruby 3.4 index assignment rejecting keyword/block arguments;
 # Ruby 4.0 `*nil` splat argument parsing;
 # Ruby 4.0 leading logical-operator (`||`, `&&`, `and`, `or`) continuations,
-# including keyword operators in if conditions)
+# including keyword operators in if conditions;
+# regex option scanning (imxouesn) not hanging on a regex ending at EOF without a
+# trailing newline such as `a = /x/`, where strchr would otherwise match the terminating NUL)
 cargo test
 
 # If pnpm blocked tree-sitter-cli's install script, download the local CLI binary.
@@ -156,7 +158,7 @@ with the project-pinned CLI when dependencies are installed.
 
 The external scanner (`src/scanner.c`) handles context-sensitive tokens that cannot be expressed in `grammar.js` alone: heredocs, delimited literals (strings, regexes, subshells, symbol/string arrays), line breaks, whitespace-sensitive operators, and the serialized scanner state needed to resume those constructs correctly. Unlike the rest of `src/`, this file is manually maintained and should be edited directly when adding new token types.
 
-Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers, and uses subtraction (`word_length > length - size`) instead of addition for the word-length boundary check so that an attacker-controlled `word_length` cannot wrap around via unsigned integer overflow.
+Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers, and uses subtraction (`word_length > length - size`) instead of addition for the word-length boundary check so that an attacker-controlled `word_length` cannot wrap around via unsigned integer overflow. Regex option scanning (`imxouesn`) also guards against `lexer->lookahead == 0`, so a regular expression ending at EOF without a trailing newline (e.g. `a = /x/`) cannot spin forever on `strchr` matching the terminating NUL.
 
 ## References
 

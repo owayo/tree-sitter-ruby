@@ -913,7 +913,10 @@ static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer) {
                 } else {
                     advance(lexer);
                     if (literal->type == REGEX_START) {
-                        while (strchr("imxouesn", lexer->lookahead) != NULL) {
+                        // lexer->lookahead が 0（EOF）のとき strchr は終端の NUL に
+                        // マッチして非 NULL を返すため、`!= 0` で EOF を除外しないと
+                        // ファイル末尾の正規表現（改行なし）で無限ループになる。
+                        while (lexer->lookahead != 0 && strchr("imxouesn", lexer->lookahead) != NULL) {
                             advance(lexer);
                         }
                     }

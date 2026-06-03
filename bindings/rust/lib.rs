@@ -537,6 +537,21 @@ end
     }
 
     #[test]
+    fn test_scanner_regex_option_at_eof_does_not_hang() {
+        // scanner.c の scan_literal_content で正規表現オプション（imxouesn）を
+        // 読む while ループは、lexer->lookahead == 0（EOF）のとき strchr が
+        // 終端の NUL に一致して非 NULL を返すため、ファイル末尾で改行なく終わる
+        // 正規表現で無限ループしていた。`lexer->lookahead != 0` 追加で防止する。
+        // 無限ループが再発した場合、このテストはタイムアウトでハングする。
+        for code in ["a = /x/", "b = /foo/i", "c = %r{baz}", "d = /q/im"] {
+            assert!(
+                !parse_has_error(code),
+                "EOF 直後で終わる正規表現のパースに失敗しました: {code:?}"
+            );
+        }
+    }
+
+    #[test]
     fn test_scanner_accepts_non_ascii_unicode_identifier_symbols() {
         // is_iden_char に Unicode コードポイント（>= 0x80）が char に切り詰められて
         // 渡されると、例えば `:Ĩ` (U+0128) は下位 8 bit が `(` (0x28) と衝突して
