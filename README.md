@@ -74,6 +74,8 @@ tree-sitter parse example.rb
 #   leading `||`/`&&` operators, non-continuing single `&`, leading `..`)
 # - covers scanner.c `is_iden_char` regression for non-ASCII Unicode identifier symbols
 #   (e.g. `:Ĩ` U+0128 and `:漢字`) so char truncation cannot collide with NON_IDENTIFIER_CHARS
+# - covers scanner short-interpolation handling so `$` immediately before EOF is not
+#   mistaken for a one-character special global variable
 # - covers Ruby 3.4 `it` implicit block parameter
 # - covers expression-based scope resolution used by Ruby Box examples (`box::Foo`)
 # - compares normalized AST output from `tree-sitter parse --no-ranges`
@@ -158,7 +160,7 @@ with the project-pinned CLI when dependencies are installed.
 
 The external scanner (`src/scanner.c`) handles context-sensitive tokens that cannot be expressed in `grammar.js` alone: heredocs, delimited literals (strings, regexes, subshells, symbol/string arrays), line breaks, whitespace-sensitive operators, and the serialized scanner state needed to resume those constructs correctly. Unlike the rest of `src/`, this file is manually maintained and should be edited directly when adding new token types.
 
-Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers, and uses subtraction (`word_length > length - size`) instead of addition for the word-length boundary check so that an attacker-controlled `word_length` cannot wrap around via unsigned integer overflow. Regex option scanning (`imxouesn`) also guards against `lexer->lookahead == 0`, so a regular expression ending at EOF without a trailing newline (e.g. `a = /x/`) cannot spin forever on `strchr` matching the terminating NUL.
+Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers, and uses subtraction (`word_length > length - size`) instead of addition for the word-length boundary check so that an attacker-controlled `word_length` cannot wrap around via unsigned integer overflow. Regex option scanning (`imxouesn`) and short interpolation scanning for special global variables both guard against `lexer->lookahead == 0`, so EOF cannot be mistaken for the terminating NUL matched by `strchr`.
 
 ## References
 

@@ -771,7 +771,8 @@ static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_conte
         advance(lexer);
         bool is_short_interpolation = false;
         if (start == '$') {
-            if (strchr("!@&`'+~=/\\,;.<>*$?:\"", lexer->lookahead) != NULL) {
+            // EOF の NUL を特殊グローバル変数の 1 文字として扱わない。
+            if (lexer->lookahead != 0 && strchr("!@&`'+~=/\\,;.<>*$?:\"", lexer->lookahead) != NULL) {
                 is_short_interpolation = true;
             } else {
                 if (lexer->lookahead == '-') {

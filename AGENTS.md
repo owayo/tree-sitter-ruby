@@ -46,6 +46,8 @@ pnpm run lint              # lint チェック（Biome）
 # - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
 #   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
 #   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
+# - scanner.c の短縮 interpolation 判定が EOF 直後の `$` を
+#   特殊グローバル変数として誤判定しないこともここで確認する
 # - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
@@ -150,4 +152,4 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `deserialize()` のバッファ境界チェックで `size + word_length > length` のような符号なし整数の和を使うと、`word_length` が極端に大きい場合に整数オーバーフローしてチェックを潜り抜けるため、`word_length > length - size` の引き算で比較すること（`size <= length` は手前のヘッダーサイズチェックで保証されている前提）
 - `tree-sitter test` をメモリ監視なしで実行してはならない
 - `scripts/` 配下の Python コードは Python 3.7 互換を維持するため、`ruff.toml` で `target-version = "py37"` を指定している。parenthesized context manager などの新しい構文を自動書き換えされないよう、新規コードでも Python 3.7 互換を崩さないこと
-- `src/scanner.c` で `strchr(set, lexer->lookahead)` を使う場合、`lexer->lookahead == 0`（EOF）のとき strchr が終端の NUL に一致して非 NULL を返すため、`lexer->lookahead != 0` で EOF を除外すること。さもないと EOF 直後の入力（例: 末尾に改行のない `a = /x/` の正規表現オプション読み）で無限ループや誤判定になる
+- `src/scanner.c` で `strchr(set, lexer->lookahead)` を使う場合、`lexer->lookahead == 0`（EOF）のとき strchr が終端の NUL に一致して非 NULL を返すため、`lexer->lookahead != 0` で EOF を除外すること。さもないと EOF 直後の入力（例: 末尾に改行のない `a = /x/` の正規表現オプション読み、`"#$` の短縮 interpolation 判定）で無限ループや誤判定になる

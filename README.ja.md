@@ -75,6 +75,8 @@ tree-sitter parse example.rb
 # - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
 #   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
 #   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
+# - scanner.c の短縮 interpolation 判定が EOF 直後の `$` を
+#   特殊グローバル変数として誤判定しないこともここで確認する
 # - Ruby 3.4 の `it` 暗黙ブロックパラメータも回帰確認する
 # - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
@@ -158,7 +160,7 @@ PATH 上の `tree-sitter` の順に解決します。依存関係をインスト
 
 外部スキャナー（`src/scanner.c`）は、`grammar.js` だけでは表現できない文脈依存トークンを処理します: heredoc、区切りリテラル（文字列、正規表現、サブシェル、シンボル/文字列配列）、改行、空白依存の演算子、およびそれらを正しく再開するためのスキャナー状態シリアライズです。`src/` 配下の他のファイルとは異なり、手動管理のため新しいトークン型を追加する際は直接編集してください。
 
-255 文字を超える heredoc 終端語は `test/corpus/literals.txt` の回帰ケースで検証しています。tree-sitter の scanner serialization buffer に収まらない終端語は、状態喪失による誤パースを避けるため ERROR にします。スキャナーのシリアライズを変更した場合は `pnpm run test` で必ず確認してください。`deserialize()` 関数にはバッファ境界チェックが含まれており、切り詰められた・破損したバッファを安全に処理します。word_length の境界チェックは加算 (`size + word_length > length`) ではなく減算 (`word_length > length - size`) で行い、攻撃者が制御可能な `word_length` で符号なし整数オーバーフローを起こしてもチェックを回避できないようにしています。また正規表現オプション読み（`imxouesn`）は `lexer->lookahead == 0` を確認し、末尾に改行のない EOF 直後で終わる正規表現（例: `a = /x/`）が `strchr` の終端 NUL マッチで無限ループに陥らないようにしています。
+255 文字を超える heredoc 終端語は `test/corpus/literals.txt` の回帰ケースで検証しています。tree-sitter の scanner serialization buffer に収まらない終端語は、状態喪失による誤パースを避けるため ERROR にします。スキャナーのシリアライズを変更した場合は `pnpm run test` で必ず確認してください。`deserialize()` 関数にはバッファ境界チェックが含まれており、切り詰められた・破損したバッファを安全に処理します。word_length の境界チェックは加算 (`size + word_length > length`) ではなく減算 (`word_length > length - size`) で行い、攻撃者が制御可能な `word_length` で符号なし整数オーバーフローを起こしてもチェックを回避できないようにしています。また正規表現オプション読み（`imxouesn`）と特殊グローバル変数の短縮 interpolation 読みは `lexer->lookahead == 0` を確認し、EOF が `strchr` の終端 NUL マッチで有効文字として誤判定されないようにしています。
 
 ## 参考資料
 

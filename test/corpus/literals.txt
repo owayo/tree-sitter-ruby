@@ -779,6 +779,18 @@ interpolation
           (string_content))
         (identifier)))))
 
+=====================================
+short interpolation dollar before EOF
+=====================================
+
+"#$
+
+---
+
+(program
+  (ERROR)
+  (comment))
+
 ===========================================
 percent q string with unbalanced delimiters
 ===========================================
