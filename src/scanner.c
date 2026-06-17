@@ -761,7 +761,14 @@ static inline bool scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
 }
 
 static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_content, const TSSymbol content_symbol) {
-    char start = (char)lexer->lookahead;
+    // `lexer->lookahead` は `int32_t` で Unicode 文字を保持する。
+    // `(char)` に切り詰めると、ASCII 範囲外で下位 8 bit が
+    // '@' (0x40) や '$' (0x24) と一致する文字
+    // （例: `Ĥ` U+0124 → 下位 8 bit 0x24 = '$',
+    //  `Ŀ` U+0140 → 下位 8 bit 0x40 = '@'）が
+    // 短縮 interpolation の起点として誤判定されてしまうため、
+    // `int32_t` のまま比較する。
+    int32_t start = lexer->lookahead;
     if (start == '@' || start == '$') {
         if (has_content) {
             lexer->result_symbol = content_symbol;

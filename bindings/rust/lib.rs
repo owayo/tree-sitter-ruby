@@ -566,6 +566,21 @@ end
     }
 
     #[test]
+    fn test_scanner_short_interpolation_ignores_non_ascii_unicode_chars() {
+        // scanner.c の scan_short_interpolation で `lexer->lookahead` を `char` に
+        // 切り詰めると、ASCII 範囲外で下位 8 bit が '@' (0x40) や '$' (0x24) と
+        // 一致する Unicode 文字（例: `Ĥ` U+0124 → 0x24, `Ŀ` U+0140 → 0x40）が
+        // 短縮 interpolation の起点として誤判定され、文字列が ERROR でパースされる
+        // 回帰を防ぐ。`int32_t` のまま比較することで Unicode 文字を区別する。
+        for code in ["\"#Ĥ\"\n", "\"#Ŀ\"\n", "\"#漢\"\n", "\"#Ą#Ɓ\"\n"] {
+            assert!(
+                !parse_has_error(code),
+                "Unicode 文字を含む文字列のパースに失敗しています: {code:?}"
+            );
+        }
+    }
+
+    #[test]
     fn test_highlights_query_captures_operators_and_global_variables() {
         let code = "a == b\nx += 1\nrange = 1..2\nif $0\nend\n";
         let operators = collect_highlight_captures(code, "operator");

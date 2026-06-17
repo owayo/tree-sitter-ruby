@@ -76,6 +76,9 @@ tree-sitter parse example.rb
 #   (e.g. `:Ĩ` U+0128 and `:漢字`) so char truncation cannot collide with NON_IDENTIFIER_CHARS
 # - covers scanner short-interpolation handling so `$` immediately before EOF is not
 #   mistaken for a one-character special global variable
+# - covers scanner short-interpolation handling so non-ASCII Unicode characters
+#   (e.g. `Ĥ` U+0124, `Ŀ` U+0140) are not misclassified as `@`/`$` interpolation
+#   starts via char truncation
 # - covers Ruby 3.4 `it` implicit block parameter
 # - covers expression-based scope resolution used by Ruby Box examples (`box::Foo`)
 # - compares normalized AST output from `tree-sitter parse --no-ranges`
@@ -135,6 +138,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # leading `&.` safe navigation treated as line continuation by the scanner;
 # scanner.c `is_iden_char` accepting non-ASCII Unicode identifier symbols
 # without colliding with NON_IDENTIFIER_CHARS via char truncation;
+# scanner.c `scan_short_interpolation` not misclassifying non-ASCII Unicode characters
+# whose low 8 bits collide with `@` (0x40) or `$` (0x24) as interpolation starts;
 # Ruby 3.4 `it` implicit block parameter parsing;
 # Ruby 3.4 index assignment rejecting keyword/block arguments;
 # Ruby 4.0 `*nil` splat argument parsing;
@@ -160,7 +165,7 @@ with the project-pinned CLI when dependencies are installed.
 
 The external scanner (`src/scanner.c`) handles context-sensitive tokens that cannot be expressed in `grammar.js` alone: heredocs, delimited literals (strings, regexes, subshells, symbol/string arrays), line breaks, whitespace-sensitive operators, and the serialized scanner state needed to resume those constructs correctly. Unlike the rest of `src/`, this file is manually maintained and should be edited directly when adding new token types.
 
-Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers, and uses subtraction (`word_length > length - size`) instead of addition for the word-length boundary check so that an attacker-controlled `word_length` cannot wrap around via unsigned integer overflow. Regex option scanning (`imxouesn`) and short interpolation scanning for special global variables both guard against `lexer->lookahead == 0`, so EOF cannot be mistaken for the terminating NUL matched by `strchr`.
+Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers, and uses subtraction (`word_length > length - size`) instead of addition for the word-length boundary check so that an attacker-controlled `word_length` cannot wrap around via unsigned integer overflow. Regex option scanning (`imxouesn`) and short interpolation scanning for special global variables both guard against `lexer->lookahead == 0`, so EOF cannot be mistaken for the terminating NUL matched by `strchr`. Short-interpolation entry points (`@`/`$` after `#`) compare against `lexer->lookahead` (`int32_t`) directly instead of truncating to `char`, so Unicode characters whose low 8 bits collide with `'@'` (0x40) or `'$'` (0x24) — such as `Ĥ` (U+0124) or `Ŀ` (U+0140) — are not misclassified as interpolation starts.
 
 ## References
 

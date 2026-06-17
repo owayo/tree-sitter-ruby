@@ -48,6 +48,9 @@ pnpm run lint              # lint チェック（Biome）
 #   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
 # - scanner.c の短縮 interpolation 判定が EOF 直後の `$` を
 #   特殊グローバル変数として誤判定しないこともここで確認する
+# - scanner.c の短縮 interpolation 判定が ASCII 外 Unicode 文字
+#   （`Ĥ` U+0124 や `Ŀ` U+0140 など）を char 切り詰めで '@'/'$' と
+#   誤一致させないこともここで確認する
 # - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
@@ -109,6 +112,10 @@ pnpm run test:unit
 # - scanner.c の改行判定で行頭 `&.`（safe navigation）が改行継続として扱われることの検証
 # - scanner.c の `is_iden_char` が ASCII 外 Unicode 識別子文字を char 切り詰めで
 #   NON_IDENTIFIER_CHARS と誤一致させない symbol パース回帰の検証
+# - scanner.c の `scan_short_interpolation` が ASCII 外 Unicode 文字
+#   （例: `Ĥ` U+0124 → 下位 8 bit 0x24 = '$',
+#    `Ŀ` U+0140 → 下位 8 bit 0x40 = '@'）を char 切り詰めで
+#   '@'/'$' と誤一致させて短縮 interpolation として誤判定しないことの検証
 # - Ruby 3.4 の `it` ブロックパラメータ（パイプ仮引数なしブロック内）のパース検証
 # - Ruby 3.4 の index assignment（`arr[i, k: v] = x` / `arr[i, &b] = x`）拒否の検証
 # - Ruby 4.0 の `*nil` splat 引数のパース検証
@@ -153,3 +160,4 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `tree-sitter test` をメモリ監視なしで実行してはならない
 - `scripts/` 配下の Python コードは Python 3.7 互換を維持するため、`ruff.toml` で `target-version = "py37"` を指定している。parenthesized context manager などの新しい構文を自動書き換えされないよう、新規コードでも Python 3.7 互換を崩さないこと
 - `src/scanner.c` で `strchr(set, lexer->lookahead)` を使う場合、`lexer->lookahead == 0`（EOF）のとき strchr が終端の NUL に一致して非 NULL を返すため、`lexer->lookahead != 0` で EOF を除外すること。さもないと EOF 直後の入力（例: 末尾に改行のない `a = /x/` の正規表現オプション読み、`"#$` の短縮 interpolation 判定）で無限ループや誤判定になる
+- `src/scanner.c` で `lexer->lookahead`（`int32_t`）を ASCII 文字と比較するときは `char` に切り詰めないこと。Unicode コードポイントの下位 8 bit が ASCII 制御文字（`'@'` 0x40, `'$'` 0x24, `'('` 0x28 など）と一致すると、`Ĥ` (U+0124) / `Ŀ` (U+0140) / `Ĩ` (U+0128) のような文字が誤判定されてしまう（短縮 interpolation 起点や識別子文字判定の誤動作の原因になる）。`int32_t` のまま比較するか、ASCII 範囲（`< 0x80`）を事前に切り分けること

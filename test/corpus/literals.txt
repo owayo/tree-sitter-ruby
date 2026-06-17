@@ -791,6 +791,21 @@ short interpolation dollar before EOF
   (ERROR)
   (comment))
 
+==========================================================
+short interpolation with non-ASCII Unicode chars after hash
+==========================================================
+
+"#Ĥ"
+"#Ŀ"
+
+---
+
+(program
+  (string
+    (string_content))
+  (string
+    (string_content)))
+
 ===========================================
 percent q string with unbalanced delimiters
 ===========================================
