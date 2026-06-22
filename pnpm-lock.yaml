@@ -9,7 +9,7 @@ importers:
   .:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^2.4.16
+        specifier: ^2.5.0
         version: 2.5.0
       tree-sitter-cli:
         specifier: ^0.26.9
