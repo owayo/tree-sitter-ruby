@@ -515,6 +515,25 @@ end
     }
 
     #[test]
+    fn test_scanner_accepts_exact_serialization_buffer_heredoc_delimiter() {
+        // heredoc 1 件のシリアライズサイズは count 2 バイト + ヘッダー 7 バイト + 終端語本体。
+        // 1015 文字なら 1024 バイト上限ぴったりに収まるため、拒否してはいけない。
+        let fitting_word = "A".repeat(1015);
+        let fitting_code = format!("x = <<{fitting_word}\nbody\n{fitting_word}\n");
+        assert!(
+            !parse_has_error(&fitting_code),
+            "シリアライズ上限ぴったりの heredoc 終端語を拒否しています"
+        );
+
+        let oversized_word = "A".repeat(1016);
+        let oversized_code = format!("x = <<{oversized_word}\nbody\n{oversized_word}\n");
+        assert!(
+            parse_has_error(&oversized_code),
+            "シリアライズ上限を超える heredoc 終端語を誤って受理しています"
+        );
+    }
+
+    #[test]
     fn test_scanner_symbol_regex_and_percent_equal_boundaries() {
         assert!(!parse_has_error(":foo=\n:Foo=\n:[]=\n/a/i\n"));
         assert!(!parse_has_error("x = %=abc=\nx %= 1\n"));

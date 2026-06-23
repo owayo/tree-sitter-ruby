@@ -97,13 +97,13 @@ static inline bool can_serialize_heredocs_with(Scanner *scanner, const Heredoc *
     for (uint32_t i = 0; i < scanner->open_heredocs.size; i++) {
         Heredoc *heredoc = array_get(&scanner->open_heredocs, i);
         size += SERIALIZED_HEREDOC_HEADER_SIZE + heredoc->word.size;
-        if (size >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+        if (size > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
             return false;
         }
     }
     if (new_heredoc != NULL) {
         size += SERIALIZED_HEREDOC_HEADER_SIZE + new_heredoc->word.size;
-        if (size >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+        if (size > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
             return false;
         }
     }
@@ -137,7 +137,8 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
         Heredoc *heredoc = array_get(&scanner->open_heredocs, i);
 
         // フラグ 3 つと 32 ビット長、終端語本体をシリアライズする。
-        if (size + SERIALIZED_HEREDOC_HEADER_SIZE + heredoc->word.size >= TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
+        // バッファ上限ぴったりは有効なため、超過だけを拒否する。
+        if (size + SERIALIZED_HEREDOC_HEADER_SIZE + heredoc->word.size > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
             return 0;
         }
         buffer[size++] = (char)heredoc->end_word_indentation_allowed;
