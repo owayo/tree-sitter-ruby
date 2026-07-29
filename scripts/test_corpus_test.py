@@ -2389,6 +2389,15 @@ class ResolveMemoryLimitTests(unittest.TestCase):
                     corpus_test.DEFAULT_MEMORY_LIMIT_MB,
                 )
 
+    def test_returns_default_when_not_finite(self):
+        """NaN と無限大はメモリ監視を無効化するため既定値に戻す。"""
+        for value in ("nan", "inf", "-inf"):
+            with self.subTest(value=value):
+                self.assertEqual(
+                    corpus_test._resolve_memory_limit_mb({"TS_MEMORY_LIMIT_MB": value}),
+                    corpus_test.DEFAULT_MEMORY_LIMIT_MB,
+                )
+
     def test_returns_parsed_value_for_valid_number(self):
         """有効な値はそのまま採用される。"""
         self.assertAlmostEqual(
@@ -2400,6 +2409,50 @@ class ResolveMemoryLimitTests(unittest.TestCase):
         """env 引数を省略した場合は os.environ から解決する。"""
         with patch.dict(os.environ, {"TS_MEMORY_LIMIT_MB": "1500"}, clear=False):
             self.assertEqual(corpus_test._resolve_memory_limit_mb(), 1500.0)
+
+
+class GetRssMbTests(unittest.TestCase):
+    """OS ごとの RSS 取得と単位変換を検証する。"""
+
+    def test_windows_tasklist_csv_preserves_thousands_separator(self):
+        """引用符内の桁区切りカンマを列区切りとして扱わない。"""
+        result = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout='"tree-sitter.exe","4242","Console","1","12,344 K"\n',
+            stderr="",
+        )
+        with patch.object(corpus_test.sys, "platform", "win32"):
+            with patch("corpus_test.subprocess.run", return_value=result):
+                self.assertAlmostEqual(corpus_test._get_rss_mb(4242), 12344 / 1024)
+
+    def test_posix_ps_converts_kilobytes_to_megabytes(self):
+        """ps の KiB 出力を MiB に変換する。"""
+        result = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="2048\n",
+            stderr="",
+        )
+        with patch.object(corpus_test.sys, "platform", "darwin"):
+            with patch("corpus_test.subprocess.run", return_value=result):
+                self.assertEqual(corpus_test._get_rss_mb(4242), 2.0)
+
+    def test_process_group_rss_sums_only_matching_group(self):
+        """同じプロセスグループの RSS だけを合算する。"""
+        result = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="99 1024\n99 2048\n100 4096\ninvalid\n",
+            stderr="",
+        )
+        with patch.object(corpus_test.sys, "platform", "darwin"):
+            with patch("corpus_test.os.getpgid", return_value=99):
+                with patch("corpus_test.subprocess.run", return_value=result):
+                    self.assertEqual(
+                        corpus_test._get_process_group_rss_mb(4242),
+                        3.0,
+                    )
 
 
 class RunWithMemoryGuardTests(unittest.TestCase):

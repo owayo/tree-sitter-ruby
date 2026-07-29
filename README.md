@@ -74,6 +74,8 @@ tree-sitter parse example.rb
 #   leading `||`/`&&` operators, non-continuing single `&`, leading `..`)
 # - covers scanner.c `is_iden_char` regression for non-ASCII Unicode identifier symbols
 #   (e.g. `:Ĩ` U+0128 and `:漢字`) so char truncation cannot collide with NON_IDENTIFIER_CHARS
+# - covers valid Ruby identifiers containing `ſ` (U+017F) and `K` (U+212A),
+#   which tree-sitter-cli 0.26.11 removes from generic character sets during generation
 # - covers scanner short-interpolation handling so `$` immediately before EOF is not
 #   mistaken for a one-character special global variable
 # - covers scanner short-interpolation handling so non-ASCII Unicode characters
@@ -111,7 +113,9 @@ pnpm run test
 # - hidden .txt / .txt directory skipping, and OSError suppression during temp file cleanup
 # - summarize_command_failure returning exit code only for empty / fully-filtered output
 # - _resolve_memory_limit_mb parsing of TS_MEMORY_LIMIT_MB (unset / blank / non-numeric /
-#   zero-or-negative / valid / os.environ fallback) boundary cases
+#   non-finite / zero-or-negative / valid / os.environ fallback) boundary cases
+# - OS-specific RSS parsing, including quoted thousands separators in Windows tasklist CSV
+#   and POSIX process-group aggregation
 # - run_with_memory_guard normal completion, large pipe output without deadlock,
 #   child-process RSS kill, and timeout-triggered kill (kill_reason set)
 pnpm run test:unit
@@ -166,6 +170,15 @@ with the project-pinned CLI when dependencies are installed.
 The external scanner (`src/scanner.c`) handles context-sensitive tokens that cannot be expressed in `grammar.js` alone: heredocs, delimited literals (strings, regexes, subshells, symbol/string arrays), line breaks, whitespace-sensitive operators, and the serialized scanner state needed to resume those constructs correctly. Unlike the rest of `src/`, this file is manually maintained and should be edited directly when adding new token types.
 
 Long heredoc terminators over 255 characters are covered by a dedicated regression case in `test/corpus/literals.txt`; terminators that cannot fit in tree-sitter's scanner serialization buffer are rejected instead of being silently misparsed, while a state that exactly fills the 1024-byte buffer remains valid. Changes to scanner serialization should be validated with `pnpm run test`. The `deserialize()` function includes bounds checking to safely handle truncated or corrupted buffers, and uses subtraction (`word_length > length - size`) instead of addition for the word-length boundary check so that an attacker-controlled `word_length` cannot wrap around via unsigned integer overflow. Regex option scanning (`imxouesn`) and short interpolation scanning for special global variables both guard against `lexer->lookahead == 0`, so EOF cannot be mistaken for the terminating NUL matched by `strchr`. Short-interpolation entry points (`@`/`$` after `#`) compare against `lexer->lookahead` (`int32_t`) directly instead of truncating to `char`, so Unicode characters whose low 8 bits collide with `'@'` (0x40) or `'$'` (0x24) — such as `Ĥ` (U+0124) or `Ŀ` (U+0140) — are not misclassified as interpolation starts.
+
+### Unicode identifiers
+
+tree-sitter-cli 0.26.11 strips `ſ` (U+017F, simple-folded to `s`) and `K`
+(U+212A, simple-folded to `k`) from generic lexer character sets to make
+case-insensitive keyword extraction correct. Ruby accepts both characters in
+identifiers, so `grammar.js` explicitly adds them back to the initial and
+continuation character rules. Keep this exception synchronized with
+`test/corpus/identifiers.txt` when changing identifier token rules.
 
 ## References
 

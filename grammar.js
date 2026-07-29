@@ -30,10 +30,23 @@ const PREC = {
 	COMPLEMENT: 85,
 };
 
-const IDENTIFIER_CHARS = /[^\x00-\x1F\s:;`"'@$#.,|^&<=>+\-*/\\%?!~()\[\]{}]*/;
-const LOWER_ALPHA_CHAR =
-	/[^\x00-\x1F\sA-Z0-9:;`"'@$#.,|^&<=>+\-*/\\%?!~()\[\]{}]/;
-const ALPHA_CHAR = /[^\x00-\x1F\s0-9:;`"'@$#.,|^&<=>+\-*/\\%?!~()\[\]{}]/;
+// tree-sitter-cli 0.26.11 は case-insensitive keyword の誤抽出を防ぐため、
+// ASCII へ単純 case fold される 2 文字を汎用文字集合から除外する。
+// Ruby ではどちらも有効な識別子文字なので、文法側で明示的に許可する。
+const NON_ASCII_SIMPLE_CASE_FOLD_CHAR = choice("\u017F", "\u212A");
+const IDENTIFIER_CHAR = choice(
+	/[^\x00-\x1F\s:;`"'@$#.,|^&<=>+\-*/\\%?!~()\[\]{}]/,
+	NON_ASCII_SIMPLE_CASE_FOLD_CHAR,
+);
+const IDENTIFIER_CHARS = repeat(IDENTIFIER_CHAR);
+const LOWER_ALPHA_CHAR = choice(
+	/[^\x00-\x1F\sA-Z0-9:;`"'@$#.,|^&<=>+\-*/\\%?!~()\[\]{}]/,
+	NON_ASCII_SIMPLE_CASE_FOLD_CHAR,
+);
+const ALPHA_CHAR = choice(
+	/[^\x00-\x1F\s0-9:;`"'@$#.,|^&<=>+\-*/\\%?!~()\[\]{}]/,
+	NON_ASCII_SIMPLE_CASE_FOLD_CHAR,
+);
 
 module.exports = grammar({
 	name: "ruby",

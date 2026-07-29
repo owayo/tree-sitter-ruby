@@ -75,8 +75,13 @@ tree-sitter parse example.rb
 # - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
 #   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
 #   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
+# - tree-sitter-cli 0.26.11 が生成時に汎用文字集合から除外する
+#   `ſ`（U+017F）と `K`（U+212A）を含む正当な Ruby 識別子も回帰確認する
 # - scanner.c の短縮 interpolation 判定が EOF 直後の `$` を
 #   特殊グローバル変数として誤判定しないこともここで確認する
+# - scanner.c の短縮 interpolation 判定が ASCII 外 Unicode 文字
+#   （`Ĥ` U+0124 や `Ŀ` U+0140 など）を char 切り詰めで `@` / `$` と
+#   誤一致させないこともここで確認する
 # - Ruby 3.4 の `it` 暗黙ブロックパラメータも回帰確認する
 # - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
@@ -110,7 +115,9 @@ pnpm run test
 #   一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
 # - summarize_command_failure の空 output / 全フィルター行のみの場合に exit code のみ返すことの検証
 # - _resolve_memory_limit_mb の TS_MEMORY_LIMIT_MB 解析（未設定 / 空文字 / 数値以外 /
-#   0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
+#   非有限値 / 0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
+# - Windows tasklist CSV の引用符付き桁区切りと POSIX プロセスグループ合算を含む
+#   OS ごとの RSS 解析検証
 # - run_with_memory_guard の正常終了、大きな pipe 出力での非デッドロック、
 #   子プロセス RSS 超過 kill、タイムアウト強制終了（kill_reason 設定）の検証
 pnpm run test:unit
@@ -134,6 +141,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # 行頭 `&.` （safe navigation）が改行継続として扱われる scanner.c 改行判定の回帰検証、
 # scanner.c の `is_iden_char` が ASCII 外 Unicode 識別子文字を char 切り詰めで
 # NON_IDENTIFIER_CHARS と誤一致させない symbol パース回帰検証、
+# scanner.c の `scan_short_interpolation` が ASCII 外 Unicode 文字
+# （`Ĥ` U+0124、`Ŀ` U+0140 など）を `@` / `$` と誤判定しない回帰検証、
 # Ruby 3.4 の `it` 暗黙ブロックパラメータのパース検証、
 # Ruby 3.4 の index assignment（`arr[i, k: v] = x` / `arr[i, &b] = x`）拒否の検証、
 # Ruby 4.0 の `*nil` splat 引数のパース検証、
@@ -161,6 +170,15 @@ PATH 上の `tree-sitter` の順に解決します。依存関係をインスト
 外部スキャナー（`src/scanner.c`）は、`grammar.js` だけでは表現できない文脈依存トークンを処理します: heredoc、区切りリテラル（文字列、正規表現、サブシェル、シンボル/文字列配列）、改行、空白依存の演算子、およびそれらを正しく再開するためのスキャナー状態シリアライズです。`src/` 配下の他のファイルとは異なり、手動管理のため新しいトークン型を追加する際は直接編集してください。
 
 255 文字を超える heredoc 終端語は `test/corpus/literals.txt` の回帰ケースで検証しています。tree-sitter の scanner serialization buffer に収まらない終端語は、状態喪失による誤パースを避けるため ERROR にしますが、1024 バイトのバッファ上限ぴったりに収まる状態は有効として扱います。スキャナーのシリアライズを変更した場合は `pnpm run test` で必ず確認してください。`deserialize()` 関数にはバッファ境界チェックが含まれており、切り詰められた・破損したバッファを安全に処理します。word_length の境界チェックは加算 (`size + word_length > length`) ではなく減算 (`word_length > length - size`) で行い、攻撃者が制御可能な `word_length` で符号なし整数オーバーフローを起こしてもチェックを回避できないようにしています。また正規表現オプション読み（`imxouesn`）と特殊グローバル変数の短縮 interpolation 読みは `lexer->lookahead == 0` を確認し、EOF が `strchr` の終端 NUL マッチで有効文字として誤判定されないようにしています。
+
+### Unicode 識別子
+
+tree-sitter-cli 0.26.11 は、case-insensitive keyword を正しく抽出するため、
+`s` へ単純 case fold される `ſ`（U+017F）と、`k` へ単純 case fold される
+`K`（U+212A）を汎用の lexer 文字集合から除外します。Ruby ではどちらも
+有効な識別子文字なので、`grammar.js` の先頭文字・継続文字ルールで明示的に
+許可しています。識別子 token のルールを変更する場合は、
+`test/corpus/identifiers.txt` の回帰ケースと必ず同期してください。
 
 ## 参考資料
 

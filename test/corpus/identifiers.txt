@@ -1,0 +1,24 @@
+========================================
+ASCII へ case fold される Unicode 識別子文字
+========================================
+
+claſs = 1
+breaK = 2
+@ſ = claſs
+@@K = breaK
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (integer))
+  (assignment
+    left: (identifier)
+    right: (integer))
+  (assignment
+    left: (instance_variable)
+    right: (identifier))
+  (assignment
+    left: (class_variable)
+    right: (identifier)))

@@ -46,6 +46,8 @@ pnpm run lint              # lint チェック（Biome）
 # - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
 #   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
 #   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
+# - tree-sitter-cli 0.26.11 が生成時に汎用文字集合から除外する
+#   `ſ`（U+017F）と `K`（U+212A）を含む正当な Ruby 識別子も回帰確認する
 # - scanner.c の短縮 interpolation 判定が EOF 直後の `$` を
 #   特殊グローバル変数として誤判定しないこともここで確認する
 # - scanner.c の短縮 interpolation 判定が ASCII 外 Unicode 文字
@@ -85,7 +87,9 @@ pnpm run test
 #   一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
 # - summarize_command_failure の空 output / 全フィルター対象行のみケースが exit code だけを返すこと
 # - _resolve_memory_limit_mb の TS_MEMORY_LIMIT_MB 解析（未設定 / 空文字 / 数値以外 /
-#   0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
+#   非有限値 / 0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
+# - Windows tasklist CSV の引用符付き桁区切りと POSIX プロセスグループ合算を含む
+#   OS ごとの RSS 解析検証
 # - run_with_memory_guard の正常終了、大きな pipe 出力での非デッドロック、
 #   子プロセス RSS 超過 kill、タイムアウト強制終了（kill_reason 設定）の検証
 pnpm run test:unit
@@ -151,6 +155,7 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 
 - `src/` 配下は自動生成ファイルのため直接編集しない（ただし `src/scanner.c` は手動管理の外部スキャナー）
 - `grammar.js` を変更した場合は必ず `tree-sitter generate` を実行する
+- tree-sitter-cli 0.26.11 は `ſ`（U+017F）と `K`（U+212A）を汎用 lexer 文字集合から除外するが、Ruby では有効な識別子文字である。識別子 token のルールでは両文字を明示的に許可し、`test/corpus/identifiers.txt` の回帰ケースと同期すること
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `pnpm run test` で確認する

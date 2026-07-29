@@ -16,6 +16,8 @@ PC のハングを防ぐ。tree-sitter 側にも `--timeout` (µs) を渡し、
     cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 """
 
+import csv
+import math
 import os
 import re
 import signal
@@ -203,7 +205,7 @@ def _resolve_memory_limit_mb(env=None):
         value = float(raw)
     except ValueError:
         return DEFAULT_MEMORY_LIMIT_MB
-    if value <= 0:
+    if not math.isfinite(value) or value <= 0:
         return DEFAULT_MEMORY_LIMIT_MB
     return value
 
@@ -224,8 +226,7 @@ def _get_rss_mb(pid):
             return None
         if result.returncode != 0:
             return None
-        for line in result.stdout.splitlines():
-            parts = [p.strip().strip('"') for p in line.split(",")]
+        for parts in csv.reader(result.stdout.splitlines()):
             if len(parts) >= 5 and parts[1] == str(pid):
                 mem = parts[4].replace(",", "").replace(" K", "").strip()
                 try:
