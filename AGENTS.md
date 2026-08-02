@@ -92,6 +92,18 @@ pnpm run test
 #   OS ごとの RSS 解析検証
 # - run_with_memory_guard の正常終了、大きな pipe 出力での非デッドロック、
 #   子プロセス RSS 超過 kill、タイムアウト強制終了（kill_reason 設定）の検証
+# - resolve_lib_dir の解決順（env 上書き / 空白のみ / POSIX 既定 / Windows は
+#   POSIX パスではなくネイティブ TEMP 配下 / os.environ フォールバック）
+# - resolve_library_path と library_suffix のプラットフォーム別解決、
+#   TREE_SITTER_LIB_PATH が TREE_SITTER_LIBDIR より優先されること
+# - configure_stdio_encoding の UTF-8 化（reconfigure 非対応ストリームの無視、
+#   例外の握り潰し、既定で sys.stdout/sys.stderr を対象にすること）
+# - root_cause_line / summarize_command_failure の ANSI 除去と
+#   Caused by チェーン最深部（例: os error 126）の抽出
+# - main() が --lib-path / --lang-name と NO_COLOR=1 を渡すこと、
+#   共有ライブラリ不在を setup error（exit 2）で即座に報告すること
+# - ツリーが出ないままの非 0 終了を、期待 ERROR ケースでも
+#   「expected ERROR but parsed OK」と誤分類しないこと
 pnpm run test:unit
 
 # Rust バインディングテスト
@@ -149,6 +161,17 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 ```
 
+`corpus_test.py` はこの共有ライブラリを `tree-sitter parse --lib-path <lib> --lang-name ruby` で
+明示的に読み込む。CLI 側の暗黙の再ビルド（Windows では MSVC の `-O2` コンパイル）に落ちるのを
+防ぐため。ライブラリが見つからない場合は 1 件もパースせず setup error（exit 2）で終わる。
+場所は次の順で解決する:
+
+| 優先度 | 指定方法 | 例 |
+|---|---|---|
+| 1 | `TREE_SITTER_LIB_PATH`（ファイル） | `/tmp/ts-lib/ruby.dylib` |
+| 2 | `TREE_SITTER_LIBDIR`（ディレクトリ）+ プラットフォーム既定名 | `/tmp/ts-lib` → `ruby.dylib` |
+| 3 | 既定（POSIX は `/tmp/ts-lib`、Windows は TEMP 配下の `ts-lib`） | — |
+
 やむを得ず `tree-sitter test` を実行する場合は、**必ず RSS と VSIZE の両方を監視**し、VSIZE 50GB または RSS 6GB 超過で即座に kill すること。
 
 ## 重要なルール
@@ -165,5 +188,9 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `deserialize()` のバッファ境界チェックで `size + word_length > length` のような符号なし整数の和を使うと、`word_length` が極端に大きい場合に整数オーバーフローしてチェックを潜り抜けるため、`word_length > length - size` の引き算で比較すること（`size <= length` は手前のヘッダーサイズチェックで保証されている前提）
 - `tree-sitter test` をメモリ監視なしで実行してはならない
 - `scripts/` 配下の Python コードは Python 3.7 互換を維持するため、`ruff.toml` で `target-version = "py37"` を指定している。parenthesized context manager などの新しい構文を自動書き換えされないよう、新規コードでも Python 3.7 互換を崩さないこと
+- POSIX パス（`/tmp/ts-lib` など）をネイティブ Windows プロセスに渡してはならない。Git Bash が解決する `/tmp` とネイティブプロセスが解決する `/tmp`（ドライブレターの無い root 相対パスとしてカレントドライブ基準になる）は別物で、共有ライブラリを見失う。CI では `cygpath -am` で変換したパスを `GITHUB_ENV` 経由で渡すこと
+- Windows の Python は stdout の既定エンコーディングが cp1252/cp932 のため、日本語を含むコーパスのテスト名を print すると `UnicodeEncodeError` でランナーごと落ちる。`scripts/` の出力側は `configure_stdio_encoding()` で UTF-8 化し、CI では `PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8` も設定すること
+- tree-sitter CLI はパイプ出力でも `Error:` 行を着色し、`NO_COLOR` でも抑止できない。CLI 出力を解析する場合は ANSI エスケープを除去してから判定すること。真の失敗理由は `Caused by:` チェーンの最深部にあるため、先頭の `Error:` 行だけを見ないこと
+- `.github/workflows/ci.yml` の `paths` フィルターには `scripts/**` と `.github/workflows/ci.yml` 自身を含めること。含めないと CI 自体やテストランナーだけを変更した push で CI が起動しない
 - `src/scanner.c` で `strchr(set, lexer->lookahead)` を使う場合、`lexer->lookahead == 0`（EOF）のとき strchr が終端の NUL に一致して非 NULL を返すため、`lexer->lookahead != 0` で EOF を除外すること。さもないと EOF 直後の入力（例: 末尾に改行のない `a = /x/` の正規表現オプション読み、`"#$` の短縮 interpolation 判定）で無限ループや誤判定になる
 - `src/scanner.c` で `lexer->lookahead`（`int32_t`）を ASCII 文字と比較するときは `char` に切り詰めないこと。Unicode コードポイントの下位 8 bit が ASCII 制御文字（`'@'` 0x40, `'$'` 0x24, `'('` 0x28 など）と一致すると、`Ĥ` (U+0124) / `Ŀ` (U+0140) / `Ĩ` (U+0128) のような文字が誤判定されてしまう（短縮 interpolation 起点や識別子文字判定の誤動作の原因になる）。`int32_t` のまま比較するか、ASCII 範囲（`< 0x80`）を事前に切り分けること

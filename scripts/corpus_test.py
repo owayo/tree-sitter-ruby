@@ -15,9 +15,15 @@ PC のハングを防ぐ。tree-sitter 側にも `--timeout` (µs) を渡し、
     mkdir -p /tmp/ts-lib
     cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
-共有ライブラリの置き場所は `TREE_SITTER_LIBDIR` で上書きできる。未設定なら
-POSIX では `/tmp/ts-lib`、Windows では TEMP ディレクトリ配下の `ts-lib` を使う
-（後者は Git Bash の `/tmp` と同じ実体を指す）。
+共有ライブラリは `tree-sitter parse --lib-path` で明示的に読み込む。CLI 側の
+暗黙の再ビルド（Windows では MSVC の -O2 コンパイル）に落ちるのを防ぐため。
+場所は `TREE_SITTER_LIB_PATH`（ファイル）または `TREE_SITTER_LIBDIR`
+（ディレクトリ）で上書きできる。未設定なら POSIX では `/tmp/ts-lib`、
+Windows では TEMP ディレクトリ配下の `ts-lib` を使う。
+
+Windows では POSIX パスをネイティブ CLI にそのまま渡してはいけない。Git Bash の
+`/tmp` とネイティブプロセスが解決する `/tmp` は同じ場所とは限らないため、CI では
+`cygpath -am` で変換したパスを環境変数で渡す。
 """
 
 import csv
@@ -40,6 +46,8 @@ PARSE_TIMEOUT_SECONDS = 10
 POLL_INTERVAL_SECONDS = 5.0
 POSIX_LIB_DIR = "/tmp/ts-lib"
 LIB_DIR_NAME = "ts-lib"
+LIBRARY_STEM = "ruby"
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
 
 def configure_stdio_encoding(streams=None):
@@ -56,7 +64,7 @@ def configure_stdio_encoding(streams=None):
         if reconfigure is None:
             continue
         try:
-            reconfigure(encoding="utf-8", errors="replace")
+            reconfigure(encoding="utf-8", errors="backslashreplace")
         except (OSError, ValueError):
             pass
 
@@ -74,8 +82,31 @@ def resolve_lib_dir(env=None):
     if override:
         return override
     if os.name == "nt":
-        return str(Path(tempfile.gettempdir()) / LIB_DIR_NAME)
+        return os.path.join(tempfile.gettempdir(), LIB_DIR_NAME)
     return POSIX_LIB_DIR
+
+
+def library_suffix():
+    """実行プラットフォームの共有ライブラリ拡張子を返す。"""
+    if sys.platform == "win32":
+        return ".dll"
+    if sys.platform == "darwin":
+        return ".dylib"
+    return ".so"
+
+
+def resolve_library_path(env=None):
+    """プリビルド済み parser 共有ライブラリのパスを解決する。
+
+    `TREE_SITTER_LIB_PATH` があれば最優先で使う。無ければ
+    `resolve_lib_dir()` の下のプラットフォーム既定名を組み立てる。
+    """
+    if env is None:
+        env = os.environ
+    override = env.get("TREE_SITTER_LIB_PATH", "").strip()
+    if override:
+        return override
+    return os.path.join(resolve_lib_dir(env), LIBRARY_STEM + library_suffix())
 
 
 def tree_sitter_command(env=None):
@@ -197,33 +228,45 @@ def format_failure_detail(detail):
     return str(detail)
 
 
-def first_cause_line(output):
-    """`Caused by:` チェーン先頭の 1 行を返す。無ければ None。
+def strip_ansi(text):
+    """ANSI エスケープシーケンスを取り除く。
+
+    tree-sitter CLI はパイプ出力でも `Error:` を着色し、`NO_COLOR` でも
+    抑止できない。除去しないと失敗要約が `Error:` 行を取りこぼす。
+    """
+    return ANSI_ESCAPE_RE.sub("", text)
+
+
+def root_cause_line(output):
+    """`Caused by:` チェーン最深部の 1 行を返す。無ければ None。
 
     tree-sitter CLI は真の失敗理由を `Caused by:` 以下に出すため、
     先頭の `Error:` 行だけでは原因が分からない。
     """
-    lines = output.splitlines()
-    for index, line in enumerate(lines):
-        if line.strip() != "Caused by:":
+    causes = []
+    in_causes = False
+    for raw in strip_ansi(output).splitlines():
+        line = raw.strip()
+        if line == "Caused by:":
+            in_causes = True
             continue
-        for cause in lines[index + 1 :]:
-            stripped = cause.strip()
-            if stripped:
-                return re.sub(r"^\d+:\s*", "", stripped)
-    return None
+        if not in_causes or not line:
+            continue
+        causes.append(re.sub(r"^\d+:\s*", "", line))
+    return causes[-1] if causes else None
 
 
 def summarize_command_failure(returncode, output):
     """コマンド失敗時の要約を 1 行に整形する。"""
-    cause = first_cause_line(output)
-    suffix = f" (caused by: {cause})" if cause else ""
-    for line in output.splitlines():
+    clean = strip_ansi(output)
+    cause = root_cause_line(clean)
+    suffix = f" (root cause: {cause})" if cause else ""
+    for line in clean.splitlines():
         stripped = line.strip()
         if stripped.startswith("Error:"):
             return f"exit {returncode}: {stripped}{suffix}"
 
-    for line in output.splitlines():
+    for line in clean.splitlines():
         stripped = line.strip()
         if not stripped:
             continue
@@ -233,7 +276,9 @@ def summarize_command_failure(returncode, output):
             continue
         if stripped.startswith("Node.js v"):
             continue
-        return f"exit {returncode}: {stripped}"
+        if stripped == "Caused by:":
+            continue
+        return f"exit {returncode}: {stripped}{suffix}"
 
     return f"exit {returncode}"
 
@@ -365,6 +410,16 @@ def _get_process_group_rss_mb(pid):
 def _kill_process_tree(proc):
     """プロセス（およびプロセスグループ）を強制終了する。"""
     if sys.platform == "win32":
+        # proc.kill() は対象プロセスのみを終了するため、まず taskkill /T で
+        # 子プロセスごと落とす（失敗しても proc.kill() にフォールバックする）。
+        try:
+            subprocess.run(
+                ["taskkill", "/PID", str(proc.pid), "/T", "/F"],
+                capture_output=True,
+                timeout=5,
+            )
+        except (OSError, subprocess.SubprocessError):
+            pass
         try:
             proc.kill()
         except OSError:
@@ -496,7 +551,8 @@ def main():
     env = {
         **os.environ,
         "TREE_SITTER_LIBDIR": resolve_lib_dir(),
-        # 失敗要約が ANSI エスケープ入りの `Error:` 行を取りこぼさないようにする。
+        # 着色の抑止は CLI 側が守らない場面があるため保険。実際の担保は
+        # summarize_command_failure() 側の ANSI 除去が行う。
         "NO_COLOR": "1",
     }
     command = tree_sitter_command(env)
@@ -504,6 +560,16 @@ def main():
     if setup_error:
         print("\n--- Setup Error ---")
         print(f"  {setup_error}")
+        return 2
+
+    library_path = resolve_library_path(env)
+    if not os.path.isfile(library_path):
+        print("\n--- Setup Error ---")
+        print(f"  parser 共有ライブラリが見つかりません: {library_path}")
+        print(
+            "  先に共有ライブラリをビルドするか"
+            " TREE_SITTER_LIB_PATH を指定してください。"
+        )
         return 2
 
     if not os.path.isdir(CORPUS_DIR):
@@ -539,7 +605,19 @@ def main():
                     tmpfile = f.name
 
                 result = run_with_memory_guard(
-                    [command, "parse", "--no-ranges", parse_timeout_arg, tmpfile],
+                    [
+                        command,
+                        "parse",
+                        # 共有ライブラリを直接指定して、CLI 側の暗黙の再ビルド
+                        # （Windows では MSVC -O2）に落ちないようにする。
+                        "--lib-path",
+                        library_path,
+                        "--lang-name",
+                        LIBRARY_STEM,
+                        "--no-ranges",
+                        parse_timeout_arg,
+                        tmpfile,
+                    ],
                     timeout=PARSE_TIMEOUT_SECONDS,
                     memory_limit_mb=memory_limit_mb,
                     env=env,
@@ -554,6 +632,15 @@ def main():
                 stdout = result.stdout or ""
                 stderr = result.stderr or ""
                 output = stdout + stderr
+                # 構文エラーでも tree-sitter は stdout にツリーを出す。ツリーが
+                # 出ないままの非 0 終了は CLI 自体の失敗なので、期待 ERROR
+                # ケースでも成功と誤判定しない。
+                if result.returncode != 0 and "(" not in stdout:
+                    failed += 1
+                    detail = summarize_command_failure(result.returncode, output)
+                    failures.append((fname, name, detail))
+                    continue
+
                 has_error = "(ERROR" in output or "(MISSING" in output
                 expected_norm = normalize_tree(expected_ast)
                 actual_norm = normalize_tree(output)

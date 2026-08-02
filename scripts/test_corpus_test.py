@@ -19,6 +19,14 @@ import corpus_test
 class CorpusTestScriptTests(unittest.TestCase):
     """コーパス補助関数の振る舞いを検証する。"""
 
+    def setUp(self):
+        """Patch resolve_library_path so main() checks stay environment agnostic."""
+        patcher = patch.object(
+            corpus_test, "resolve_library_path", return_value=__file__
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def _write_corpus(self, body):
         with tempfile.NamedTemporaryFile(
             mode="w",
@@ -2240,8 +2248,10 @@ class CorpusTestScriptTests(unittest.TestCase):
         first_cmd = mock_run.call_args_list[0][0][0]
         second_cmd = mock_guard.call_args_list[0][0][0]
         self.assertEqual(first_cmd[:2], ["/custom/tree-sitter", "--version"])
+        self.assertEqual(second_cmd[:2], ["/custom/tree-sitter", "parse"])
+        self.assertIn("--no-ranges", second_cmd)
         self.assertEqual(
-            second_cmd[:3], ["/custom/tree-sitter", "parse", "--no-ranges"]
+            second_cmd[2:6], ["--lib-path", __file__, "--lang-name", "ruby"]
         )
 
     # --- extract_tests: .DS_Store 等の非 .txt ファイルが混在するケース ---
@@ -2570,7 +2580,7 @@ class ResolveLibDirTests(unittest.TestCase):
             ):
                 resolved = corpus_test.resolve_lib_dir({})
 
-        self.assertEqual(Path(resolved), Path("C:/Temp") / "ts-lib")
+        self.assertEqual(resolved, os.path.join("C:/Temp", "ts-lib"))
         self.assertFalse(resolved.startswith("/tmp"))
 
     def test_falls_back_to_os_environ(self):
@@ -2595,7 +2605,9 @@ class ConfigureStdioEncodingTests(unittest.TestCase):
         stream = _Stream()
         corpus_test.configure_stdio_encoding([stream])
 
-        self.assertEqual(stream.calls, [{"encoding": "utf-8", "errors": "replace"}])
+        self.assertEqual(
+            stream.calls, [{"encoding": "utf-8", "errors": "backslashreplace"}]
+        )
 
     def test_skips_streams_without_reconfigure(self):
         """reconfigure を持たないストリーム (StringIO 等) では何もしない。"""
@@ -2625,12 +2637,12 @@ class ConfigureStdioEncodingTests(unittest.TestCase):
         self.assertEqual(len(calls), 2)
 
 
-class FirstCauseLineTests(unittest.TestCase):
+class RootCauseLineTests(unittest.TestCase):
     """tree-sitter の Caused by チェーン抽出を検証する。"""
 
     def test_returns_none_without_cause_section(self):
         """Caused by が無ければ None を返す。"""
-        self.assertIsNone(corpus_test.first_cause_line("Error: boom\n"))
+        self.assertIsNone(corpus_test.root_cause_line("Error: boom\n"))
 
     def test_extracts_single_cause(self):
         """単一原因はそのまま返す。"""
@@ -2639,36 +2651,41 @@ class FirstCauseLineTests(unittest.TestCase):
             Error: Failed to load language for path "x.rb"
 
             Caused by:
-                Dynamic library `ruby.dll` not found after build attempt.
+                Error opening dynamic library /tmp/ts-lib/ruby.dll -- dlopen failed
             """
         )
         self.assertEqual(
-            corpus_test.first_cause_line(output),
-            "Dynamic library `ruby.dll` not found after build attempt.",
+            corpus_test.root_cause_line(output),
+            "Error opening dynamic library /tmp/ts-lib/ruby.dll -- dlopen failed",
         )
 
-    def test_strips_chain_numbering(self):
-        """複数原因では先頭の番号付けを取り除いて返す。"""
+    def test_returns_deepest_cause_without_numbering(self):
+        """複数原因では最深部を、番号付けを外して返す。"""
         output = textwrap.dedent(
             """\
             Error: Failed to load language for path "x.rb"
 
             Caused by:
                 0: failed to load language for current directory
-                1: No such file or directory (os error 2)
+                1: The specified module could not be found. (os error 126)
             """
         )
         self.assertEqual(
-            corpus_test.first_cause_line(output),
-            "failed to load language for current directory",
+            corpus_test.root_cause_line(output),
+            "The specified module could not be found. (os error 126)",
         )
 
     def test_returns_none_when_cause_section_is_empty(self):
         """Caused by の後に内容が無ければ None を返す。"""
-        self.assertIsNone(corpus_test.first_cause_line("Caused by:\n\n"))
+        self.assertIsNone(corpus_test.root_cause_line("Caused by:\n\n"))
 
-    def test_summarize_command_failure_appends_cause(self):
-        """失敗要約に Caused by の先頭行を添える。"""
+    def test_strips_ansi_before_matching(self):
+        """ANSI エスケープ付きでも Caused by を認識する。"""
+        output = "\x1b[31mError:\x1b[0m boom\n\nCaused by:\n    os error 126\n"
+        self.assertEqual(corpus_test.root_cause_line(output), "os error 126")
+
+    def test_summarize_command_failure_appends_root_cause(self):
+        """失敗要約に最深部の原因を添える。"""
         output = textwrap.dedent(
             """\
             Error: Failed to load language for path "x.rb"
@@ -2680,12 +2697,61 @@ class FirstCauseLineTests(unittest.TestCase):
         self.assertEqual(
             corpus_test.summarize_command_failure(1, output),
             'exit 1: Error: Failed to load language for path "x.rb"'
-            " (caused by: No language found)",
+            " (root cause: No language found)",
+        )
+
+    def test_summarize_command_failure_strips_ansi_error_line(self):
+        """着色された Error: 行でも要約が取りこぼさない。"""
+        output = '\x1b[31mError:\x1b[0m Failed to load language for path "x.rb"\n'
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, output),
+            'exit 1: Error: Failed to load language for path "x.rb"',
         )
 
 
+class ResolveLibraryPathTests(unittest.TestCase):
+    """共有ライブラリのファイルパス解決を検証する。"""
+
+    def test_explicit_lib_path_wins(self):
+        """TREE_SITTER_LIB_PATH は libdir より優先される。"""
+        env = {
+            "TREE_SITTER_LIB_PATH": "C:/Temp/ts-lib/ruby.dll",
+            "TREE_SITTER_LIBDIR": "/ignored",
+        }
+        self.assertEqual(
+            corpus_test.resolve_library_path(env), "C:/Temp/ts-lib/ruby.dll"
+        )
+
+    def test_derives_from_libdir_with_platform_suffix(self):
+        """libdir とプラットフォーム既定の拡張子から組み立てる。"""
+        env = {"TREE_SITTER_LIBDIR": "/opt/ts-lib"}
+        self.assertEqual(
+            corpus_test.resolve_library_path(env),
+            os.path.join("/opt/ts-lib", "ruby" + corpus_test.library_suffix()),
+        )
+
+    def test_library_suffix_per_platform(self):
+        """プラットフォームごとの拡張子を返す。"""
+        for platform, expected in (
+            ("win32", ".dll"),
+            ("darwin", ".dylib"),
+            ("linux", ".so"),
+        ):
+            with patch.object(corpus_test.sys, "platform", platform):
+                self.assertEqual(corpus_test.library_suffix(), expected)
+
+
 class MainEnvironmentTests(unittest.TestCase):
-    """main() が子プロセスへ渡す環境変数を検証する。"""
+    """main() の環境変数受け渡しとセットアップ検証を確認する。"""
+
+    @staticmethod
+    def _version_ok():
+        return subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.11\n",
+            stderr="",
+        )
 
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
@@ -2694,12 +2760,7 @@ class MainEnvironmentTests(unittest.TestCase):
         self, mock_run, mock_guard, mock_listdir
     ):
         """解決済み libdir と NO_COLOR=1 を env に含める。"""
-        mock_run.return_value = subprocess.CompletedProcess(
-            args=["tree-sitter", "--version"],
-            returncode=0,
-            stdout="tree-sitter 0.26.11\n",
-            stderr="",
-        )
+        mock_run.return_value = self._version_ok()
         mock_listdir.return_value = []
 
         corpus_dir = tempfile.mkdtemp()
@@ -2709,8 +2770,11 @@ class MainEnvironmentTests(unittest.TestCase):
                 with patch.object(
                     corpus_test, "resolve_lib_dir", return_value="C:/Temp/ts-lib"
                 ):
-                    with redirect_stdout(stdout):
-                        corpus_test.main()
+                    with patch.object(
+                        corpus_test, "resolve_library_path", return_value=__file__
+                    ):
+                        with redirect_stdout(stdout):
+                            corpus_test.main()
         finally:
             os.rmdir(corpus_dir)
 
@@ -2718,6 +2782,84 @@ class MainEnvironmentTests(unittest.TestCase):
         env = call_kwargs["env"]
         self.assertEqual(env.get("TREE_SITTER_LIBDIR"), "C:/Temp/ts-lib")
         self.assertEqual(env.get("NO_COLOR"), "1")
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
+    @patch("corpus_test.subprocess.run")
+    def test_main_reports_missing_library_as_setup_error(
+        self, mock_run, mock_guard, mock_listdir
+    ):
+        """共有ライブラリが無ければ 1 件もパースせず setup error で終わる。"""
+        mock_run.return_value = self._version_ok()
+
+        stdout = io.StringIO()
+        with patch.object(
+            corpus_test,
+            "resolve_library_path",
+            return_value=os.path.join(tempfile.gettempdir(), "definitely-missing.dll"),
+        ):
+            with redirect_stdout(stdout):
+                exit_code = corpus_test.main()
+
+        self.assertEqual(exit_code, 2)
+        mock_listdir.assert_not_called()
+        mock_guard.assert_not_called()
+        self.assertIn("--- Setup Error ---", stdout.getvalue())
+        self.assertIn("parser 共有ライブラリが見つかりません", stdout.getvalue())
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
+    @patch("corpus_test.subprocess.run")
+    def test_expected_error_case_reports_cli_failure(
+        self, mock_run, mock_guard, mock_listdir
+    ):
+        """ツリーが出ない CLI 失敗は期待 ERROR ケースでも成功にしない。"""
+        corpus = textwrap.dedent(
+            """\
+            =========
+            expected error
+            =========
+            def (
+            ---
+            (program
+              (ERROR))
+            """
+        )
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".txt", delete=False, encoding="utf-8"
+        ) as f:
+            f.write(corpus)
+            corpus_path = f.name
+
+        mock_run.return_value = self._version_ok()
+        mock_guard.return_value = subprocess.CompletedProcess(
+            args=["tree-sitter", "parse"],
+            returncode=1,
+            stdout="",
+            stderr=(
+                '\x1b[31mError:\x1b[0m Failed to load language for path "x.rb"\n'
+                "\nCaused by:\n"
+                "    The specified module could not be found. (os error 126)\n"
+            ),
+        )
+        mock_listdir.return_value = [os.path.basename(corpus_path)]
+
+        stdout = io.StringIO()
+        try:
+            with patch.object(corpus_test, "CORPUS_DIR", os.path.dirname(corpus_path)):
+                with patch.object(
+                    corpus_test, "resolve_library_path", return_value=__file__
+                ):
+                    with redirect_stdout(stdout):
+                        exit_code = corpus_test.main()
+        finally:
+            os.unlink(corpus_path)
+
+        output = stdout.getvalue()
+        self.assertEqual(exit_code, 1)
+        self.assertNotIn("expected ERROR but parsed OK", output)
+        self.assertIn("Failed to load language", output)
+        self.assertIn("root cause: The specified module could not be found.", output)
 
 
 if __name__ == "__main__":

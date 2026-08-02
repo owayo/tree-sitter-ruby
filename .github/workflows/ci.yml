@@ -8,14 +8,18 @@ on:
       - src/**
       - test/**
       - bindings/rust/**
+      - scripts/**
       - Cargo.toml
+      - .github/workflows/ci.yml
   pull_request:
     paths:
       - grammar.js
       - src/**
       - test/**
       - bindings/rust/**
+      - scripts/**
       - Cargo.toml
+      - .github/workflows/ci.yml
 
 concurrency:
   group: ${{github.workflow}}-${{github.ref}}
@@ -40,34 +44,43 @@ jobs:
       - name: Build shared library
         shell: bash
         run: |
-          mkdir -p /tmp/ts-lib
+          libdir=/tmp/ts-lib
+          mkdir -p "$libdir"
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            gcc -shared -O0 -static-libgcc -o /tmp/ts-lib/ruby.dll -I src src/parser.c src/scanner.c
+            gcc -shared -O0 -static-libgcc -o "$libdir/ruby.dll" -I src src/parser.c src/scanner.c
             # ネイティブの tree-sitter.exe は POSIX パスをドライブレターの無い
-            # root 相対パスとして扱い、カレントドライブ基準 (D:\tmp\ts-lib) に
-            # 解決してしまう。Git Bash の /tmp と同じ実体を指す Windows 形式の
-            # パスを渡す。
-            libdir="$(cygpath -w /tmp/ts-lib)"
+            # root 相対パスとして扱い、カレントドライブ基準 (D:/tmp/ts-lib) に
+            # 解決してしまう。gcc が実際に書き出した場所を cygpath でネイティブ
+            # パスへ変換して渡す。
+            native_libdir="$(cygpath -am "$libdir")"
+            native_libpath="$(cygpath -am "$libdir/ruby.dll")"
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
-            libdir=/tmp/ts-lib
+            cc -shared -fPIC -O0 -o "$libdir/ruby.dylib" -I src src/parser.c src/scanner.c
+            native_libdir="$libdir"
+            native_libpath="$libdir/ruby.dylib"
           else
-            cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.so -I src src/parser.c src/scanner.c
-            libdir=/tmp/ts-lib
+            cc -shared -fPIC -O0 -o "$libdir/ruby.so" -I src src/parser.c src/scanner.c
+            native_libdir="$libdir"
+            native_libpath="$libdir/ruby.so"
           fi
-          ls -l /tmp/ts-lib
-          echo "TREE_SITTER_LIBDIR=$libdir" >> "$GITHUB_ENV"
+          ls -l "$libdir"
+          {
+            echo "TREE_SITTER_LIBDIR=$native_libdir"
+            echo "TREE_SITTER_LIB_PATH=$native_libpath"
+          } >> "$GITHUB_ENV"
       - name: Verify shared library loads
         shell: bash
         run: |
-          # 326 件のコーパステストを回す前に、共有ライブラリを実際にロードできる
-          # ことを 1 回のパースで確かめる。失敗時は tree-sitter の Caused by
-          # チェーンがそのままログに残る。
+          # 全コーパステストを回す前に、共有ライブラリを実際にロードできることを
+          # 1 回のパースで確かめる。失敗時は tree-sitter の Caused by チェーンが
+          # そのままログに残るので、10 分待たずに真因が分かる。
           printf 'x = 1\n' > smoke_parse_check.rb
-          tree-sitter parse --no-ranges smoke_parse_check.rb
+          tree-sitter parse --lib-path "$TREE_SITTER_LIB_PATH" --lang-name ruby \
+            --no-ranges smoke_parse_check.rb
       - name: Run corpus tests
         shell: bash
         env:
+          PYTHONUTF8: "1"
           PYTHONIOENCODING: utf-8
         run: python3 scripts/corpus_test.py
       - name: Run Rust tests
