@@ -2157,6 +2157,7 @@ class CorpusTestScriptTests(unittest.TestCase):
 
     # --- main: 環境変数が正しく渡されることの検証 ---
 
+    @patch.dict(os.environ, {"TREE_SITTER_LIBDIR": "/tmp/ts-lib"})
     @patch("corpus_test.os.listdir")
     @patch("corpus_test.run_with_memory_guard")
     @patch("corpus_test.subprocess.run")
@@ -2529,6 +2530,194 @@ class RunWithMemoryGuardTests(unittest.TestCase):
         )
         self.assertIsInstance(result.kill_reason, str)
         self.assertIn("MEMORY_KILL", result.kill_reason)
+
+
+class ResolveLibDirTests(unittest.TestCase):
+    """共有ライブラリディレクトリの解決を検証する。"""
+
+    def test_env_override_wins(self):
+        """TREE_SITTER_LIBDIR が指定されていればそのまま使う。"""
+        self.assertEqual(
+            corpus_test.resolve_lib_dir({"TREE_SITTER_LIBDIR": "D:/custom/ts-lib"}),
+            "D:/custom/ts-lib",
+        )
+
+    def test_env_override_is_trimmed(self):
+        """前後の空白は取り除いて解釈する。"""
+        self.assertEqual(
+            corpus_test.resolve_lib_dir({"TREE_SITTER_LIBDIR": "  /opt/ts-lib \n"}),
+            "/opt/ts-lib",
+        )
+
+    def test_blank_override_falls_back_to_default(self):
+        """空白のみの指定は未設定として扱う。"""
+        with patch.object(corpus_test.os, "name", "posix"):
+            self.assertEqual(
+                corpus_test.resolve_lib_dir({"TREE_SITTER_LIBDIR": "   "}),
+                corpus_test.POSIX_LIB_DIR,
+            )
+
+    def test_posix_default(self):
+        """POSIX では /tmp/ts-lib を既定にする。"""
+        with patch.object(corpus_test.os, "name", "posix"):
+            self.assertEqual(corpus_test.resolve_lib_dir({}), "/tmp/ts-lib")
+
+    def test_windows_default_uses_native_temp_dir(self):
+        """Windows では POSIX パスではなくネイティブの TEMP 配下を使う。"""
+        with patch.object(corpus_test.os, "name", "nt"):
+            with patch.object(
+                corpus_test.tempfile, "gettempdir", return_value="C:/Temp"
+            ):
+                resolved = corpus_test.resolve_lib_dir({})
+
+        self.assertEqual(Path(resolved), Path("C:/Temp") / "ts-lib")
+        self.assertFalse(resolved.startswith("/tmp"))
+
+    def test_falls_back_to_os_environ(self):
+        """env 未指定なら os.environ を参照する。"""
+        with patch.dict(os.environ, {"TREE_SITTER_LIBDIR": "/env/ts-lib"}):
+            self.assertEqual(corpus_test.resolve_lib_dir(), "/env/ts-lib")
+
+
+class ConfigureStdioEncodingTests(unittest.TestCase):
+    """出力ストリームの UTF-8 化を検証する。"""
+
+    def test_reconfigures_streams_to_utf8(self):
+        """reconfigure を持つストリームは UTF-8 + replace に切り替える。"""
+
+        class _Stream:
+            def __init__(self):
+                self.calls = []
+
+            def reconfigure(self, **kwargs):
+                self.calls.append(kwargs)
+
+        stream = _Stream()
+        corpus_test.configure_stdio_encoding([stream])
+
+        self.assertEqual(stream.calls, [{"encoding": "utf-8", "errors": "replace"}])
+
+    def test_skips_streams_without_reconfigure(self):
+        """reconfigure を持たないストリーム (StringIO 等) では何もしない。"""
+        corpus_test.configure_stdio_encoding([io.StringIO()])
+
+    def test_swallows_reconfigure_errors(self):
+        """reconfigure が失敗してもランナーを落とさない。"""
+
+        class _Stream:
+            def reconfigure(self, **kwargs):
+                raise ValueError("detached")
+
+        corpus_test.configure_stdio_encoding([_Stream()])
+
+    def test_defaults_to_std_streams(self):
+        """引数なしなら sys.stdout / sys.stderr を対象にする。"""
+        calls = []
+
+        class _Stream:
+            def reconfigure(self, **kwargs):
+                calls.append(kwargs)
+
+        with patch.object(corpus_test.sys, "stdout", _Stream()):
+            with patch.object(corpus_test.sys, "stderr", _Stream()):
+                corpus_test.configure_stdio_encoding()
+
+        self.assertEqual(len(calls), 2)
+
+
+class FirstCauseLineTests(unittest.TestCase):
+    """tree-sitter の Caused by チェーン抽出を検証する。"""
+
+    def test_returns_none_without_cause_section(self):
+        """Caused by が無ければ None を返す。"""
+        self.assertIsNone(corpus_test.first_cause_line("Error: boom\n"))
+
+    def test_extracts_single_cause(self):
+        """単一原因はそのまま返す。"""
+        output = textwrap.dedent(
+            """\
+            Error: Failed to load language for path "x.rb"
+
+            Caused by:
+                Dynamic library `ruby.dll` not found after build attempt.
+            """
+        )
+        self.assertEqual(
+            corpus_test.first_cause_line(output),
+            "Dynamic library `ruby.dll` not found after build attempt.",
+        )
+
+    def test_strips_chain_numbering(self):
+        """複数原因では先頭の番号付けを取り除いて返す。"""
+        output = textwrap.dedent(
+            """\
+            Error: Failed to load language for path "x.rb"
+
+            Caused by:
+                0: failed to load language for current directory
+                1: No such file or directory (os error 2)
+            """
+        )
+        self.assertEqual(
+            corpus_test.first_cause_line(output),
+            "failed to load language for current directory",
+        )
+
+    def test_returns_none_when_cause_section_is_empty(self):
+        """Caused by の後に内容が無ければ None を返す。"""
+        self.assertIsNone(corpus_test.first_cause_line("Caused by:\n\n"))
+
+    def test_summarize_command_failure_appends_cause(self):
+        """失敗要約に Caused by の先頭行を添える。"""
+        output = textwrap.dedent(
+            """\
+            Error: Failed to load language for path "x.rb"
+
+            Caused by:
+                No language found
+            """
+        )
+        self.assertEqual(
+            corpus_test.summarize_command_failure(1, output),
+            'exit 1: Error: Failed to load language for path "x.rb"'
+            " (caused by: No language found)",
+        )
+
+
+class MainEnvironmentTests(unittest.TestCase):
+    """main() が子プロセスへ渡す環境変数を検証する。"""
+
+    @patch("corpus_test.os.listdir")
+    @patch("corpus_test.run_with_memory_guard")
+    @patch("corpus_test.subprocess.run")
+    def test_main_passes_resolved_libdir_and_no_color(
+        self, mock_run, mock_guard, mock_listdir
+    ):
+        """解決済み libdir と NO_COLOR=1 を env に含める。"""
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=["tree-sitter", "--version"],
+            returncode=0,
+            stdout="tree-sitter 0.26.11\n",
+            stderr="",
+        )
+        mock_listdir.return_value = []
+
+        corpus_dir = tempfile.mkdtemp()
+        stdout = io.StringIO()
+        try:
+            with patch.object(corpus_test, "CORPUS_DIR", corpus_dir):
+                with patch.object(
+                    corpus_test, "resolve_lib_dir", return_value="C:/Temp/ts-lib"
+                ):
+                    with redirect_stdout(stdout):
+                        corpus_test.main()
+        finally:
+            os.rmdir(corpus_dir)
+
+        _, call_kwargs = mock_run.call_args_list[0]
+        env = call_kwargs["env"]
+        self.assertEqual(env.get("TREE_SITTER_LIBDIR"), "C:/Temp/ts-lib")
+        self.assertEqual(env.get("NO_COLOR"), "1")
 
 
 if __name__ == "__main__":

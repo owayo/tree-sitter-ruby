@@ -42,14 +42,33 @@ jobs:
         run: |
           mkdir -p /tmp/ts-lib
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            gcc -shared -O0 -o /tmp/ts-lib/ruby.dll -I src src/parser.c src/scanner.c
+            gcc -shared -O0 -static-libgcc -o /tmp/ts-lib/ruby.dll -I src src/parser.c src/scanner.c
+            # ネイティブの tree-sitter.exe は POSIX パスをドライブレターの無い
+            # root 相対パスとして扱い、カレントドライブ基準 (D:\tmp\ts-lib) に
+            # 解決してしまう。Git Bash の /tmp と同じ実体を指す Windows 形式の
+            # パスを渡す。
+            libdir="$(cygpath -w /tmp/ts-lib)"
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
+            libdir=/tmp/ts-lib
           else
             cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.so -I src src/parser.c src/scanner.c
+            libdir=/tmp/ts-lib
           fi
+          ls -l /tmp/ts-lib
+          echo "TREE_SITTER_LIBDIR=$libdir" >> "$GITHUB_ENV"
+      - name: Verify shared library loads
+        shell: bash
+        run: |
+          # 326 件のコーパステストを回す前に、共有ライブラリを実際にロードできる
+          # ことを 1 回のパースで確かめる。失敗時は tree-sitter の Caused by
+          # チェーンがそのままログに残る。
+          printf 'x = 1\n' > smoke_parse_check.rb
+          tree-sitter parse --no-ranges smoke_parse_check.rb
       - name: Run corpus tests
         shell: bash
+        env:
+          PYTHONIOENCODING: utf-8
         run: python3 scripts/corpus_test.py
       - name: Run Rust tests
         if: runner.os != 'Windows'

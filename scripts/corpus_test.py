@@ -14,6 +14,10 @@ PC のハングを防ぐ。tree-sitter 側にも `--timeout` (µs) を渡し、
 事前準備:
     mkdir -p /tmp/ts-lib
     cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
+
+共有ライブラリの置き場所は `TREE_SITTER_LIBDIR` で上書きできる。未設定なら
+POSIX では `/tmp/ts-lib`、Windows では TEMP ディレクトリ配下の `ts-lib` を使う
+（後者は Git Bash の `/tmp` と同じ実体を指す）。
 """
 
 import csv
@@ -34,6 +38,44 @@ CORPUS_DIR = PROJECT_DIR / "test" / "corpus"
 DEFAULT_MEMORY_LIMIT_MB = 1024.0
 PARSE_TIMEOUT_SECONDS = 10
 POLL_INTERVAL_SECONDS = 5.0
+POSIX_LIB_DIR = "/tmp/ts-lib"
+LIB_DIR_NAME = "ts-lib"
+
+
+def configure_stdio_encoding(streams=None):
+    """非 ASCII を含む出力が既定コードページで落ちないようにする。
+
+    Windows の Python は stdout の既定エンコーディングが cp1252/cp932 に
+    なるため、日本語を含むコーパスのテスト名を print した時点で
+    UnicodeEncodeError が送出され、ランナーごと異常終了してしまう。
+    """
+    if streams is None:
+        streams = (sys.stdout, sys.stderr)
+    for stream in streams:
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (OSError, ValueError):
+            pass
+
+
+def resolve_lib_dir(env=None):
+    """tree-sitter が parser 共有ライブラリを探すディレクトリを解決する。
+
+    POSIX パスをそのまま Windows のネイティブ CLI に渡すと、ドライブレターの
+    無い root 相対パスとしてカレントドライブ基準（例 `D:/tmp/ts-lib`）に解決され、
+    Git Bash の `/tmp`（= TEMP ディレクトリ）に置いた共有ライブラリを見失う。
+    """
+    if env is None:
+        env = os.environ
+    override = env.get("TREE_SITTER_LIBDIR", "").strip()
+    if override:
+        return override
+    if os.name == "nt":
+        return str(Path(tempfile.gettempdir()) / LIB_DIR_NAME)
+    return POSIX_LIB_DIR
 
 
 def tree_sitter_command(env=None):
@@ -155,12 +197,31 @@ def format_failure_detail(detail):
     return str(detail)
 
 
+def first_cause_line(output):
+    """`Caused by:` チェーン先頭の 1 行を返す。無ければ None。
+
+    tree-sitter CLI は真の失敗理由を `Caused by:` 以下に出すため、
+    先頭の `Error:` 行だけでは原因が分からない。
+    """
+    lines = output.splitlines()
+    for index, line in enumerate(lines):
+        if line.strip() != "Caused by:":
+            continue
+        for cause in lines[index + 1 :]:
+            stripped = cause.strip()
+            if stripped:
+                return re.sub(r"^\d+:\s*", "", stripped)
+    return None
+
+
 def summarize_command_failure(returncode, output):
     """コマンド失敗時の要約を 1 行に整形する。"""
+    cause = first_cause_line(output)
+    suffix = f" (caused by: {cause})" if cause else ""
     for line in output.splitlines():
         stripped = line.strip()
         if stripped.startswith("Error:"):
-            return f"exit {returncode}: {stripped}"
+            return f"exit {returncode}: {stripped}{suffix}"
 
     for line in output.splitlines():
         stripped = line.strip()
@@ -430,7 +491,14 @@ def main():
     failed = 0
     failures = []
 
-    env = {**os.environ, "TREE_SITTER_LIBDIR": "/tmp/ts-lib"}
+    configure_stdio_encoding()
+
+    env = {
+        **os.environ,
+        "TREE_SITTER_LIBDIR": resolve_lib_dir(),
+        # 失敗要約が ANSI エスケープ入りの `Error:` 行を取りこぼさないようにする。
+        "NO_COLOR": "1",
+    }
     command = tree_sitter_command(env)
     setup_error = check_tree_sitter_cli(env, command)
     if setup_error:
@@ -463,6 +531,9 @@ def main():
                     suffix=".rb",
                     delete=False,
                     encoding="utf-8",
+                    # Windows で LF が CRLF に翻訳されると、単独 CR や
+                    # バックスラッシュ行継続の回帰ケースが崩れる。
+                    newline="",
                 ) as f:
                     f.write(code + "\n")
                     tmpfile = f.name
