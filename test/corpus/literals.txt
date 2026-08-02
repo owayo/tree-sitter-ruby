@@ -295,10 +295,18 @@ $DEBUG
 $FILENAME
 $LOAD_PATH
 $VERBOSE
+$名前
+$Ĩ
+$Kfoo
+$-名
 
 ---
 
 (program
+  (global_variable)
+  (global_variable)
+  (global_variable)
+  (global_variable)
   (global_variable)
   (global_variable)
   (global_variable)
@@ -1162,6 +1170,42 @@ x = <<''
     left: (identifier)
     right: (heredoc_beginning))
   (heredoc_body
+    (heredoc_end)))
+
+========================================
+Unicode heredoc delimiters
+========================================
+
+unquoted = <<終端
+本文
+終端
+collision = <<Ĩ
+body
+Ĩ
+quoted = <<"終 端"
+本文
+終 端
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end))
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end))
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
     (heredoc_end)))
 
 ========================================

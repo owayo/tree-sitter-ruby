@@ -489,6 +489,50 @@ end
     }
 
     #[test]
+    fn test_scanner_accepts_unicode_heredoc_delimiters() {
+        // scanner は終端語を UTF-8 バイト列として保持し、Unicode code point と
+        // 比較する。下位 8 bit の衝突を含む非引用・引用終端語を検証する。
+        for code in [
+            "x = <<終端\n本文\n終端\n",
+            "x = <<Ĩ\nbody\nĨ\n",
+            "x = <<\"終 端\"\n本文\n終 端\n",
+        ] {
+            assert!(
+                !parse_has_error(code),
+                "Unicode heredoc 終端語をパースできません: {code:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_unicode_global_variable_short_interpolation() {
+        let code = "$名前 = 42\nfirst = \"#$名前\"\nsecond = \"#$-名\"\n";
+        let language: tree_sitter::Language = LANGUAGE.into();
+        let mut parser = tree_sitter::Parser::new();
+        parser.set_language(&language).unwrap();
+        let tree = parser.parse(code, None).unwrap();
+        assert!(
+            !tree.root_node().has_error(),
+            "Unicode グローバル変数のパースに失敗しました"
+        );
+
+        let query = tree_sitter::Query::new(
+            &language,
+            "(interpolation (global_variable) @global_variable)",
+        )
+        .expect("Unicode グローバル変数の interpolation クエリを作成できません");
+        let mut cursor = tree_sitter::QueryCursor::new();
+        let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+        let mut globals = Vec::new();
+        while let Some(query_match) = matches.next() {
+            for capture in query_match.captures {
+                globals.push(&code[capture.node.byte_range()]);
+            }
+        }
+        assert_eq!(globals, vec!["$名前", "$-名"]);
+    }
+
+    #[test]
     fn test_scanner_preserves_deep_literal_nesting_across_interpolation() {
         // literal_stack の nesting_depth は 256 を超えてもシリアライズで失われない。
         let depth = 260;

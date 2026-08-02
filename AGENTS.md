@@ -53,6 +53,8 @@ pnpm run lint              # lint チェック（Biome）
 # - scanner.c の短縮 interpolation 判定が ASCII 外 Unicode 文字
 #   （`Ĥ` U+0124 や `Ŀ` U+0140 など）を char 切り詰めで '@'/'$' と
 #   誤一致させないこともここで確認する
+# - 非引用・引用付き Unicode heredoc 終端語を UTF-8 バイト列として保持・照合する回帰も確認する
+# - `$名前` / `$-名` の Unicode グローバル変数と短縮 interpolation も回帰確認する
 # - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
@@ -132,6 +134,8 @@ pnpm run test:unit
 #   （例: `Ĥ` U+0124 → 下位 8 bit 0x24 = '$',
 #    `Ŀ` U+0140 → 下位 8 bit 0x40 = '@'）を char 切り詰めで
 #   '@'/'$' と誤一致させて短縮 interpolation として誤判定しないことの検証
+# - scanner.c が Unicode heredoc 終端語を UTF-8 バイト列で保持・照合することの検証
+# - `$名前` / `$-名` の通常参照と短縮 interpolation のパース検証
 # - Ruby 3.4 の `it` ブロックパラメータ（パイプ仮引数なしブロック内）のパース検証
 # - Ruby 3.4 の index assignment（`arr[i, k: v] = x` / `arr[i, &b] = x`）拒否の検証
 # - Ruby 4.0 の `*nil` splat 引数のパース検証
@@ -182,6 +186,8 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `pnpm run test` で確認する
+- Unicode heredoc 終端語は UTF-8 バイト列として保存・照合し、ASCII 終端語の 1 文字 1 バイト表現と serialization buffer 容量を維持すること
+- `global_variable` の名前部分は共通の Unicode 識別子文字ルールと同期し、`scan_short_interpolation()` の `$name` / `$-x` 判定でも ASCII 外文字を locale 非依存で許可すること
 - tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う
 - scanner serialization buffer の上限ぴったりに収まる状態は有効として扱い、超過した場合だけ ERROR として扱う
 - `src/scanner.c` の `deserialize()` はバッファ境界チェックを行うため、新しいフィールドを追加する際は対応する境界チェックも追加すること

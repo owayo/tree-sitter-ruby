@@ -1421,7 +1421,17 @@ module.exports = grammar({
 		class_variable: (_) => token(seq("@@", ALPHA_CHAR, IDENTIFIER_CHARS)),
 
 		global_variable: (_) =>
-			/\$(-[a-zA-Z0-9_]|[!@&`'+~=/\\,;.<>*$?:"]|[0-9]+|[a-zA-Z_][a-zA-Z0-9_]*)/,
+			token(
+				seq(
+					"$",
+					choice(
+						seq("-", choice(/[0-9]/, ALPHA_CHAR)),
+						/[!@&`'+~=/\\,;.<>*$?:"]/,
+						/[0-9]+/,
+						seq(ALPHA_CHAR, IDENTIFIER_CHARS),
+					),
+				),
+			),
 
 		chained_string: ($) => seq($.string, repeat1($.string)),
 

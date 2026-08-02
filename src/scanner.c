@@ -84,6 +84,54 @@ static inline void skip(Scanner *scanner, TSLexer *lexer) {
 
 static inline void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
 
+static inline uint32_t encode_utf8_codepoint(int32_t codepoint, char encoded[4]) {
+    if (codepoint < 0 || codepoint > 0x10FFFF || (codepoint >= 0xD800 && codepoint <= 0xDFFF)) {
+        return 0;
+    }
+
+    if (codepoint <= 0x7F) {
+        encoded[0] = (char)codepoint;
+        return 1;
+    }
+    if (codepoint <= 0x7FF) {
+        encoded[0] = (char)(0xC0 | (codepoint >> 6));
+        encoded[1] = (char)(0x80 | (codepoint & 0x3F));
+        return 2;
+    }
+    if (codepoint <= 0xFFFF) {
+        encoded[0] = (char)(0xE0 | (codepoint >> 12));
+        encoded[1] = (char)(0x80 | ((codepoint >> 6) & 0x3F));
+        encoded[2] = (char)(0x80 | (codepoint & 0x3F));
+        return 3;
+    }
+
+    encoded[0] = (char)(0xF0 | (codepoint >> 18));
+    encoded[1] = (char)(0x80 | ((codepoint >> 12) & 0x3F));
+    encoded[2] = (char)(0x80 | ((codepoint >> 6) & 0x3F));
+    encoded[3] = (char)(0x80 | (codepoint & 0x3F));
+    return 4;
+}
+
+static inline bool append_utf8_codepoint(String *string, int32_t codepoint) {
+    char encoded[4];
+    uint32_t length = encode_utf8_codepoint(codepoint, encoded);
+    if (length == 0) return false;
+
+    for (uint32_t i = 0; i < length; i++) {
+        array_push(string, encoded[i]);
+    }
+    return true;
+}
+
+static inline uint32_t match_utf8_codepoint(const String *string, size_t position, int32_t codepoint) {
+    char encoded[4];
+    uint32_t length = encode_utf8_codepoint(codepoint, encoded);
+    if (length == 0 || position >= string->size || length > string->size - position) {
+        return 0;
+    }
+    return memcmp(&string->contents[position], encoded, length) == 0 ? length : 0;
+}
+
 static inline void reset(Scanner *scanner) {
     array_delete(&scanner->literal_stack);
     for (uint32_t i = 0; i < scanner->open_heredocs.size; i++) {
@@ -719,6 +767,8 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
     }
 }
 
+static inline bool is_heredoc_word_char(int32_t c) { return c >= 0x80 || iswalnum(c) || c == '_'; }
+
 static inline bool scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
     String word = array_new();
     int32_t quote = 0;
@@ -731,7 +781,10 @@ static inline bool scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
             advance(lexer);
             while (lexer->lookahead != quote && lexer->lookahead != '\n' && lexer->lookahead != '\r' &&
                    !lexer->eof(lexer)) {
-                array_push(&word, lexer->lookahead);
+                if (!append_utf8_codepoint(&word, lexer->lookahead)) {
+                    array_delete(&word);
+                    return false;
+                }
                 advance(lexer);
             }
             if (lexer->lookahead != quote) {
@@ -742,11 +795,17 @@ static inline bool scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
             break;
 
         default:
-            if (iswalnum(lexer->lookahead) || lexer->lookahead == '_') {
-                array_push(&word, lexer->lookahead);
+            if (is_heredoc_word_char(lexer->lookahead)) {
+                if (!append_utf8_codepoint(&word, lexer->lookahead)) {
+                    array_delete(&word);
+                    return false;
+                }
                 advance(lexer);
-                while (iswalnum(lexer->lookahead) || lexer->lookahead == '_') {
-                    array_push(&word, lexer->lookahead);
+                while (is_heredoc_word_char(lexer->lookahead)) {
+                    if (!append_utf8_codepoint(&word, lexer->lookahead)) {
+                        array_delete(&word);
+                        return false;
+                    }
                     advance(lexer);
                 }
             } else {
@@ -785,9 +844,11 @@ static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_conte
             } else {
                 if (lexer->lookahead == '-') {
                     advance(lexer);
-                    is_short_interpolation = iswalpha(lexer->lookahead) || lexer->lookahead == '_';
+                    is_short_interpolation =
+                        lexer->lookahead >= 0x80 || iswalpha(lexer->lookahead) || lexer->lookahead == '_';
                 } else {
-                    is_short_interpolation = iswalnum(lexer->lookahead) || lexer->lookahead == '_';
+                    is_short_interpolation =
+                        lexer->lookahead >= 0x80 || iswalnum(lexer->lookahead) || lexer->lookahead == '_';
                 }
             }
         }
@@ -844,10 +905,14 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
             }
         }
 
-        if (heredoc->word.size > 0 && lexer->lookahead == *array_get(&heredoc->word, position_in_word) &&
-            look_for_heredoc_end) {
+        // 終端語は UTF-8 バイト列で保持する。lookahead の Unicode code point を
+        // 同じ表現に変換して比較し、char への切り詰めによる誤不一致を防ぐ。
+        uint32_t matched_bytes = look_for_heredoc_end
+                                     ? match_utf8_codepoint(&heredoc->word, position_in_word, lexer->lookahead)
+                                     : 0;
+        if (matched_bytes > 0) {
             advance(lexer);
-            position_in_word++;
+            position_in_word += matched_bytes;
         } else {
             position_in_word = 0;
             look_for_heredoc_end = false;
