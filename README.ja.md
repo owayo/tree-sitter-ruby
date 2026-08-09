@@ -122,6 +122,8 @@ pnpm run test
 #   OS ごとの RSS 解析検証
 # - run_with_memory_guard の正常終了、大きな pipe 出力での非デッドロック、
 #   子プロセス RSS 超過 kill、タイムアウト強制終了（kill_reason 設定）の検証
+# - Windows の taskkill / POSIX のプロセスグループ kill が失敗した場合に、
+#   対象プロセスの直接 kill へフォールバックすることの検証
 pnpm run test:unit
 
 # パーサーライブラリの事前コンパイル（parse ベーステストに必要）

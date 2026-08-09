@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: DOC201, DOC501
 """tree-sitter parse ベースの低メモリなコーパステストランナー。
 
 大規模な parser テーブル（parser.c 約15MB）では `tree-sitter test` が
@@ -146,7 +145,7 @@ def strip_line_ending(text):
     """末尾の 1 行分の改行だけを取り除く。"""
     if text.endswith("\r\n"):
         return text[:-2]
-    if text.endswith("\n") or text.endswith("\r"):
+    if text.endswith(("\n", "\r")):
         return text[:-1]
     return text
 
@@ -323,6 +322,7 @@ def _get_rss_mb(pid):
             result = subprocess.run(
                 ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
                 capture_output=True,
+                check=False,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
@@ -345,6 +345,7 @@ def _get_rss_mb(pid):
         result = subprocess.run(
             ["ps", "-o", "rss=", "-p", str(pid)],
             capture_output=True,
+            check=False,
             text=True,
             encoding="utf-8",
             errors="replace",
@@ -377,6 +378,7 @@ def _get_process_group_rss_mb(pid):
         result = subprocess.run(
             ["ps", "-ax", "-o", "pgid=", "-o", "rss="],
             capture_output=True,
+            check=False,
             text=True,
             encoding="utf-8",
             errors="replace",
@@ -416,6 +418,7 @@ def _kill_process_tree(proc):
             subprocess.run(
                 ["taskkill", "/PID", str(proc.pid), "/T", "/F"],
                 capture_output=True,
+                check=False,
                 timeout=5,
             )
         except (OSError, subprocess.SubprocessError):
@@ -510,6 +513,7 @@ def check_tree_sitter_cli(env, command=None):
         result = subprocess.run(
             [command, "--version"],
             capture_output=True,
+            check=False,
             text=True,
             encoding="utf-8",
             errors="replace",
@@ -517,7 +521,7 @@ def check_tree_sitter_cli(env, command=None):
             env=env,
         )
     except FileNotFoundError:
-        return "tree-sitter コマンドが見つかりません。tree-sitter-cli をインストールしてください。"  # noqa: E501
+        return "tree-sitter コマンドが見つかりません。tree-sitter-cli をインストールしてください。"
     except subprocess.TimeoutExpired:
         return (
             "tree-sitter CLI の起動確認が 10 秒でタイムアウトしました。"

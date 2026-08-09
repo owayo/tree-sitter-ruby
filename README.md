@@ -121,6 +121,7 @@ pnpm run test
 #   and POSIX process-group aggregation
 # - run_with_memory_guard normal completion, large pipe output without deadlock,
 #   child-process RSS kill, and timeout-triggered kill (kill_reason set)
+# - direct-process kill fallback when Windows taskkill or POSIX process-group kill fails
 pnpm run test:unit
 
 # Pre-compile parser library (required for parse-based testing)

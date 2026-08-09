@@ -94,6 +94,8 @@ pnpm run test
 #   OS ごとの RSS 解析検証
 # - run_with_memory_guard の正常終了、大きな pipe 出力での非デッドロック、
 #   子プロセス RSS 超過 kill、タイムアウト強制終了（kill_reason 設定）の検証
+# - Windows の taskkill / POSIX のプロセスグループ kill が失敗した場合に、
+#   対象プロセスの直接 kill へフォールバックすることの検証
 # - resolve_lib_dir の解決順（env 上書き / 空白のみ / POSIX 既定 / Windows は
 #   POSIX パスではなくネイティブ TEMP 配下 / os.environ フォールバック）
 # - resolve_library_path と library_suffix のプラットフォーム別解決、
@@ -194,6 +196,7 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `deserialize()` のバッファ境界チェックで `size + word_length > length` のような符号なし整数の和を使うと、`word_length` が極端に大きい場合に整数オーバーフローしてチェックを潜り抜けるため、`word_length > length - size` の引き算で比較すること（`size <= length` は手前のヘッダーサイズチェックで保証されている前提）
 - `tree-sitter test` をメモリ監視なしで実行してはならない
 - `scripts/` 配下の Python コードは Python 3.7 互換を維持するため、`ruff.toml` で `target-version = "py37"` を指定している。parenthesized context manager などの新しい構文を自動書き換えされないよう、新規コードでも Python 3.7 互換を崩さないこと
+- 終了コードと stdout/stderr を結果として解析する `subprocess.run()` 呼び出しは `check=False` を明示し、非 0 終了を例外ではなく戻り値として扱う契約を保つこと
 - POSIX パス（`/tmp/ts-lib` など）をネイティブ Windows プロセスに渡してはならない。Git Bash が解決する `/tmp` とネイティブプロセスが解決する `/tmp`（ドライブレターの無い root 相対パスとしてカレントドライブ基準になる）は別物で、共有ライブラリを見失う。CI では `cygpath -am` で変換したパスを `GITHUB_ENV` 経由で渡すこと
 - Windows の Python は stdout の既定エンコーディングが cp1252/cp932 のため、日本語を含むコーパスのテスト名を print すると `UnicodeEncodeError` でランナーごと落ちる。`scripts/` の出力側は `configure_stdio_encoding()` で UTF-8 化し、CI では `PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8` も設定すること
 - tree-sitter CLI はパイプ出力でも `Error:` 行を着色し、`NO_COLOR` でも抑止できない。CLI 出力を解析する場合は ANSI エスケープを除去してから判定すること。真の失敗理由は `Caused by:` チェーンの最深部にあるため、先頭の `Error:` 行だけを見ないこと

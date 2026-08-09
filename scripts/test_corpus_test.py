@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# ruff: noqa: D100, D101, D102, D103, D403, DOC201, DOC501, E501
 """scripts/corpus_test.py のユニットテスト。"""
 
 import io
@@ -11,7 +10,7 @@ import textwrap
 import unittest
 from contextlib import contextmanager, redirect_stdout
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import corpus_test
 
@@ -156,6 +155,7 @@ class CorpusTestScriptTests(unittest.TestCase):
             result = subprocess.run(
                 cmd,
                 capture_output=True,
+                check=False,
                 text=True,
                 env=env,
                 timeout=10,
@@ -2464,6 +2464,41 @@ class GetRssMbTests(unittest.TestCase):
                         corpus_test._get_process_group_rss_mb(4242),
                         3.0,
                     )
+
+
+class KillProcessTreeTests(unittest.TestCase):
+    """プロセスツリー強制終了の OS 別フォールバックを検証する。"""
+
+    def test_windows_taskkill_failure_falls_back_to_process_kill(self):
+        """taskkill の起動に失敗しても対象プロセスを直接終了する。"""
+        proc = Mock(pid=4242)
+        with patch.object(corpus_test.sys, "platform", "win32"):
+            with patch(
+                "corpus_test.subprocess.run", side_effect=OSError("taskkill failed")
+            ) as mock_run:
+                corpus_test._kill_process_tree(proc)
+
+        mock_run.assert_called_once_with(
+            ["taskkill", "/PID", "4242", "/T", "/F"],
+            capture_output=True,
+            check=False,
+            timeout=5,
+        )
+        proc.kill.assert_called_once_with()
+
+    def test_posix_group_kill_failure_falls_back_to_process_kill(self):
+        """プロセスグループ終了に失敗しても対象プロセスを直接終了する。"""
+        proc = Mock(pid=4242)
+        with patch.object(corpus_test.sys, "platform", "darwin"):
+            with patch("corpus_test.os.getpgid", return_value=99) as mock_getpgid:
+                with patch(
+                    "corpus_test.os.killpg", side_effect=OSError("killpg failed")
+                ) as mock_killpg:
+                    corpus_test._kill_process_tree(proc)
+
+        mock_getpgid.assert_called_once_with(4242)
+        mock_killpg.assert_called_once_with(99, corpus_test.signal.SIGKILL)
+        proc.kill.assert_called_once_with()
 
 
 class RunWithMemoryGuardTests(unittest.TestCase):

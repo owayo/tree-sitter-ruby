@@ -3,3 +3,14 @@
 # 最低動作環境（Python 3.7）で実行できるよう、parenthesized context
 # manager などの新しい構文に自動書き換えされないようターゲットを固定する。
 target-version = "py37"
+
+[lint]
+# これらのスクリプトは必ず python3 経由で呼び出すため、実行権限は不要。
+# テストの入れ子コンテキストは、モックの有効範囲を明確に保つため許可する。
+ignore = ["EXE001", "SIM117"]
+
+[lint.per-file-ignores]
+# 公開 API ではないスクリプトでは、戻り値の docstring 節を必須にしない。
+"scripts/corpus_test.py" = ["DOC201", "DOC501", "E501"]
+# unittest のテストクラス・メソッドでは、公開 API 用 docstring 規約を適用しない。
+"scripts/test_corpus_test.py" = ["D100", "D101", "D102", "D103", "D403", "DOC201", "DOC501", "E501"]
