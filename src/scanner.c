@@ -43,6 +43,7 @@ typedef enum {
     BINARY_LEFT_SHIFT,
     BINARY_AMPERSAND,
     LAMBDA_BODY_BRACE,
+    COMMAND_BLOCK_BRACE,
 
     NONE
 } TokenType;
@@ -1171,6 +1172,14 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             if (valid_symbols[LAMBDA_BODY_BRACE]) {
                 advance(lexer);
                 lexer->result_symbol = LAMBDA_BODY_BRACE;
+                return true;
+            }
+            // 括弧なしメソッド呼び出しの直後の `{` は Ruby では常にブロック。
+            // ハッシュを唯一の引数にするには `foo({...})` と括弧が要るため、
+            // この位置ではハッシュリテラルの開始として解釈してはならない。
+            if (valid_symbols[COMMAND_BLOCK_BRACE]) {
+                advance(lexer);
+                lexer->result_symbol = COMMAND_BLOCK_BRACE;
                 return true;
             }
             break;

@@ -409,3 +409,110 @@ w = //i
   (assignment
     (identifier)
     (regex)))
+
+=========================================================
+brace after a paren-less call is a block, never a hash argument
+=========================================================
+
+assert_pattern { foo.at("h1") => { content: "x" } }
+1.times {
+  [0, 1] => [a, b]
+}
+foo { a }
+foo bar, { a => b }
+foo({ a => b })
+x = { a => b }
+return { a => b }
+foo(a) { |v| v }
+obj.meth { |v| v }
+foo { a => b }.size
+
+---
+
+(program
+  (call
+    (identifier)
+    (block
+      (block_body
+        (match_pattern
+          (call
+            (identifier)
+            (identifier)
+            (argument_list
+              (string
+                (string_content))))
+          (hash_pattern
+            (keyword_pattern
+              (hash_key_symbol)
+              (string
+                (string_content))))))))
+  (call
+    (integer)
+    (identifier)
+    (block
+      (block_body
+        (match_pattern
+          (array
+            (integer)
+            (integer))
+          (array_pattern
+            (identifier)
+            (identifier))))))
+  (call
+    (identifier)
+    (block
+      (block_body
+        (identifier))))
+  (call
+    (identifier)
+    (argument_list
+      (identifier)
+      (hash
+        (pair
+          (identifier)
+          (identifier)))))
+  (call
+    (identifier)
+    (argument_list
+      (hash
+        (pair
+          (identifier)
+          (identifier)))))
+  (assignment
+    (identifier)
+    (hash
+      (pair
+        (identifier)
+        (identifier))))
+  (return
+    (argument_list
+      (hash
+        (pair
+          (identifier)
+          (identifier)))))
+  (call
+    (identifier)
+    (argument_list
+      (identifier))
+    (block
+      (block_parameters
+        (identifier))
+      (block_body
+        (identifier))))
+  (call
+    (identifier)
+    (identifier)
+    (block
+      (block_parameters
+        (identifier))
+      (block_body
+        (identifier))))
+  (call
+    (call
+      (identifier)
+      (block
+        (block_body
+          (match_pattern
+            (identifier)
+            (identifier)))))
+    (identifier)))

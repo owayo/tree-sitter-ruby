@@ -4789,8 +4789,13 @@
                 "type": "FIELD",
                 "name": "block",
                 "content": {
-                  "type": "SYMBOL",
-                  "name": "block"
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_command_block"
+                  },
+                  "named": true,
+                  "value": "block"
                 }
               }
             ]
@@ -5224,6 +5229,60 @@
         "members": [
           {
             "type": "STRING",
+            "value": "{"
+          },
+          {
+            "type": "FIELD",
+            "name": "parameters",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "block_parameters"
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            }
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "FIELD",
+                "name": "body",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "block_body"
+                }
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "STRING",
+            "value": "}"
+          }
+        ]
+      }
+    },
+    "_command_block": {
+      "type": "PREC",
+      "value": 1,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_command_block_brace"
+            },
+            "named": false,
             "value": "{"
           },
           {
@@ -8917,6 +8976,10 @@
     {
       "type": "SYMBOL",
       "name": "_lambda_body_brace"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_command_block_brace"
     }
   ],
   "inline": [

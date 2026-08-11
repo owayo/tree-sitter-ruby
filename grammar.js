@@ -89,6 +89,7 @@ module.exports = grammar({
 		$._binary_left_shift,
 		$._binary_ampersand,
 		$._lambda_body_brace,
+		$._command_block_brace,
 	],
 
 	extras: ($) => [$.comment, $.heredoc_body, /\s/, /\\\r?\n/],
@@ -951,11 +952,14 @@ module.exports = grammar({
 
 			const block = field("block", $.block);
 			const doBlock = field("block", $.do_block);
+			// 引数リストを伴わない `foo { ... }` だけは、ハッシュ引数と
+			// 取り違えないよう専用の `{` トークンを使う。
+			const commandBlock = field("block", alias($._command_block, $.block));
 			return choice(
 				receiverArguments,
 				prec(PREC.CURLY_BLOCK, seq(receiverArguments, block)),
 				prec(PREC.DO_BLOCK, seq(receiverArguments, doBlock)),
-				prec(PREC.CURLY_BLOCK, seq(receiver, block)),
+				prec(PREC.CURLY_BLOCK, seq(receiver, commandBlock)),
 				prec(PREC.DO_BLOCK, seq(receiver, doBlock)),
 			);
 		},
@@ -1017,6 +1021,22 @@ module.exports = grammar({
 				PREC.CURLY_BLOCK,
 				seq(
 					"{",
+					field("parameters", optional($.block_parameters)),
+					optional(field("body", $.block_body)),
+					"}",
+				),
+			),
+
+		// 括弧なしのメソッド呼び出しの直後に来る `{` は、Ruby では常にブロック。
+		// ハッシュを唯一の引数として渡すには `foo({...})` と括弧が必要で、
+		// `foo { k => v }` の `=>` は rightward pattern match になる。
+		// この位置の `{` を通常の `{` と字句レベルで区別しないと、
+		// `argument_list > hash > pair` として読まれてしまう。
+		_command_block: ($) =>
+			prec(
+				PREC.CURLY_BLOCK,
+				seq(
+					alias($._command_block_brace, "{"),
 					field("parameters", optional($.block_parameters)),
 					optional(field("body", $.block_body)),
 					"}",
