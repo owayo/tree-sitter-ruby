@@ -375,3 +375,37 @@ e = -> a=f({x: 1}) { a }
       (block
         (block_body
           (identifier))))))
+
+============================================
+adjacent slashes are an empty regex literal
+============================================
+
+x = //..//
+y = (//..//)
+z = 6/2/1
+w = //i
+
+---
+
+(program
+  (assignment
+    (identifier)
+    (range
+      (regex)
+      (regex)))
+  (assignment
+    (identifier)
+    (parenthesized_statements
+      (range
+        (regex)
+        (regex))))
+  (assignment
+    (identifier)
+    (binary
+      (binary
+        (integer)
+        (integer))
+      (integer)))
+  (assignment
+    (identifier)
+    (regex)))

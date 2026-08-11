@@ -582,6 +582,13 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
             literal->allows_interpolation = true;
             advance(lexer);
             if (valid_symbols[FORWARD_SLASH]) {
+                // `//` と連続する場合は空の正規表現リテラル。
+                // 除算演算子として読むと右辺が正規表現の開始になり、
+                // 閉じない (`a // b` は Ruby でも構文エラー) ので、
+                // 正しい Ruby では常に空の正規表現。
+                if (lexer->lookahead == '/') {
+                    return true;
+                }
                 if (!scanner->has_leading_whitespace) {
                     return false;
                 }
