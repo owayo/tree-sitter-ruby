@@ -781,6 +781,78 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
 
 static inline bool is_heredoc_word_char(int32_t c) { return c >= 0x80 || iswalnum(c) || c == '_'; }
 
+// `[` の直後から、対応する `]` と、その後に続く代入の `=` を先読みする。
+// `h [k] = v` のように空白を挟んだ添字代入を、コマンド呼び出しの配列引数
+// (`h([k])`) と区別するために使う。`h([k]) = v` は Ruby では書けないので、
+// `]` の直後に `=` が来ればその `[` は添字参照だと確定できる。
+// 走査は同一行に限定し、上限を設けて暴走を防ぐ。
+static inline bool scan_index_assignment_ahead(TSLexer *lexer) {
+    uint32_t depth = 1;
+    uint32_t budget = 4096;
+
+    while (depth > 0) {
+        if (budget-- == 0 || lexer->eof(lexer)) {
+            return false;
+        }
+        int32_t c = lexer->lookahead;
+        if (c == '\n' || c == '\r' || c == '#') {
+            // 改行をまたぐ形やコメントの手前では判定しない。
+            return false;
+        }
+        if (c == '\'' || c == '"') {
+            // 文字列中の括弧を数えないよう読み飛ばす。
+            advance(lexer);
+            while (lexer->lookahead != c) {
+                if (budget-- == 0 || lexer->eof(lexer) || lexer->lookahead == '\n' || lexer->lookahead == '\r') {
+                    return false;
+                }
+                if (lexer->lookahead == '\\') {
+                    advance(lexer);
+                    if (lexer->eof(lexer)) {
+                        return false;
+                    }
+                }
+                advance(lexer);
+            }
+            advance(lexer);
+            continue;
+        }
+        if (c == '[') {
+            depth++;
+        } else if (c == ']') {
+            depth--;
+        }
+        advance(lexer);
+    }
+
+    while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
+        advance(lexer);
+    }
+
+    // 複合代入 (`+=` / `||=` / `<<=` など) の演算子部分を読み飛ばす。
+    // `<=` / `>=` は比較演算子なので `<<` / `>>` の形だけを許す。
+    int32_t op = lexer->lookahead;
+    if (op == '+' || op == '-' || op == '*' || op == '/' || op == '%' || op == '|' || op == '&' || op == '^') {
+        advance(lexer);
+        if (lexer->lookahead == op && (op == '*' || op == '|' || op == '&')) {
+            advance(lexer);
+        }
+    } else if (op == '<' || op == '>') {
+        advance(lexer);
+        if (lexer->lookahead != op) {
+            return false;
+        }
+        advance(lexer);
+    }
+
+    if (lexer->lookahead != '=') {
+        return false;
+    }
+    advance(lexer);
+    // `==` / `=~` / `=>` は代入ではない。
+    return lexer->lookahead != '=' && lexer->lookahead != '~' && lexer->lookahead != '>';
+}
+
 static inline bool scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
     String word = array_new();
     int32_t quote = 0;
@@ -884,9 +956,14 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
     size_t position_in_word = 0;
     bool look_for_heredoc_end = true;
     bool has_content = false;
+    // 終端語が空の heredoc (`<<""`) は空行で終わる。終端語が空だと
+    // `position_in_word == word.size` が常に成立してしまうため、行頭に
+    // いるときだけ終端判定を行う。最初の呼び出しでは開始行の改行の直前に
+    // いるので、その改行を消費するまでは終端しない。
+    bool at_line_start = heredoc->word.size > 0 || lexer->get_column(lexer) == 0;
 
     for (;;) {
-        if (position_in_word == heredoc->word.size) {
+        if (position_in_word == heredoc->word.size && at_line_start && look_for_heredoc_end) {
             if (!has_content) {
                 lexer->mark_end(lexer);
             }
@@ -905,6 +982,7 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
             }
             has_content = true;
             position_in_word = 0;
+            at_line_start = false;
         }
 
         if (lexer->eof(lexer)) {
@@ -961,6 +1039,7 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
                 }
                 has_content = true;
                 look_for_heredoc_end = true;
+                at_line_start = true;
                 while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
                     advance(lexer);
                     if (!heredoc->end_word_indentation_allowed) {
@@ -1277,11 +1356,19 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             // 次のいずれかを満たす `[` は要素参照として扱う。
             // * 直前に空白がない
             // * 現在位置で任意式が妥当ではない
-            if (valid_symbols[ELEMENT_REFERENCE_BRACKET] &&
-                (!scanner->has_leading_whitespace || !valid_symbols[STRING_START])) {
+            // * 対応する `]` の直後に代入の `=` が続く (`h [k] = v`)
+            if (valid_symbols[ELEMENT_REFERENCE_BRACKET]) {
                 advance(lexer);
-                lexer->result_symbol = ELEMENT_REFERENCE_BRACKET;
-                return true;
+                lexer->mark_end(lexer);
+                if (!scanner->has_leading_whitespace || !valid_symbols[STRING_START]) {
+                    lexer->result_symbol = ELEMENT_REFERENCE_BRACKET;
+                    return true;
+                }
+                if (scan_index_assignment_ahead(lexer)) {
+                    lexer->result_symbol = ELEMENT_REFERENCE_BRACKET;
+                    return true;
+                }
+                return false;
             }
             break;
 

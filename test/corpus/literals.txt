@@ -1158,6 +1158,11 @@ x = <<""
 
 x = <<''
 
+y = <<""
+  body line
+
+puts y
+
 ---
 
 (program
@@ -1165,12 +1170,24 @@ x = <<''
     left: (identifier)
     right: (heredoc_beginning))
   (heredoc_body
+    (heredoc_content)
     (heredoc_end))
   (assignment
     left: (identifier)
     right: (heredoc_beginning))
   (heredoc_body
-    (heredoc_end)))
+    (heredoc_content)
+    (heredoc_end))
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end))
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (identifier))))
 
 ========================================
 Unicode heredoc delimiters

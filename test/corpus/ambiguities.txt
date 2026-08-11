@@ -1,0 +1,377 @@
+====================================
+left shift is not a heredoc beginning
+====================================
+
+a = r<<i
+b = x.inject {|r, i| r<<i}
+c = p(r<<i)
+d = 1<<2
+
+---
+
+(program
+  (assignment
+    (identifier)
+    (binary
+      (identifier)
+      (identifier)))
+  (assignment
+    (identifier)
+    (call
+      (identifier)
+      (identifier)
+      (block
+        (block_parameters
+          (identifier)
+          (identifier))
+        (block_body
+          (binary
+            (identifier)
+            (identifier))))))
+  (assignment
+    (identifier)
+    (call
+      (identifier)
+      (argument_list
+        (binary
+          (identifier)
+          (identifier)))))
+  (assignment
+    (identifier)
+    (binary
+      (integer)
+      (integer))))
+
+============================================
+heredoc beginning still wins where it should
+============================================
+
+a = [<<"", 1]
+  first
+
+b = f(<<EOS)
+  second
+EOS
+c=<<EOS
+  third
+EOS
+d = <<~EOS
+  fourth
+EOS
+e = x <<EOS
+  fifth
+EOS
+
+---
+
+(program
+  (assignment
+    (identifier)
+    (array
+      (heredoc_beginning)
+      (integer)))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end))
+  (assignment
+    (identifier)
+    (call
+      (identifier)
+      (argument_list
+        (heredoc_beginning))))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end))
+  (assignment
+    (identifier)
+    (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end))
+  (assignment
+    (identifier)
+    (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end))
+  (assignment
+    (identifier)
+    (call
+      (identifier)
+      (argument_list
+        (heredoc_beginning))))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end)))
+
+===============================
+left shift operator with spaces
+===============================
+
+a = b << c
+a <<= 2
+
+---
+
+(program
+  (assignment
+    (identifier)
+    (binary
+      (identifier)
+      (identifier)))
+  (operator_assignment
+    (identifier)
+    (integer)))
+
+==============================================
+block ampersand followed by a space in an argument list
+==============================================
+
+f(& blk)
+super.instance_eval(& Overlaid)
+g(&blk)
+h = a & b
+i = a&b
+
+---
+
+(program
+  (call
+    (identifier)
+    (argument_list
+      (block_argument
+        (identifier))))
+  (call
+    (super)
+    (identifier)
+    (argument_list
+      (block_argument
+        (constant))))
+  (call
+    (identifier)
+    (argument_list
+      (block_argument
+        (identifier))))
+  (assignment
+    (identifier)
+    (binary
+      (identifier)
+      (identifier)))
+  (assignment
+    (identifier)
+    (call
+      (identifier)
+      (argument_list
+        (block_argument
+          (identifier))))))
+
+=====================================================
+percent as modulo before a bracketed argument list
+=====================================================
+
+raise ArgumentError, "%s: %s" % [__method__, value.inspect]
+x = "%s" % [a, b]
+y = "a" "b"
+
+---
+
+(program
+  (call
+    (identifier)
+    (argument_list
+      (constant)
+      (binary
+        (string
+          (string_content))
+        (array
+          (identifier)
+          (call
+            (identifier)
+            (identifier))))))
+  (assignment
+    (identifier)
+    (binary
+      (string
+        (string_content))
+      (array
+        (identifier)
+        (identifier))))
+  (assignment
+    (identifier)
+    (chained_string
+      (string
+        (string_content))
+      (string
+        (string_content)))))
+
+=============================================
+percent literal delimited by a space
+=============================================
+
+x = % abc
+
+---
+
+(program
+  (assignment
+    (identifier)
+    (string
+      (string_content))))
+
+============================
+keywords as method names
+============================
+
+class C
+  def self
+    1
+  end
+
+  def super
+    2
+  end
+
+  def self.foo
+    3
+  end
+end
+
+---
+
+(program
+  (class
+    (constant)
+    (body_statement
+      (method
+        (identifier)
+        (body_statement
+          (integer)))
+      (method
+        (identifier)
+        (body_statement
+          (integer)))
+      (singleton_method
+        (self)
+        (identifier)
+        (body_statement
+          (integer))))))
+
+==========================================
+index assignment with a space before the bracket
+==========================================
+
+h = {}
+h [k] = v
+h [k] += 1 if false
+foo [1, 2].each { |x| x }
+assert_equal [1], x
+
+---
+
+(program
+  (assignment
+    (identifier)
+    (hash))
+  (assignment
+    (element_reference
+      (identifier)
+      (identifier))
+    (identifier))
+  (if_modifier
+    (operator_assignment
+      (element_reference
+        (identifier)
+        (identifier))
+      (integer))
+    (false))
+  (call
+    (identifier)
+    (argument_list
+      (call
+        (array
+          (integer)
+          (integer))
+        (identifier)
+        (block
+          (block_parameters
+            (identifier))
+          (block_body
+            (identifier))))))
+  (call
+    (identifier)
+    (argument_list
+      (array
+        (integer))
+      (identifier))))
+
+============================================
+brace after bare lambda parameters is the body
+============================================
+
+a = -> a=a() { a }
+b = -> *a, b: { }
+c = -> *a { a.last }
+d = -> a: 1 { a }
+e = -> a=f({x: 1}) { a }
+
+---
+
+(program
+  (assignment
+    (identifier)
+    (lambda
+      (lambda_parameters
+        (optional_parameter
+          (identifier)
+          (call
+            (identifier)
+            (argument_list))))
+      (block
+        (block_body
+          (identifier)))))
+  (assignment
+    (identifier)
+    (lambda
+      (lambda_parameters
+        (splat_parameter
+          (identifier))
+        (keyword_parameter
+          (identifier)))
+      (block)))
+  (assignment
+    (identifier)
+    (lambda
+      (lambda_parameters
+        (splat_parameter
+          (identifier)))
+      (block
+        (block_body
+          (call
+            (identifier)
+            (identifier))))))
+  (assignment
+    (identifier)
+    (lambda
+      (lambda_parameters
+        (keyword_parameter
+          (identifier)
+          (integer)))
+      (block
+        (block_body
+          (identifier)))))
+  (assignment
+    (identifier)
+    (lambda
+      (lambda_parameters
+        (optional_parameter
+          (identifier)
+          (call
+            (identifier)
+            (argument_list
+              (hash
+                (pair
+                  (hash_key_symbol)
+                  (integer)))))))
+      (block
+        (block_body
+          (identifier))))))
