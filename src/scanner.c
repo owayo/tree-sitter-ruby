@@ -42,6 +42,7 @@ typedef enum {
     SHORT_INTERPOLATION,
     BINARY_LEFT_SHIFT,
     BINARY_AMPERSAND,
+    LAMBDA_BODY_BRACE,
 
     NONE
 } TokenType;
@@ -1077,6 +1078,17 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
     }
 
     switch (lexer->lookahead) {
+        case '{':
+            // 括弧なし仮引数リストの直後の `{` は lambda の本体。Ruby も
+            // `tLAMBEG` として区別しており、直前の呼び出しのブロックには
+            // ならない (`-> a=f() { }` の `{` は f のブロックではない)。
+            if (valid_symbols[LAMBDA_BODY_BRACE]) {
+                advance(lexer);
+                lexer->result_symbol = LAMBDA_BODY_BRACE;
+                return true;
+            }
+            break;
+
         case '&':
             if (valid_symbols[BLOCK_AMPERSAND] || valid_symbols[BINARY_AMPERSAND]) {
                 advance(lexer);

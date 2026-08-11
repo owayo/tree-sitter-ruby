@@ -88,6 +88,7 @@ module.exports = grammar({
 		$._short_interpolation,
 		$._binary_left_shift,
 		$._binary_ampersand,
+		$._lambda_body_brace,
 	],
 
 	extras: ($) => [$.comment, $.heredoc_body, /\s/, /\\\r?\n/],
@@ -1582,7 +1583,21 @@ module.exports = grammar({
 						),
 					),
 				),
-				field("body", choice($.block, $.do_block)),
+				field("body", choice(alias($._lambda_block, $.block), $.do_block)),
+			),
+
+		// 括弧なしの仮引数リストの直後に来る `{` は、必ず lambda の本体の開始。
+		// Ruby も `tLAMBEG` として字句レベルで区別しており、`-> a=f() { }` の
+		// `{` を `f()` のブロックとして取ってはならない。
+		_lambda_block: ($) =>
+			prec(
+				PREC.CURLY_BLOCK,
+				seq(
+					alias($._lambda_body_brace, "{"),
+					field("parameters", optional($.block_parameters)),
+					optional(field("body", $.block_body)),
+					"}",
+				),
 			),
 
 		empty_statement: (_) => prec(-1, ";"),
