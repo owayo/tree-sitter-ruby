@@ -86,6 +86,8 @@ module.exports = grammar({
 		$._binary_star_star,
 		$._element_reference_bracket,
 		$._short_interpolation,
+		$._binary_left_shift,
+		$._binary_ampersand,
 	],
 
 	extras: ($) => [$.comment, $.heredoc_body, /\s/, /\\\r?\n/],
@@ -1145,9 +1147,13 @@ module.exports = grammar({
 				[prec.left, PREC.OR, "or"],
 				[prec.left, PREC.BOOLEAN_OR, "||"],
 				[prec.left, PREC.BOOLEAN_AND, "&&"],
-				[prec.left, PREC.SHIFT, choice("<<", ">>")],
+				[
+					prec.left,
+					PREC.SHIFT,
+					choice(alias($._binary_left_shift, "<<"), ">>"),
+				],
 				[prec.left, PREC.COMPARISON, choice("<", "<=", ">", ">=")],
-				[prec.left, PREC.BITWISE_AND, "&"],
+				[prec.left, PREC.BITWISE_AND, alias($._binary_ampersand, "&")],
 				[prec.left, PREC.BITWISE_OR, choice("^", "|")],
 				[prec.left, PREC.ADDITIVE, choice("+", alias($._binary_minus, "-"))],
 				[
@@ -1362,7 +1368,14 @@ module.exports = grammar({
 				$.delimited_symbol,
 				$.operator,
 				$._nonlocal_variable,
+				// Ruby の `fname` は予約語も受け付ける (`def self`, `def super` 等)。
+				// 他の予約語は `word` トークンのフォールバックで識別子として
+				// 解釈されるが、`self` / `super` はこの位置でも独立したノードとして
+				// 有効なため、明示的に列挙する必要がある。
+				alias($._keyword_method_name, $.identifier),
 			),
+
+		_keyword_method_name: (_) => choice("self", "super"),
 
 		_nonlocal_variable: ($) =>
 			choice($.instance_variable, $.class_variable, $.global_variable),

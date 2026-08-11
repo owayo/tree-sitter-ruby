@@ -40,6 +40,8 @@ typedef enum {
     BINARY_STAR_STAR,
     ELEMENT_REFERENCE_BRACKET,
     SHORT_INTERPOLATION,
+    BINARY_LEFT_SHIFT,
+    BINARY_AMPERSAND,
 
     NONE
 } TokenType;
@@ -711,9 +713,18 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
                 case '\n':
                 case ' ':
                 case '\t':
-                    // `/` 演算子が有効なら `%` 演算子も有効なので、
-                    // 空白が続く `%` は percent string ではなく演算子として扱う。
+                    // 空白も区切り文字になり得る (`% abc ` は文字列 "abc") が、
+                    // Ruby がそう解釈するのは式の開始位置 (EXPR_BEG) にいるときだけ。
+                    // `/` 演算子が有効なら `%` 演算子も有効なので、そこは剰余演算子。
                     if (valid_symbols[FORWARD_SLASH]) {
+                        return false;
+                    }
+                    // 文字列リテラルの連結 (`"a" "b"`) を待っている位置では
+                    // 文字列だけが有効で `%w[]` などは現れない。この位置の `%` も
+                    // Ruby では剰余演算子なので percent literal を成立させない。
+                    // 例: `"%s" % [a, b]` を空白区切りの文字列として飲み込むと
+                    // ファイル末尾まで巻き込んで解析全体が壊れる。
+                    if (!valid_symbols[STRING_ARRAY_START]) {
                         return false;
                     }
                     break;
@@ -1067,11 +1078,22 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
 
     switch (lexer->lookahead) {
         case '&':
-            if (valid_symbols[BLOCK_AMPERSAND]) {
+            if (valid_symbols[BLOCK_AMPERSAND] || valid_symbols[BINARY_AMPERSAND]) {
                 advance(lexer);
-                if (lexer->lookahead != '&' && lexer->lookahead != '.' && lexer->lookahead != '=' &&
-                    !iswspace(lexer->lookahead)) {
+                if (lexer->lookahead == '&' || lexer->lookahead == '.' || lexer->lookahead == '=') {
+                    // `&&` / `&.` / `&=` は内部レキサに任せる。
+                    return false;
+                }
+                // `&` の直後に空白があっても、二項 `&` が使えない位置
+                // (`f(& blk)` のように直前に完結した式が無い位置) なら
+                // Ruby はブロック引数の `&` として扱う。
+                if (valid_symbols[BLOCK_AMPERSAND] &&
+                    (!iswspace(lexer->lookahead) || !valid_symbols[BINARY_AMPERSAND])) {
                     lexer->result_symbol = BLOCK_AMPERSAND;
+                    return true;
+                }
+                if (valid_symbols[BINARY_AMPERSAND]) {
+                    lexer->result_symbol = BINARY_AMPERSAND;
                     return true;
                 }
                 return false;
@@ -1087,6 +1109,42 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                     return true;
                 }
                 return false;
+            }
+            // 左シフト演算子が使える位置、つまり直前に完結した式がある位置での `<<`。
+            // Ruby の字句規則では、この位置の `<<` が heredoc になるのは
+            // `<<` の直前に空白がある場合だけで、`r<<i` のように空白がなければ
+            // 常に左シフト演算子として扱われる。
+            if (valid_symbols[BINARY_LEFT_SHIFT]) {
+                advance(lexer);
+                if (lexer->lookahead != '<') {
+                    return false;
+                }
+                advance(lexer);
+                if (lexer->lookahead == '=') {
+                    // `<<=` は複合代入演算子なので内部レキサに任せる。
+                    return false;
+                }
+                lexer->mark_end(lexer);
+
+                if (valid_symbols[STRING_START] && scanner->has_leading_whitespace) {
+                    Heredoc heredoc = {0};
+                    if (lexer->lookahead == '-' || lexer->lookahead == '~') {
+                        advance(lexer);
+                        heredoc.end_word_indentation_allowed = true;
+                    }
+                    if (scan_heredoc_word(lexer, &heredoc)) {
+                        if (can_serialize_heredocs_with(scanner, &heredoc)) {
+                            lexer->mark_end(lexer);
+                            array_push(&scanner->open_heredocs, heredoc);
+                            lexer->result_symbol = HEREDOC_START;
+                            return true;
+                        }
+                        array_delete(&heredoc.word);
+                    }
+                }
+
+                lexer->result_symbol = BINARY_LEFT_SHIFT;
+                return true;
             }
             break;
 
