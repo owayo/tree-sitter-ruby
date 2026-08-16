@@ -936,9 +936,17 @@ module.exports = grammar({
 			);
 
 			const args = field("arguments", $.argument_list);
-			const receiverArguments = seq(
-				choice(
-					receiver,
+			// `foo.(1)` (= `foo.call(1)`) はメソッド名が無いので、`.` の次に来られるのは
+			// 引数リストだけ。**そこには改行を挟める** (`foo.` で行を終えて次行に `(1)`)。
+			// 名前つきの `foo.bar (1)` と違って `(` を空白から切り離す必要がないので、
+			// `token.immediate` を外した版をこの枝にだけ使う。
+			const operatorArgs = field(
+				"arguments",
+				alias($._spaced_argument_list, $.argument_list),
+			);
+			const receiverArguments = choice(
+				seq(receiver, args),
+				seq(
 					prec.left(
 						PREC.CALL,
 						seq(
@@ -946,8 +954,8 @@ module.exports = grammar({
 							field("operator", $._call_operator),
 						),
 					),
+					operatorArgs,
 				),
-				args,
 			);
 
 			const block = field("block", $.block);
@@ -973,6 +981,13 @@ module.exports = grammar({
 					optional($._argument_list_with_trailing_comma),
 					")",
 				),
+			),
+
+		// `.` `&.` `::` の直後に置く引数リスト。`token.immediate` を使わないので
+		// **空白と改行を挟める**。`call` の `.()` の枝からだけ参照する。
+		_spaced_argument_list: ($) =>
+			prec.right(
+				seq("(", optional($._argument_list_with_trailing_comma), ")"),
 			),
 
 		_argument_list_with_trailing_comma: ($) =>
