@@ -1374,6 +1374,9 @@ module.exports = grammar({
 				"+@",
 				"-@",
 				"~@",
+				// `!@` は Ruby が受け付けるのに抜けていた (`def !@; end` / `foo.!@ bar`)。
+				// 単項演算子のメソッド名は `+@` `-@` `~@` `!@` の 4 つで揃う。
+				"!@",
 				"[]",
 				"[]=",
 				"`",
@@ -1598,12 +1601,23 @@ module.exports = grammar({
 					"parameters",
 					optional(
 						choice(
-							alias($.parameters, $.lambda_parameters),
+							alias($._lambda_parenthesized_parameters, $.lambda_parameters),
 							alias($.bare_parameters, $.lambda_parameters),
 						),
 					),
 				),
 				field("body", choice(alias($._lambda_block, $.block), $.do_block)),
+			),
+
+		// lambda リテラルの括弧つき仮引数リストは、ブロックと同じくシャドウ引数を取れる
+		// (`->(x; y) { x }`)。`parameters` を使い回すと `def foo(x; y)` まで通ってしまうので、
+		// lambda 専用の節にする。**シャドウ引数を持つのは block_parameters と、ここだけ。**
+		_lambda_parenthesized_parameters: ($) =>
+			seq(
+				"(",
+				commaSep($._formal_parameter),
+				optional(seq(";", sep1(field("locals", $.identifier), ","))),
+				")",
 			),
 
 		// 括弧なしの仮引数リストの直後に来る `{` は、必ず lambda の本体の開始。
