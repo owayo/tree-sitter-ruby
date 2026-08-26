@@ -44,6 +44,7 @@ typedef enum {
     BINARY_AMPERSAND,
     LAMBDA_BODY_BRACE,
     COMMAND_BLOCK_BRACE,
+    RANGE_OPERAND,
 
     NONE
 } TokenType;
@@ -582,7 +583,10 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
             literal->open_delimiter = literal->close_delimiter = lexer->lookahead;
             literal->allows_interpolation = true;
             advance(lexer);
-            if (valid_symbols[FORWARD_SLASH]) {
+            // 範囲演算子の直後は Ruby の EXPR_BEG 状態で、`/` は必ず正規表現の開始になる。
+            // `_range_operand` はマッチしないトークンで、その位置に立っていることを
+            // スキャナーに伝えるためだけに文法へ置いてある (`/a/../b/` が `(/a/../b/)`)。
+            if (valid_symbols[FORWARD_SLASH] && !valid_symbols[RANGE_OPERAND]) {
                 // `//` と連続する場合は空の正規表現リテラル。
                 // 除算演算子として読むと右辺が正規表現の開始になり、
                 // 閉じない (`a // b` は Ruby でも構文エラー) ので、

@@ -90,6 +90,7 @@ module.exports = grammar({
 		$._binary_ampersand,
 		$._lambda_body_brace,
 		$._command_block_brace,
+		$._range_operand,
 	],
 
 	extras: ($) => [$.comment, $.heredoc_body, /\s/, /\\\r?\n/],
@@ -1170,9 +1171,15 @@ module.exports = grammar({
 			return prec.right(
 				PREC.RANGE,
 				choice(
-					seq(begin, operator, end),
-					seq(operator, end),
-					seq(begin, operator),
+					// Ruby は範囲演算子の後の改行を常に継続として扱う (`x = 0..\n10` は
+					// `x = (0..10)`)。`_no_line_break` はマッチしないトークンで、この位置で
+					// 改行トークンを作らないようスキャナーに伝えるヒントとして置いている。
+					seq(
+						begin,
+						operator,
+						choice(seq(optional($._range_operand), optional(end)), $._no_line_break),
+					),
+					seq(operator, optional($._range_operand), end),
 				),
 			);
 		},
