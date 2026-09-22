@@ -32,7 +32,7 @@ fn collect_tag_names(code: &str, capture_name: &str) -> Vec<String> {
     let mut names = Vec::new();
     while let Some(query_match) = matches.next() {
         if !query_match
-            .captures
+            .captures()
             .iter()
             .any(|capture| capture.index as usize == target_idx)
         {
@@ -40,7 +40,7 @@ fn collect_tag_names(code: &str, capture_name: &str) -> Vec<String> {
         }
 
         // タグ対象と同じマッチに含まれる name キャプチャだけを集める。
-        for capture in query_match.captures {
+        for capture in query_match.captures() {
             if capture.index as usize == name_idx {
                 names.push(code[capture.node.byte_range()].to_string());
             }

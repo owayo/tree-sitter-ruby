@@ -2316,6 +2316,20 @@ regexp with invalid option
     (string_content))
   (ERROR))
 
+=======================================================
+regexp with non-ASCII character after the closing slash
+=======================================================
+
+/a/ど
+
+---
+
+(program
+  (regex
+    (string_content))
+  (ERROR
+    (identifier)))
+
 =====================================
 regular expression with interpolation
 =====================================

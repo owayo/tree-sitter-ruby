@@ -7,18 +7,28 @@ on:
       - grammar.js
       - src/**
       - test/**
+      # cargo test の統合テスト (tests/) とクエリ本体。ここが抜けていると
+      # クエリやクエリテストだけを直した push で CI が起動しない。
+      - tests/**
+      - queries/**
       - bindings/rust/**
       - scripts/**
       - Cargo.toml
+      - Cargo.lock
       - .github/workflows/ci.yml
   pull_request:
     paths:
       - grammar.js
       - src/**
       - test/**
+      # cargo test の統合テスト (tests/) とクエリ本体。ここが抜けていると
+      # クエリやクエリテストだけを直した push で CI が起動しない。
+      - tests/**
+      - queries/**
       - bindings/rust/**
       - scripts/**
       - Cargo.toml
+      - Cargo.lock
       - .github/workflows/ci.yml
 
 concurrency:

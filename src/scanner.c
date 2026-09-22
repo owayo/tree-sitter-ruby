@@ -275,6 +275,22 @@ static inline bool is_iden_char(int32_t c) {
     return memchr(&NON_IDENTIFIER_CHARS, (char)c, sizeof(NON_IDENTIFIER_CHARS)) == NULL;
 }
 
+// 正規表現リテラル末尾のオプション文字（`/x/im` の `im`）か判定する。
+// `strchr("imxouesn", c)` では c が char へ切り詰められ、下位 8 bit が
+// 一致する ASCII 外の文字（`ど` U+3069 → 0x69 = 'i'、`ũ` U+0169 も同じ）が
+// オプションとして誤って消費されてしまう。int32_t のまま比較する。
+static inline bool is_regex_option_char(int32_t c) {
+    return c == 'i' || c == 'm' || c == 'x' || c == 'o' || c == 'u' || c == 'e' || c == 's' || c == 'n';
+}
+
+// 特殊グローバル変数（`$!` `$&` `$"` など）の 1 文字目か判定する。
+// strchr は第 2 引数を char へ変換するため、`lexer->lookahead` をそのまま
+// 渡すと下位 8 bit が一致する ASCII 外の文字が誤って一致する。EOF (0) も
+// 終端 NUL に一致してしまうので、先に ASCII 範囲へ絞り込んでから照合する。
+static inline bool is_special_global_variable_char(int32_t c) {
+    return c > 0 && c < 0x80 && strchr("!@&`'+~=/\\,;.<>*$?:\"", (char)c) != NULL;
+}
+
 static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
     bool heredoc_body_start_is_valid = scanner->open_heredocs.size > 0 && !scanner->open_heredocs.contents[0].started &&
                                        valid_symbols[HEREDOC_BODY_START];
@@ -934,8 +950,9 @@ static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_conte
         advance(lexer);
         bool is_short_interpolation = false;
         if (start == '$') {
-            // EOF の NUL を特殊グローバル変数の 1 文字として扱わない。
-            if (lexer->lookahead != 0 && strchr("!@&`'+~=/\\,;.<>*$?:\"", lexer->lookahead) != NULL) {
+            // EOF の NUL も ASCII 外の文字も、特殊グローバル変数の
+            // 1 文字目としては扱わない（判定は is_special_global_variable_char）。
+            if (is_special_global_variable_char(lexer->lookahead)) {
                 is_short_interpolation = true;
             } else {
                 if (lexer->lookahead == '-') {
@@ -1090,10 +1107,11 @@ static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer) {
                 } else {
                     advance(lexer);
                     if (literal->type == REGEX_START) {
-                        // lexer->lookahead が 0（EOF）のとき strchr は終端の NUL に
-                        // マッチして非 NULL を返すため、`!= 0` で EOF を除外しないと
-                        // ファイル末尾の正規表現（改行なし）で無限ループになる。
-                        while (lexer->lookahead != 0 && strchr("imxouesn", lexer->lookahead) != NULL) {
+                        // `is_regex_option_char` は int32_t のまま比較するため、
+                        // EOF（0）も ASCII 外の文字も自然に弾ける。strchr を使うと
+                        // EOF が終端 NUL に一致して無限ループになり、さらに下位
+                        // 8 bit の衝突で `ど`（U+3069）などが誤って消費される。
+                        while (is_regex_option_char(lexer->lookahead)) {
                             advance(lexer);
                         }
                     }

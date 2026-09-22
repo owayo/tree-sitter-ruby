@@ -21,14 +21,14 @@ Ruby の tree-sitter 文法パーサー。
 ## 開発コマンド
 
 ```bash
-pnpm install --ignore-scripts  # 依存関係インストール
+pnpm install               # 依存関係インストール（CLI バイナリ取得まで実行）
 tree-sitter generate       # grammar.js からパーサー生成
 pnpm run lint              # lint チェック（Biome）
 ```
 
 ### テスト実行
 
-**`tree-sitter test` は直接実行禁止。** tree-sitter-cli 0.26 系は大規模パーサー（parser.c 15MB）で RSS 8GB+/VSIZE 400GB+ を消費しハングする既知の問題がある。
+**`tree-sitter test` は直接実行禁止。** tree-sitter-cli は大規模パーサー（現在 parser.c 21MB / STATE_COUNT 8235）で RSS 8GB+/VSIZE 400GB+ を消費しハングする既知の問題がある。0.26 系で確認し、0.27 系でも解消していない。
 
 代わりに以下の方法でテストすること:
 
@@ -46,8 +46,14 @@ pnpm run lint              # lint チェック（Biome）
 # - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
 #   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
 #   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
-# - tree-sitter-cli 0.26.11 が生成時に汎用文字集合から除外する
+# - tree-sitter-cli 0.26.11 が生成時に汎用文字集合から除外していた
 #   `ſ`（U+017F）と `K`（U+212A）を含む正当な Ruby 識別子も回帰確認する
+#   （0.27.0 では除外されなくなったが、明示許可は保険として残している）
+# - endless method definition (`def m = foo 1`) の括弧なしコマンド呼び出しと
+#   その rescue 修飾・splat / block 引数もここで確認する
+# - scanner.c の正規表現オプション判定が ASCII 外 Unicode 文字
+#   （`ど` U+3069 / `ũ` U+0169 は下位 8 bit が 0x69 = 'i'）を
+#   char 切り詰めで誤って消費しないこともここで確認する
 # - scanner.c の短縮 interpolation 判定が EOF 直後の `$` を
 #   特殊グローバル変数として誤判定しないこともここで確認する
 # - scanner.c の短縮 interpolation 判定が ASCII 外 Unicode 文字
@@ -146,14 +152,24 @@ pnpm run test:unit
 # - scanner.c の正規表現オプション読み（imxouesn）が、EOF 直後で終わる正規表現
 #   （`a = /x/` など末尾に改行がない）で strchr の終端 NUL マッチによる
 #   無限ループに陥らないことの検証
+# - endless method definition の括弧なしコマンド呼び出し
+#   （`def greet(person) = "Hi, ".dup.concat person`）のパース検証と、
+#   `def m = foo 1 rescue 2` の rescue が本体側に束縛されることの検証
+# - ブロック付きコマンド呼び出しのチェーン（`1.upto 0 do end.foo(1)`）が
+#   パースできることの回帰検証（`call` のレシーバ拡張による退行の検出用）
+# - scanner.c の正規表現オプション判定（imxouesn）が ASCII 外 Unicode 文字を
+#   char 切り詰めで誤って消費しないこと、正当なオプションと EOF は
+#   従来どおり扱われることの検証
 cargo test
 
 # 個別ファイルのパース検証
 TREE_SITTER_LIBDIR=/tmp/ts-lib tree-sitter parse example.rb
 
-# pnpm が tree-sitter-cli の install script を止めた場合は
-# ローカル CLI バイナリを取得する。install.js はカレントディレクトリに
-# tree-sitter を書き出すため、パッケージディレクトリで実行する。
+# tree-sitter-cli の install script は `pnpm-workspace.yaml` の `allowBuilds` で
+# 許可済みなので通常は不要。何らかの理由で止まったときだけ手動で取得する。
+# install.js はカレントディレクトリに tree-sitter を書き出すため、
+# 必ずパッケージディレクトリで実行する（リポジトリルートで実行すると
+# 18MB のバイナリが作業ツリーに落ちる。`.gitignore` 済み）。
 (cd node_modules/tree-sitter-cli && node install.js)
 ```
 
@@ -184,7 +200,9 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 
 - `src/` 配下は自動生成ファイルのため直接編集しない（ただし `src/scanner.c` は手動管理の外部スキャナー）
 - `grammar.js` を変更した場合は必ず `tree-sitter generate` を実行する
-- tree-sitter-cli 0.26.11 は `ſ`（U+017F）と `K`（U+212A）を汎用 lexer 文字集合から除外するが、Ruby では有効な識別子文字である。識別子 token のルールでは両文字を明示的に許可し、`test/corpus/identifiers.txt` の回帰ケースと同期すること
+- tree-sitter-cli 0.26.11 は `ſ`（U+017F）と `K`（U+212A）を汎用 lexer 文字集合から除外していたが、Ruby では有効な識別子文字である。0.27.0 ではこの除外が無くなり、明示許可の有無で parser.c は 1 バイトも変わらない（no-op）。ただし CLI 側で再発したときに黙って壊れないよう明示許可は残し、`test/corpus/identifiers.txt` の回帰ケースと同期すること
+- endless method definition (`def m = ...`) の本体に括弧なしコマンド呼び出しを許すルールは、既存の `command_call` を流用せず専用の `_endless_command_call` / `_endless_command_argument_list` / `_endless_command_argument` で入口を絞ってある。`command_call` を直接持ち込むと引数リストが `_expression` へ戻る相互再帰でパターン構文まで流れ込み、LR conflict が連鎖するため。引数に `pair`（`def m = foo a: 1`）を足すと parser.c が 21MB から 32MB へ膨らむので意図的に除外している（括弧付き `def m = foo(a: 1)` は従来どおり解析できる）
+- `call` / `command_call_with_block` のレシーバに `_chained_command_call` を足してはならない。`1.upto 0 do end.foo(1)` の AST は改善するが、Rails / Homebrew / ruby 本体で広範なパース失敗（ファイル全体が ERROR）を引き起こし、parser.c も 37MB へ倍増する
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `pnpm run test` で確認する
@@ -200,6 +218,6 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - POSIX パス（`/tmp/ts-lib` など）をネイティブ Windows プロセスに渡してはならない。Git Bash が解決する `/tmp` とネイティブプロセスが解決する `/tmp`（ドライブレターの無い root 相対パスとしてカレントドライブ基準になる）は別物で、共有ライブラリを見失う。CI では `cygpath -am` で変換したパスを `GITHUB_ENV` 経由で渡すこと
 - Windows の Python は stdout の既定エンコーディングが cp1252/cp932 のため、日本語を含むコーパスのテスト名を print すると `UnicodeEncodeError` でランナーごと落ちる。`scripts/` の出力側は `configure_stdio_encoding()` で UTF-8 化し、CI では `PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8` も設定すること
 - tree-sitter CLI はパイプ出力でも `Error:` 行を着色し、`NO_COLOR` でも抑止できない。CLI 出力を解析する場合は ANSI エスケープを除去してから判定すること。真の失敗理由は `Caused by:` チェーンの最深部にあるため、先頭の `Error:` 行だけを見ないこと
-- `.github/workflows/ci.yml` の `paths` フィルターには `scripts/**` と `.github/workflows/ci.yml` 自身を含めること。含めないと CI 自体やテストランナーだけを変更した push で CI が起動しない
-- `src/scanner.c` で `strchr(set, lexer->lookahead)` を使う場合、`lexer->lookahead == 0`（EOF）のとき strchr が終端の NUL に一致して非 NULL を返すため、`lexer->lookahead != 0` で EOF を除外すること。さもないと EOF 直後の入力（例: 末尾に改行のない `a = /x/` の正規表現オプション読み、`"#$` の短縮 interpolation 判定）で無限ループや誤判定になる
+- `.github/workflows/ci.yml` の `paths` フィルターには `scripts/**`、`tests/**`（cargo test の統合テスト）、`queries/**`、`Cargo.lock`、`.github/workflows/ci.yml` 自身を含めること。含めないと CI 自体・テストランナー・クエリだけを変更した push で CI が起動しない
+- `src/scanner.c` で `strchr(set, lexer->lookahead)` を直接呼ばないこと。strchr は第 2 引数を `char` へ変換するため、(1) `lexer->lookahead == 0`（EOF）が終端の NUL に一致して無限ループになり、(2) 下位 8 bit が一致する ASCII 外の文字（`ど` U+3069 / `ũ` U+0169 → 0x69 = `'i'`）が誤って一致する。文字集合が小さければ `is_regex_option_char()` のように `int32_t` のまま列挙比較し、大きければ `is_special_global_variable_char()` のように `c > 0 && c < 0x80` で ASCII 範囲へ絞り込んでから照合すること
 - `src/scanner.c` で `lexer->lookahead`（`int32_t`）を ASCII 文字と比較するときは `char` に切り詰めないこと。Unicode コードポイントの下位 8 bit が ASCII 制御文字（`'@'` 0x40, `'$'` 0x24, `'('` 0x28 など）と一致すると、`Ĥ` (U+0124) / `Ŀ` (U+0140) / `Ĩ` (U+0128) のような文字が誤判定されてしまう（短縮 interpolation 起点や識別子文字判定の誤動作の原因になる）。`int32_t` のまま比較するか、ASCII 範囲（`< 0x80`）を事前に切り分けること

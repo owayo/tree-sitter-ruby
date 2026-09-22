@@ -10,7 +10,7 @@
 
 ```toml
 [dependencies]
-tree-sitter = "0.26"
+tree-sitter = "0.27"
 tree-sitter-ruby = { git = "https://github.com/owayo/tree-sitter-ruby.git" }
 ```
 
@@ -44,8 +44,8 @@ cargo install tree-sitter-cli
 ## 開発
 
 ```bash
-# 依存関係のインストール
-pnpm install --ignore-scripts
+# 依存関係のインストール（tree-sitter CLI バイナリの取得まで実行）
+pnpm install
 
 # grammar.js からパーサーを生成
 tree-sitter generate
@@ -59,7 +59,7 @@ tree-sitter parse example.rb
 
 ### テスト
 
-> **警告:** `tree-sitter test` は、このパーサーでは過剰なメモリを消費します（RSS 8GB+、VSIZE 400GB+）。パーサーテーブルが大きいため（parser.c 約15MB、STATE_COUNT 6013）、`test` サブコマンドが内部でパースツリー全体を S 式文字列に変換し差分比較を行うことで、大量のメモリ確保が発生します。`tree-sitter parse` は影響を受けません（約10MB RSS）。これは特定の upstream issue としては追跡されていませんが、関連するメモリ問題が [tree-sitter#1890](https://github.com/tree-sitter/tree-sitter/issues/1890)、[tree-sitter#1185](https://github.com/tree-sitter/tree-sitter/issues/1185)、[zed#47880](https://github.com/zed-industries/zed/issues/47880) で報告されています。代わりに以下のテストランナーを使用してください。
+> **警告:** `tree-sitter test` は、このパーサーでは過剰なメモリを消費します（RSS 8GB+、VSIZE 400GB+）。パーサーテーブルが大きいため（現在 parser.c 約21MB、STATE_COUNT 8235）、`test` サブコマンドが内部でパースツリー全体を S 式文字列に変換し差分比較を行うことで、大量のメモリ確保が発生します。`tree-sitter parse` は影響を受けません（約10MB RSS）。これは特定の upstream issue としては追跡されていませんが、関連するメモリ問題が [tree-sitter#1890](https://github.com/tree-sitter/tree-sitter/issues/1890)、[tree-sitter#1185](https://github.com/tree-sitter/tree-sitter/issues/1185)、[zed#47880](https://github.com/zed-industries/zed/issues/47880) で報告されています。代わりに以下のテストランナーを使用してください。
 
 ```bash
 # 推奨: tree-sitter parse によるコーパステスト（低メモリ）
@@ -75,8 +75,14 @@ tree-sitter parse example.rb
 # - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
 #   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
 #   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
-# - tree-sitter-cli 0.26.11 が生成時に汎用文字集合から除外する
+# - tree-sitter-cli 0.26.11 が生成時に汎用文字集合から除外していた
 #   `ſ`（U+017F）と `K`（U+212A）を含む正当な Ruby 識別子も回帰確認する
+#   （0.27.0 では除外されなくなったが、明示許可は保険として残している）
+# - endless method definition（`def m = foo 1`）の括弧なしコマンド呼び出しと
+#   その rescue 修飾・splat / block 引数もここで確認する
+# - scanner.c の正規表現オプション判定が ASCII 外 Unicode 文字
+#   （`ど` U+3069 / `ũ` U+0169 は下位 8 bit が 0x69 = 'i'）を
+#   char 切り詰めで誤って消費しないこともここで確認する
 # - scanner.c の短縮 interpolation 判定が EOF 直後の `$` を
 #   特殊グローバル変数として誤判定しないこともここで確認する
 # - scanner.c の短縮 interpolation 判定が ASCII 外 Unicode 文字
@@ -155,12 +161,19 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # Ruby 4.0 の行頭論理演算子（`||` / `&&` / `and` / `or`）による行継続のパース検証、
 # if 条件内のキーワード演算子を含む、
 # 正規表現オプション読み（imxouesn）が末尾に改行のない EOF 直後で終わる正規表現
-# （`a = /x/` 等）で strchr の終端 NUL マッチによる無限ループに陥らないことの検証）
+# （`a = /x/` 等）で strchr の終端 NUL マッチによる無限ループに陥らないことの検証、
+# endless method definition の括弧なしコマンド呼び出しのパース検証と
+# `def m = foo 1 rescue 2` の rescue が本体側に束縛されることの検証、
+# ブロック付きコマンド呼び出しのチェーン（`1.upto 0 do end.foo(1)`）の回帰検証、
+# 正規表現オプション判定（imxouesn）が ASCII 外 Unicode 文字を char 切り詰めで
+# 誤って消費せず、正当なオプションと EOF は従来どおり扱われることの検証）
 cargo test
 
-# pnpm が tree-sitter-cli の install script を止めた場合は
-# ローカル CLI バイナリを取得する。install.js はカレントディレクトリに
-# tree-sitter を書き出すため、パッケージディレクトリで実行する。
+# tree-sitter-cli の install script は `pnpm-workspace.yaml` の `allowBuilds` で
+# 許可済みなので通常は不要。何らかの理由で止まったときだけ手動で取得する。
+# install.js はカレントディレクトリに tree-sitter を書き出すため、
+# 必ずパッケージディレクトリで実行する（リポジトリルートで実行すると
+# 18MB のバイナリが作業ツリーに落ちる。`.gitignore` 済み）。
 (cd node_modules/tree-sitter-cli && node install.js)
 ```
 
@@ -175,18 +188,42 @@ PATH 上の `tree-sitter` の順に解決します。依存関係をインスト
 
 外部スキャナー（`src/scanner.c`）は、`grammar.js` だけでは表現できない文脈依存トークンを処理します: heredoc、区切りリテラル（文字列、正規表現、サブシェル、シンボル/文字列配列）、改行、空白依存の演算子、およびそれらを正しく再開するためのスキャナー状態シリアライズです。`src/` 配下の他のファイルとは異なり、手動管理のため新しいトークン型を追加する際は直接編集してください。
 
-255 文字を超える heredoc 終端語は `test/corpus/literals.txt` の回帰ケースで検証しています。tree-sitter の scanner serialization buffer に収まらない終端語は、状態喪失による誤パースを避けるため ERROR にしますが、1024 バイトのバッファ上限ぴったりに収まる状態は有効として扱います。Unicode 終端語は UTF-8 バイト列として保持・照合し、ASCII 終端語の 1 文字 1 バイト表現と容量を維持します。スキャナーのシリアライズを変更した場合は `pnpm run test` で必ず確認してください。`deserialize()` 関数にはバッファ境界チェックが含まれており、切り詰められた・破損したバッファを安全に処理します。word_length の境界チェックは加算 (`size + word_length > length`) ではなく減算 (`word_length > length - size`) で行い、攻撃者が制御可能な `word_length` で符号なし整数オーバーフローを起こしてもチェックを回避できないようにしています。また正規表現オプション読み（`imxouesn`）と特殊グローバル変数の短縮 interpolation 読みは `lexer->lookahead == 0` を確認し、EOF が `strchr` の終端 NUL マッチで有効文字として誤判定されないようにしています。
+255 文字を超える heredoc 終端語は `test/corpus/literals.txt` の回帰ケースで検証しています。tree-sitter の scanner serialization buffer に収まらない終端語は、状態喪失による誤パースを避けるため ERROR にしますが、1024 バイトのバッファ上限ぴったりに収まる状態は有効として扱います。Unicode 終端語は UTF-8 バイト列として保持・照合し、ASCII 終端語の 1 文字 1 バイト表現と容量を維持します。スキャナーのシリアライズを変更した場合は `pnpm run test` で必ず確認してください。`deserialize()` 関数にはバッファ境界チェックが含まれており、切り詰められた・破損したバッファを安全に処理します。word_length の境界チェックは加算 (`size + word_length > length`) ではなく減算 (`word_length > length - size`) で行い、攻撃者が制御可能な `word_length` で符号なし整数オーバーフローを起こしてもチェックを回避できないようにしています。また正規表現オプション読み（`imxouesn`）と特殊グローバル変数の短縮 interpolation 読みでは、`lexer->lookahead` を `strchr` に直接渡しません。strchr は第 2 引数を `char` へ変換するため、EOF（`0`）が終端 NUL に一致するだけでなく、下位 8 bit がオプション文字と衝突する ASCII 外のコードポイント（`ど` U+3069 と `ũ` U+0169 はいずれも 0x69 = `'i'`）まで消費されてしまいます。前者は `int32_t` のまま列挙比較し、後者は `c > 0 && c < 0x80` で ASCII 範囲に絞ってから照合します。
 
 ### Unicode 識別子
 
 tree-sitter-cli 0.26.11 は、case-insensitive keyword を正しく抽出するため、
 `s` へ単純 case fold される `ſ`（U+017F）と、`k` へ単純 case fold される
-`K`（U+212A）を汎用の lexer 文字集合から除外します。Ruby ではどちらも
+`K`（U+212A）を汎用の lexer 文字集合から除外していました。Ruby ではどちらも
 有効な識別子文字なので、`grammar.js` の先頭文字・継続文字ルールで明示的に
-許可しています。識別子 token のルールを変更する場合は、
+許可しています。0.27.0 ではこの除外が無くなり、明示許可は no-op（`src/parser.c` は
+1 バイトも変わらない）ですが、CLI 側で再発したときに黙って壊れないよう残しています。
+識別子 token のルールを変更する場合は、
 `test/corpus/identifiers.txt` の回帰ケースと必ず同期してください。
 名前付きグローバル変数も同じ Unicode 識別子ルールを使い、1 文字の option 形式
 （`$-名`）と短縮 interpolation（`"#$名前"`）にも対応します。
+
+### endless method definition
+
+Ruby 3.1 以降、endless method definition の本体には括弧なしのコマンド呼び出しを
+書けます（`parse.y` の `endless_command : command`）。例えば
+`def greet(person) = "Hi, ".dup.concat person` です。この位置に既存の `command_call`
+をそのまま使うことはできません。`command_call` の引数リストが `_expression` へ
+戻る相互再帰のため、パターンマッチ（`x in [1] | [2]`）やブロック束縛まで
+endless body の文脈に流れ込み、LR conflict が連鎖するからです。そのため文法側では
+`_arg` を leaf としてだけ再利用する `_endless_command_call` /
+`_endless_command_argument_list` / `_endless_command_argument` を専用に定義しています。
+
+`pair`（`def m = foo a: 1`）は endless の引数リストから意図的に除外しています。
+`_arg => _arg` の形が `match_pattern` と競合し、この文脈だけで LR 状態が倍増して
+`src/parser.c` が 21MB から 32MB へ膨らむためです。splat / 二重 splat / block 引数は
+ほとんどコストがかからないので対応しています。括弧付きの `def m = foo(a: 1)` は
+従来どおり解析できます。
+
+`call` や `command_call_with_block` のレシーバに `_chained_command_call` を
+追加してはいけません。`1.upto 0 do end.foo(1)` の AST は改善しますが、
+Rails・Homebrew・ruby 本体でファイル全体がパース失敗するようになり、
+`src/parser.c` も 37MB へ倍増します。
 
 ## 参考資料
 

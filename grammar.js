@@ -31,8 +31,11 @@ const PREC = {
 };
 
 // tree-sitter-cli 0.26.11 は case-insensitive keyword の誤抽出を防ぐため、
-// ASCII へ単純 case fold される 2 文字を汎用文字集合から除外する。
+// ASCII へ単純 case fold される 2 文字を汎用文字集合から除外していた。
 // Ruby ではどちらも有効な識別子文字なので、文法側で明示的に許可する。
+// 0.27.0 ではこの除外が無くなり、明示許可の有無で parser.c は 1 バイトも
+// 変わらない (no-op) が、CLI 側で再発したときに黙って壊れないよう残す。
+// 回帰ケースは test/corpus/identifiers.txt にある。
 const NON_ASCII_SIMPLE_CASE_FOLD_CHAR = choice("\u017F", "\u212A");
 const IDENTIFIER_CHAR = choice(
 	/[^\x00-\x1F\s:;`"'@$#.,|^&<=>+\-*/\\%?!~()\[\]{}]/,
@@ -104,10 +107,12 @@ module.exports = grammar({
 		[$._keyword_variable, $._assignment_lhs, $._lhs],
 	],
 
+	// `_call_operator` は inline 対象のため supertype として宣言しない。
+	// tree-sitter 0.27 以降は「supertype かつ inline」を警告のうえ supertype 側を
+	// 無視するので、宣言したままだと node-types.json に反映されない定義が残る。
 	supertypes: ($) => [
 		$._statement,
 		$._arg,
-		$._call_operator,
 		$._method_name,
 		$._expression,
 		$._variable,
@@ -216,12 +221,66 @@ module.exports = grammar({
 				seq(field("body", $._expression), "rescue", field("handler", $._arg)),
 			),
 
+		// endless method definition (`def m = expr`) の本体で許す
+		// 括弧なしコマンド呼び出し (parse.y の `endless_command : command`)。
+		// 例: `def greet(name) = "Hi, ".dup.concat name`
+		//
+		// 既存の `command_call` を流用すると、その引数リストが `_expression` へ
+		// 戻る相互再帰のせいで pattern (`x in [1] | [2]`) や block 束縛まで
+		// endless body の文脈に流れ込み、LR conflict が連鎖する。
+		// leaf にだけ `_arg` を再利用した専用ルールで入口を絞る。
+		_endless_command_call: ($) =>
+			seq(
+				choice(
+					$._call,
+					field("method", choice($._variable, $._function_identifier)),
+				),
+				field(
+					"arguments",
+					alias($._endless_command_argument_list, $.argument_list),
+				),
+			),
+
+		_endless_command_argument_list: ($) =>
+			prec.right(commaSep1($._endless_command_argument)),
+
+		// `pair` (`def m = foo a: 1`) は意図的に含めない。`_arg => _arg` の形が
+		// `match_pattern` と競合し、この文脈だけで LR 状態が倍増して parser.c が
+		// 18MB から 32MB へ膨らむ (splat 系を足しても 22MB に収まるのとは桁違い)。
+		// 括弧付きで `def m = foo(a: 1)` と書けば従来どおり解析できる。
+		_endless_command_argument: ($) =>
+			prec.left(
+				choice(
+					$._arg,
+					$.splat_argument,
+					$.hash_splat_argument,
+					$.block_argument,
+				),
+			),
+
+		// `def m = foo 1 rescue 2` の本体は `foo 1 rescue 2` 全体になる
+		// (parse.y の `endless_command modifier_rescue after_rescue arg`)。
+		_endless_command_rescue_modifier: ($) =>
+			prec(
+				PREC.RESCUE,
+				seq(
+					field("body", alias($._endless_command_call, $.call)),
+					"rescue",
+					field("handler", $._arg),
+				),
+			),
+
 		_body_expr: ($) =>
 			seq(
 				"=",
 				field(
 					"body",
-					choice($._arg, alias($.rescue_modifier_arg, $.rescue_modifier)),
+					choice(
+						$._arg,
+						alias($.rescue_modifier_arg, $.rescue_modifier),
+						alias($._endless_command_call, $.call),
+						alias($._endless_command_rescue_modifier, $.rescue_modifier),
+					),
 				),
 			),
 

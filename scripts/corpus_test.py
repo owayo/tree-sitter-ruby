@@ -650,6 +650,10 @@ def main():
                 actual_norm = normalize_tree(output)
                 ast_matches = not expected_ast.strip() or actual_norm == expected_norm
                 if expects_error:
+                    # ERROR を期待するケースは「構文エラーになること」だけを見て、
+                    # AST の完全一致までは要求しない。エラー回復後の木の形は
+                    # tree-sitter のリカバリ実装に依存し CLI の更新で変わるため、
+                    # 固定すると本質と無関係な失敗でテストが落ち続ける。
                     if has_error:
                         passed += 1
                     else:

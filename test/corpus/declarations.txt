@@ -781,3 +781,118 @@ end
           (identifier)))
       (ensure
         (identifier)))))
+
+==================================
+endless method with a command call
+==================================
+
+def greet(person) = "Hi, ".dup.concat person
+
+---
+
+(program
+  (method
+    (identifier)
+    (method_parameters
+      (identifier))
+    (call
+      (call
+        (string
+          (string_content))
+        (identifier))
+      (identifier)
+      (argument_list
+        (identifier)))))
+
+==============================================
+endless method with multiple command arguments
+==============================================
+
+def m = foo 1, 2
+
+---
+
+(program
+  (method
+    (identifier)
+    (call
+      (identifier)
+      (argument_list
+        (integer)
+        (integer)))))
+
+======================================================
+endless method with a command call and rescue modifier
+======================================================
+
+def m = foo 1 rescue 2
+
+---
+
+(program
+  (method
+    (identifier)
+    (rescue_modifier
+      (call
+        (identifier)
+        (argument_list
+          (integer)))
+      (integer))))
+
+===========================================
+endless method with splat command arguments
+===========================================
+
+def m = foo *args, **opts, &blk
+
+---
+
+(program
+  (method
+    (identifier)
+    (call
+      (identifier)
+      (argument_list
+        (splat_argument
+          (identifier))
+        (hash_splat_argument
+          (identifier))
+        (block_argument
+          (identifier))))))
+
+============================================
+endless singleton method with a command call
+============================================
+
+def self.m(x) = puts x
+
+---
+
+(program
+  (singleton_method
+    (self)
+    (identifier)
+    (method_parameters
+      (identifier))
+    (call
+      (identifier)
+      (argument_list
+        (identifier)))))
+
+===============================================
+endless method with a nested parenthesized call
+===============================================
+
+def m = foo(a: 1)
+
+---
+
+(program
+  (method
+    (identifier)
+    (call
+      (identifier)
+      (argument_list
+        (pair
+          (hash_key_symbol)
+          (integer))))))

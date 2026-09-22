@@ -164,7 +164,7 @@ end
         let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
         let mut scope_nodes = Vec::new();
         while let Some(m) = matches.next() {
-            for c in m.captures {
+            for c in m.captures() {
                 if c.index as usize == scope_idx {
                     scope_nodes.push(c.node.kind().to_string());
                 }
@@ -199,7 +199,7 @@ end
         let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
         let mut def_texts = Vec::new();
         while let Some(m) = matches.next() {
-            for c in m.captures {
+            for c in m.captures() {
                 if c.index as usize == def_idx {
                     let text = &code[c.node.byte_range()];
                     def_texts.push(text.to_string());
@@ -235,7 +235,7 @@ end
         let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
         let mut def_texts = Vec::new();
         while let Some(m) = matches.next() {
-            for c in m.captures {
+            for c in m.captures() {
                 if c.index as usize == def_idx {
                     let text = &code[c.node.byte_range()];
                     def_texts.push(text.to_string());
@@ -289,7 +289,7 @@ end
         let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
         let mut scope_kinds: Vec<String> = Vec::new();
         while let Some(m) = matches.next() {
-            for c in m.captures {
+            for c in m.captures() {
                 if c.index as usize == scope_idx {
                     scope_kinds.push(c.node.kind().to_string());
                 }
@@ -342,7 +342,7 @@ end
         let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
         let mut defs = Vec::new();
         while let Some(m) = matches.next() {
-            for c in m.captures {
+            for c in m.captures() {
                 if c.index as usize == def_idx {
                     defs.push(code[c.node.byte_range()].to_string());
                 }
@@ -373,7 +373,7 @@ end
         let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
         let mut texts = Vec::new();
         while let Some(m) = matches.next() {
-            for c in m.captures {
+            for c in m.captures() {
                 if c.index as usize == capture_idx {
                     texts.push(code[c.node.byte_range()].to_string());
                 }
@@ -525,7 +525,7 @@ end
         let mut matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
         let mut globals = Vec::new();
         while let Some(query_match) = matches.next() {
-            for capture in query_match.captures {
+            for capture in query_match.captures() {
                 globals.push(&code[capture.node.byte_range()]);
             }
         }
@@ -742,6 +742,99 @@ end
             assert!(
                 !parse_has_error(code),
                 "行頭論理演算子による継続のパースに失敗しました: {code:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_scanner_regex_options_ignore_non_ascii_unicode_chars() {
+        // 正規表現オプション（imxouesn）の判定を `strchr` で行うと
+        // `lexer->lookahead` (int32_t) が char へ切り詰められ、下位 8 bit が
+        // 一致する ASCII 外の文字がオプションとして誤って消費される。
+        // 例: `ど` U+3069 と `ũ` U+0169 はどちらも下位 8 bit が 0x69 = 'i'。
+        for code in ["a = /x/\u{3069}\n", "a = /x/\u{0169}\n"] {
+            assert!(
+                parse_has_error(code),
+                "非 ASCII 文字が正規表現オプションとして誤って受理されました: {code:?}"
+            );
+        }
+
+        // 正当なオプションと、オプション無しの EOF 直後は従来どおり受理する。
+        for code in ["a = /x/im\n", "a = /x/"] {
+            assert!(
+                !parse_has_error(code),
+                "正当な正規表現オプションのパースに失敗しました: {code:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_can_parse_endless_method_command_call() {
+        // Ruby 3.1 以降、endless method definition の本体には括弧なしの
+        // コマンド呼び出しを書ける（parse.y の `endless_command : command`）。
+        for code in [
+            "def greet(person) = \"Hi, \".dup.concat person\n",
+            "def m = foo 1, 2\n",
+            "def m = obj.bar baz\n",
+            "def m = foo 1 rescue 2\n",
+            "def m = foo *args, **opts, &blk\n",
+            "def self.m(x) = puts x\n",
+            // 括弧付きなら keyword 引数も従来どおり解析できる。
+            "def m = foo(a: 1)\n",
+        ] {
+            assert!(
+                !parse_has_error(code),
+                "endless method の括弧なしコマンド呼び出しのパースに失敗しました: {code:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn test_endless_method_command_call_binds_rescue_to_body() {
+        // `def m = foo 1 rescue 2` の本体は `foo 1 rescue 2` 全体になる
+        // （`(def m = foo 1) rescue 2` ではない）。
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&LANGUAGE.into())
+            .expect("Error loading Ruby parser");
+        let tree = parser.parse("def m = foo 1 rescue 2\n", None).unwrap();
+        let root = tree.root_node();
+        assert!(
+            !root.has_error(),
+            "rescue 修飾付き endless method のパースに失敗しました"
+        );
+
+        let method = root.child(0).expect("トップレベルのノードがありません");
+        assert_eq!(
+            method.kind(),
+            "method",
+            "rescue が method 定義の外側へ抜けています: {}",
+            root.to_sexp()
+        );
+        let body = method
+            .child_by_field_name("body")
+            .expect("body フィールドがありません");
+        assert_eq!(
+            body.kind(),
+            "rescue_modifier",
+            "body が rescue_modifier になっていません: {}",
+            root.to_sexp()
+        );
+    }
+
+    #[test]
+    fn test_can_parse_block_call_chain_with_parenthesized_arguments() {
+        // `do ... end` ブロック付きコマンド呼び出しに続くメソッドチェーン。
+        // `call` / `command_call_with_block` のレシーバへ `_chained_command_call`
+        // を足すと Rails 等で広範な回帰が出るため、この形が通ることを固定する。
+        for code in [
+            "1.upto 0 do\nend\n  .foo(1)\n",
+            "1.upto 0 do\nend.foo(1)\n",
+            "[1].map do |i|\n  i\nend\n  .first\n",
+        ] {
+            assert!(
+                !parse_has_error(code),
+                "ブロック付き呼び出しのチェーンのパースに失敗しました: {code:?}"
             );
         }
     }

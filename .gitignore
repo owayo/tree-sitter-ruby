@@ -40,3 +40,11 @@ dist/
 *.zip
 
 __pycache__
+
+# node_modules/tree-sitter-cli/install.js がカレントディレクトリへ書き出す CLI バイナリ
+/tree-sitter
+/tree-sitter.exe
+
+# Python のカバレッジ・lint キャッシュ
+.coverage
+.ruff_cache/

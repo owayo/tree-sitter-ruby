@@ -34,24 +34,6 @@
     ]
   },
   {
-    "type": "_call_operator",
-    "named": true,
-    "subtypes": [
-      {
-        "type": "&.",
-        "named": false
-      },
-      {
-        "type": ".",
-        "named": false
-      },
-      {
-        "type": "::",
-        "named": false
-      }
-    ]
-  },
-  {
     "type": "_expression",
     "named": true,
     "subtypes": [
@@ -1310,8 +1292,16 @@
         "required": false,
         "types": [
           {
-            "type": "_call_operator",
-            "named": true
+            "type": "&.",
+            "named": false
+          },
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "::",
+            "named": false
           }
         ]
       },
@@ -2487,6 +2477,10 @@
             "named": true
           },
           {
+            "type": "call",
+            "named": true
+          },
+          {
             "type": "rescue_modifier",
             "named": true
           }
@@ -3211,6 +3205,10 @@
           },
           {
             "type": "body_statement",
+            "named": true
+          },
+          {
+            "type": "call",
             "named": true
           },
           {

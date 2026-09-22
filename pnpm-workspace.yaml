@@ -1,0 +1,4 @@
+# tree-sitter-cli の install スクリプトは CLI のネイティブバイナリを取得する。
+# これが無いと `tree-sitter generate` / `tree-sitter parse` が動かず開発できないため許可する。
+allowBuilds:
+  tree-sitter-cli: true
