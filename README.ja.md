@@ -38,23 +38,25 @@ println!("{}", tree.root_node().to_sexp());
 ## 前提条件
 
 ```bash
-cargo install tree-sitter-cli
+mise install
 ```
+
+Node.js、pnpm、Python、Ruff、Rust の版は `mise.toml` で管理します。tree-sitter CLI は pnpm でプロジェクト内に導入します。
 
 ## 開発
 
 ```bash
 # 依存関係のインストール（tree-sitter CLI バイナリの取得まで実行）
-pnpm install
+mise exec -- pnpm install
 
 # grammar.js からパーサーを生成
-tree-sitter generate
+mise exec -- pnpm exec tree-sitter generate
 
 # grammar.js を lint
-pnpm run lint
+mise exec -- pnpm run lint
 
 # ファイルをパース
-tree-sitter parse example.rb
+mise exec -- pnpm exec tree-sitter parse example.rb
 ```
 
 ### テスト
@@ -66,6 +68,7 @@ tree-sitter parse example.rb
 # - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
 # - Ruby 4.0 の `*nil` splat パースもここで確認する
 # - Ruby 3.4 の index assignment で keyword / block 引数を拒否する回帰もここで確認する
+# - 空白付き添字代入の括弧内にある改行・コメントと、改行を含む配列引数との区別も確認する
 # - `%=` 文字列、空 heredoc 終端語、不正な regexp option、
 #   不正な `..` method/operator 名の scanner 回帰もここで確認する
 # - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する
@@ -94,7 +97,7 @@ tree-sitter parse example.rb
 # - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
-pnpm run test
+python3 scripts/corpus_test.py
 
 # scripts/corpus_test.py のユニットテスト
 # - 壊れた corpus 入力の抽出（空ファイル、空白のみコード、:error タグ）

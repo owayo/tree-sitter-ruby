@@ -15,6 +15,12 @@ on:
       - scripts/**
       - Cargo.toml
       - Cargo.lock
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - biome.jsonc
+      - ruff.toml
+      - mise.toml
       - .github/workflows/ci.yml
   pull_request:
     paths:
@@ -29,6 +35,12 @@ on:
       - scripts/**
       - Cargo.toml
       - Cargo.lock
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - biome.jsonc
+      - ruff.toml
+      - mise.toml
       - .github/workflows/ci.yml
 
 concurrency:

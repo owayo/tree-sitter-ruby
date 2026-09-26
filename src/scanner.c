@@ -813,7 +813,7 @@ static inline bool is_heredoc_word_char(int32_t c) { return c >= 0x80 || iswalnu
 // `h [k] = v` のように空白を挟んだ添字代入を、コマンド呼び出しの配列引数
 // (`h([k])`) と区別するために使う。`h([k]) = v` は Ruby では書けないので、
 // `]` の直後に `=` が来ればその `[` は添字参照だと確定できる。
-// 走査は同一行に限定し、上限を設けて暴走を防ぐ。
+// 添字の中では改行やコメントを許し、走査文字数には上限を設ける。
 static inline bool scan_index_assignment_ahead(TSLexer *lexer) {
     uint32_t depth = 1;
     uint32_t budget = 4096;
@@ -823,15 +823,21 @@ static inline bool scan_index_assignment_ahead(TSLexer *lexer) {
             return false;
         }
         int32_t c = lexer->lookahead;
-        if (c == '\n' || c == '\r' || c == '#') {
-            // 改行をまたぐ形やコメントの手前では判定しない。
-            return false;
+        if (c == '#') {
+            // コメント内の `[` / `]` は添字の括弧として数えない。
+            do {
+                if (budget-- == 0) {
+                    return false;
+                }
+                advance(lexer);
+            } while (!lexer->eof(lexer) && lexer->lookahead != '\n' && lexer->lookahead != '\r');
+            continue;
         }
         if (c == '\'' || c == '"') {
             // 文字列中の括弧を数えないよう読み飛ばす。
             advance(lexer);
             while (lexer->lookahead != c) {
-                if (budget-- == 0 || lexer->eof(lexer) || lexer->lookahead == '\n' || lexer->lookahead == '\r') {
+                if (budget-- == 0 || lexer->eof(lexer)) {
                     return false;
                 }
                 if (lexer->lookahead == '\\') {

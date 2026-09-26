@@ -38,23 +38,25 @@ This grammar ships with the following query files in `queries/`:
 ## Prerequisites
 
 ```bash
-cargo install tree-sitter-cli
+mise install
 ```
+
+The versions of Node.js, pnpm, Python, Ruff, and Rust are defined in `mise.toml`. The project-local tree-sitter CLI is installed by pnpm.
 
 ## Development
 
 ```bash
 # Install dependencies (also fetches the tree-sitter CLI binary)
-pnpm install
+mise exec -- pnpm install
 
 # Generate parser from grammar.js
-tree-sitter generate
+mise exec -- pnpm exec tree-sitter generate
 
 # Lint grammar.js
-pnpm run lint
+mise exec -- pnpm run lint
 
 # Parse a file
-tree-sitter parse example.rb
+mise exec -- pnpm exec tree-sitter parse example.rb
 ```
 
 ### Testing
@@ -66,6 +68,8 @@ tree-sitter parse example.rb
 # - covers recent Ruby syntax regressions such as anonymous *, **, & forwarding
 # - covers Ruby 4.0 `*nil` splat parsing
 # - covers Ruby 3.4 index assignment rejecting keyword/block arguments
+# - covers spaced index assignment with newlines and comments inside the brackets,
+#   while keeping multiline array arguments as method-call arguments
 # - covers scanner regressions for `%=` strings, empty heredoc delimiters,
 #   invalid regexp options, and invalid `..` method/operator names
 # - covers Ruby 4.0 leading logical-operator continuations in expressions and if conditions,
@@ -93,7 +97,7 @@ tree-sitter parse example.rb
 # - covers expression-based scope resolution used by Ruby Box examples (`box::Foo`)
 # - compares normalized AST output from `tree-sitter parse --no-ranges`
 # - preserves single CR characters in corpus source sections
-pnpm run test
+python3 scripts/corpus_test.py
 
 # Unit tests for scripts/corpus_test.py
 # - malformed corpus extraction (empty files, whitespace-only code, :error tags)

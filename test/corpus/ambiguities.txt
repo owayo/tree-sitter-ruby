@@ -304,6 +304,56 @@ assert_equal [1], x
         (integer))
       (identifier))))
 
+===================================================
+multiline index assignment with a space before bracket
+===================================================
+
+h = {}
+h [
+  0 # ] はコメント内の文字
+] += 1
+h [
+  0, # [ もコメント内の文字
+  1
+] = 2
+foo [
+  1 # 配列引数のまま扱う
+]
+h ["a
+b"] = 3
+
+---
+
+(program
+  (assignment
+    (identifier)
+    (hash))
+  (operator_assignment
+    (element_reference
+      (identifier)
+      (integer)
+      (comment))
+    (integer))
+  (assignment
+    (element_reference
+      (identifier)
+      (integer)
+      (comment)
+      (integer))
+    (integer))
+  (call
+    (identifier)
+    (argument_list
+      (array
+        (integer)
+        (comment))))
+  (assignment
+    (element_reference
+      (identifier)
+      (string
+        (string_content)))
+    (integer)))
+
 ============================================
 brace after bare lambda parameters is the body
 ============================================

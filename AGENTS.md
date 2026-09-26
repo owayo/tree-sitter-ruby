@@ -21,9 +21,10 @@ Ruby の tree-sitter 文法パーサー。
 ## 開発コマンド
 
 ```bash
-pnpm install               # 依存関係インストール（CLI バイナリ取得まで実行）
-tree-sitter generate       # grammar.js からパーサー生成
-pnpm run lint              # lint チェック（Biome）
+mise install                              # mise.toml の開発ツールを導入
+mise exec -- pnpm install                 # 依存関係と CLI バイナリを導入
+mise exec -- pnpm exec tree-sitter generate # grammar.js からパーサー生成
+mise exec -- pnpm run lint                # lint チェック（Biome）
 ```
 
 ### テスト実行
@@ -37,6 +38,7 @@ pnpm run lint              # lint チェック（Biome）
 # - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
 # - Ruby 4.0 の `*nil` splat パースもここで確認する
 # - Ruby 3.4 の index assignment で keyword / block 引数を拒否する回帰もここで確認する
+# - 空白付き添字代入の括弧内にある改行・コメントと、配列引数との区別も確認する
 # - `%=` 文字列、空 heredoc 終端語、不正な regexp option、
 #   不正な `..` method/operator 名の scanner 回帰もここで確認する
 # - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する
@@ -64,7 +66,7 @@ pnpm run lint              # lint チェック（Biome）
 # - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
-pnpm run test
+python3 scripts/corpus_test.py
 
 # corpus_test.py のユニットテスト
 # - 壊れた corpus 入力の抽出（空ファイル、空白のみコード、:error タグ）
@@ -205,7 +207,7 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `call` / `command_call_with_block` のレシーバに `_chained_command_call` を足してはならない。`1.upto 0 do end.foo(1)` の AST は改善するが、Rails / Homebrew / ruby 本体で広範なパース失敗（ファイル全体が ERROR）を引き起こし、parser.c も 37MB へ倍増する
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
-- `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `pnpm run test` で確認する
+- `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `python3 scripts/corpus_test.py` で確認する
 - Unicode heredoc 終端語は UTF-8 バイト列として保存・照合し、ASCII 終端語の 1 文字 1 バイト表現と serialization buffer 容量を維持すること
 - `global_variable` の名前部分は共通の Unicode 識別子文字ルールと同期し、`scan_short_interpolation()` の `$name` / `$-x` 判定でも ASCII 外文字を locale 非依存で許可すること
 - tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う
