@@ -1,0 +1,566 @@
+==============================
+when clause after else
+:error
+==============================
+
+case x
+when 1
+  a
+else
+  when 2
+    b
+end
+
+---
+
+(ERROR)
+
+==============================
+when clause after else on one line
+:error
+==============================
+
+case x; when 1; a; else; when 2; b; end
+
+---
+
+(ERROR)
+
+==============================
+when clause after else without case value
+:error
+==============================
+
+case
+when ready
+  a
+else
+  when other
+    b
+end
+
+---
+
+(ERROR)
+
+==============================
+when clause after else body
+:error
+==============================
+
+case x
+when 1
+  a
+else
+  b
+  when 2
+    c
+end
+
+---
+
+(ERROR)
+
+==============================
+multiple when clauses before else
+==============================
+
+case x
+when 1
+  a
+when 2, 3
+  b
+else
+  c
+end
+
+---
+
+(program
+  (case
+    (identifier)
+    (when (pattern (integer)) (then (identifier)))
+    (when (pattern (integer)) (pattern (integer)) (then (identifier)))
+    (else (identifier))))
+
+==============================
+nested case in else
+==============================
+
+case x
+when 1
+  a
+else
+  case y
+  when 2
+    b
+  else
+    c
+  end
+end
+
+---
+
+(program
+  (case
+    (identifier)
+    (when (pattern (integer)) (then (identifier)))
+    (else
+      (case
+        (identifier)
+        (when (pattern (integer)) (then (identifier)))
+        (else (identifier))))))
+
+==============================
+when method call in else
+==============================
+
+case x
+when 1
+  a
+else
+  obj.when 2
+end
+
+---
+
+(program
+  (case
+    (identifier)
+    (when (pattern (integer)) (then (identifier)))
+    (else
+      (call
+        (identifier)
+        (identifier)
+        (argument_list (integer))))))
+
+==============================
+when in method names and symbols
+==============================
+
+def when; :ok; end
+def self.when; :ok; end
+alias other when
+alias when other
+undef when
+obj.when
+obj.when(1)
+obj.when 1
+obj&.when
+obj::when
+items.each do |item| item end.when 1
+def m = obj.when 1
+{when: 1}
+foo(when: 1)
+:when
+when_value = 1
+whenever = 2
+when?
+when!
+
+---
+
+(program
+  (method
+    name: (identifier)
+    body: (body_statement
+      (simple_symbol)))
+  (singleton_method
+    object: (self)
+    name: (identifier)
+    body: (body_statement
+      (simple_symbol)))
+  (alias
+    name: (identifier)
+    alias: (identifier))
+  (alias
+    name: (identifier)
+    alias: (identifier))
+  (undef
+    (identifier))
+  (call
+    receiver: (identifier)
+    method: (identifier))
+  (call
+    receiver: (identifier)
+    method: (identifier)
+    arguments: (argument_list
+      (integer)))
+  (call
+    receiver: (identifier)
+    method: (identifier)
+    arguments: (argument_list
+      (integer)))
+  (call
+    receiver: (identifier)
+    method: (identifier))
+  (call
+    receiver: (identifier)
+    method: (identifier))
+  (call
+    receiver: (call
+      receiver: (identifier)
+      method: (identifier)
+      block: (do_block
+        parameters: (block_parameters
+          (identifier))
+        body: (body_statement
+          (identifier))))
+    method: (identifier)
+    arguments: (argument_list
+      (integer)))
+  (method
+    name: (identifier)
+    body: (call
+      receiver: (identifier)
+      method: (identifier)
+      arguments: (argument_list
+        (integer))))
+  (hash
+    (pair
+      key: (hash_key_symbol)
+      value: (integer)))
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (pair
+        key: (hash_key_symbol)
+        value: (integer))))
+  (simple_symbol)
+  (assignment
+    left: (identifier)
+    right: (integer))
+  (assignment
+    left: (identifier)
+    right: (integer))
+  (call
+    method: (identifier))
+  (call
+    method: (identifier)))
+
+==============================
+when setter method names
+==============================
+
+def when=(value); value; end
+def self.when=(value); value; end
+obj.when = 1
+alias other when=
+alias when= other
+undef when=
+
+---
+
+(program
+  (method
+    name: (setter
+      name: (identifier))
+    parameters: (method_parameters
+      (identifier))
+    body: (body_statement
+      (identifier)))
+  (singleton_method
+    object: (self)
+    name: (setter
+      name: (identifier))
+    parameters: (method_parameters
+      (identifier))
+    body: (body_statement
+      (identifier)))
+  (assignment
+    left: (call
+      receiver: (identifier)
+      method: (identifier))
+    right: (integer))
+  (alias
+    name: (identifier)
+    alias: (setter
+      name: (identifier)))
+  (alias
+    name: (setter
+      name: (identifier))
+    alias: (identifier))
+  (undef
+    (setter
+      name: (identifier))))
+
+==============================
+when keyword parameters and patterns
+==============================
+
+def m(when:); :ok; end
+def n(when: 1); :ok; end
+->(when:) { :ok }
+case x
+in {when:}
+  :ok
+end
+case x
+in {when: value}
+  value
+end
+
+---
+
+(program
+  (method
+    name: (identifier)
+    parameters: (method_parameters
+      (keyword_parameter
+        name: (identifier)))
+    body: (body_statement
+      (simple_symbol)))
+  (method
+    name: (identifier)
+    parameters: (method_parameters
+      (keyword_parameter
+        name: (identifier)
+        value: (integer)))
+    body: (body_statement
+      (simple_symbol)))
+  (lambda
+    parameters: (lambda_parameters
+      (keyword_parameter
+        name: (identifier)))
+    body: (block
+      body: (block_body
+        (simple_symbol))))
+  (case_match
+    value: (identifier)
+    clauses: (in_clause
+      pattern: (hash_pattern
+        (keyword_pattern
+          key: (hash_key_symbol)))
+      body: (then
+        (simple_symbol))))
+  (case_match
+    value: (identifier)
+    clauses: (in_clause
+      pattern: (hash_pattern
+        (keyword_pattern
+          key: (hash_key_symbol)
+          value: (identifier)))
+      body: (then
+        (identifier)))))
+
+==============================
+when in parenthesized argument after else
+:error
+==============================
+
+case x
+when 1
+  a
+else
+  p(when 2)
+end
+
+---
+
+(ERROR)
+
+==============================
+when in array element after else
+:error
+==============================
+
+case x
+when 1
+  a
+else
+  x = [when 2]
+end
+
+---
+
+(ERROR)
+
+==============================
+when after another argument in else
+:error
+==============================
+
+case x
+when 1
+  a
+else
+  foo(1, when 2)
+end
+
+---
+
+(ERROR)
+
+==============================
+bare when in argument after else
+:error
+==============================
+
+case x
+when 1
+  a
+else
+  p(when)
+end
+
+---
+
+(ERROR)
+
+==============================
+when as ordinary method parameter
+:error
+==============================
+
+def m(when); end
+
+---
+
+(ERROR)
+
+==============================
+when as ordinary block parameter
+:error
+==============================
+
+[1].each { |when| }
+
+---
+
+(ERROR)
+
+==============================
+when as singleton method receiver
+:error
+==============================
+
+def when.foo; end
+
+---
+
+(ERROR)
+
+==============================
+when labels near clauses and other identifier contexts
+==============================
+
+case x
+when 1
+  foo when: 2, if: 3
+when 2
+  bar
+end
+foo when: 1
+foo.when when: 1
+proc { |when:| }
+proc { |when: 1| }
+case x
+in when: 1
+end
+case x
+in Foo(when: 1)
+end
+def when = 1
+def self.when = 1
+def obj.when; end
+obj.when ||= 1
+a, obj.when = 1, 2
+{when:}
+foo(when:)
+
+---
+
+(program
+  (case
+    value: (identifier)
+    (when
+      pattern: (pattern
+        (integer))
+      body: (then
+        (call
+          method: (identifier)
+          arguments: (argument_list
+            (pair
+              key: (hash_key_symbol)
+              value: (integer))
+            (pair
+              key: (hash_key_symbol)
+              value: (integer))))))
+    (when
+      pattern: (pattern
+        (integer))
+      body: (then
+        (identifier))))
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (pair
+        key: (hash_key_symbol)
+        value: (integer))))
+  (call
+    receiver: (identifier)
+    method: (identifier)
+    arguments: (argument_list
+      (pair
+        key: (hash_key_symbol)
+        value: (integer))))
+  (call
+    method: (identifier)
+    block: (block
+      parameters: (block_parameters
+        (keyword_parameter
+          name: (identifier)))))
+  (call
+    method: (identifier)
+    block: (block
+      parameters: (block_parameters
+        (keyword_parameter
+          name: (identifier)
+          value: (integer)))))
+  (case_match
+    value: (identifier)
+    clauses: (in_clause
+      pattern: (hash_pattern
+        (keyword_pattern
+          key: (hash_key_symbol)
+          value: (integer)))))
+  (case_match
+    value: (identifier)
+    clauses: (in_clause
+      pattern: (hash_pattern
+        class: (constant)
+        (keyword_pattern
+          key: (hash_key_symbol)
+          value: (integer)))))
+  (method
+    name: (identifier)
+    body: (integer))
+  (singleton_method
+    object: (self)
+    name: (identifier)
+    body: (integer))
+  (singleton_method
+    object: (identifier)
+    name: (identifier))
+  (operator_assignment
+    left: (call
+      receiver: (identifier)
+      method: (identifier))
+    right: (integer))
+  (assignment
+    left: (left_assignment_list
+      (identifier)
+      (call
+        receiver: (identifier)
+        method: (identifier)))
+    right: (right_assignment_list
+      (integer)
+      (integer)))
+  (hash
+    (pair
+      key: (hash_key_symbol)))
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (pair
+        key: (hash_key_symbol)))))
