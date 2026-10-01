@@ -100,6 +100,13 @@ module.exports = grammar({
 
 	word: ($) => $.identifier,
 
+	// `when` must not fall back to an identifier outside a case clause.
+	// Legal method names and labels explicitly accept the keyword instead of
+	// disabling reservation, which can leak into other items in the same LR state.
+	reserved: {
+		global: (_) => ["when"],
+	},
+
 	conflicts: ($) => [
 		[$._assignment_lhs, $._lhs],
 		[$._argument, $._index_assignment_argument],
@@ -327,7 +334,7 @@ module.exports = grammar({
 			prec.right(
 				PREC.BITWISE_OR + 1,
 				seq(
-					field("name", $.identifier),
+					field("name", identifierOrWhen($)),
 					token.immediate(":"),
 					field("value", optional($._arg)),
 				),
@@ -597,6 +604,7 @@ module.exports = grammar({
 						"key",
 						choice(
 							alias($.identifier, $.hash_key_symbol),
+							alias("when", $.hash_key_symbol),
 							alias($.constant, $.hash_key_symbol),
 							alias($.identifier_suffix, $.hash_key_symbol),
 							alias($.constant_suffix, $.hash_key_symbol),
@@ -943,7 +951,7 @@ module.exports = grammar({
 					field(
 						"method",
 						choice(
-							$.identifier,
+							identifierOrWhen($),
 							$.operator,
 							$.constant,
 							$._function_identifier,
@@ -985,7 +993,12 @@ module.exports = grammar({
 				field("operator", $._call_operator),
 				field(
 					"method",
-					choice($.identifier, $._function_identifier, $.operator, $.constant),
+					choice(
+						identifierOrWhen($),
+						$._function_identifier,
+						$.operator,
+						$.constant,
+					),
 				),
 			),
 
@@ -1465,7 +1478,7 @@ module.exports = grammar({
 
 		_method_name: ($) =>
 			choice(
-				$.identifier,
+				identifierOrWhen($),
 				$._function_identifier,
 				$.constant,
 				$.setter,
@@ -1485,7 +1498,8 @@ module.exports = grammar({
 		_nonlocal_variable: ($) =>
 			choice($.instance_variable, $.class_variable, $.global_variable),
 
-		setter: ($) => seq(field("name", $.identifier), token.immediate("=")),
+		setter: ($) =>
+			seq(field("name", identifierOrWhen($)), token.immediate("=")),
 
 		undef: ($) => seq("undef", commaSep1($._method_name)),
 		alias: ($) =>
@@ -1659,6 +1673,7 @@ module.exports = grammar({
 							choice(
 								$.hash_key_symbol,
 								alias($.identifier, $.hash_key_symbol),
+								alias("when", $.hash_key_symbol),
 								alias($.constant, $.hash_key_symbol),
 								alias($.identifier_suffix, $.hash_key_symbol),
 								alias($.constant_suffix, $.hash_key_symbol),
@@ -1767,4 +1782,14 @@ function commaSep1(rule) {
  */
 function commaSep(rule) {
 	return optional(commaSep1(rule));
+}
+
+/**
+ * Build a name choice without weakening the reserved-word set for its LR state.
+ *
+ * @param {GrammarSymbols<string>} $
+ * @returns {ChoiceRule}
+ */
+function identifierOrWhen($) {
+	return choice($.identifier, alias("when", $.identifier));
 }
