@@ -35,6 +35,61 @@ This grammar ships with the following query files in `queries/`:
 | `tags.scm` | Code navigation tags (definitions and references for methods, classes, modules, constants) |
 | `locals.scm` | Local variable scoping |
 
+## Known limitations
+
+### Spaced index assignment and local variables
+
+This grammar does not resolve Ruby local-variable bindings. For a bare identifier
+followed by a space and `[`, Ruby uses the bindings visible at that point to
+distinguish an index receiver from a method called with an array argument. These
+two snippets are syntax errors in Ruby when parsed independently:
+
+```ruby
+v [0] = 1
+```
+
+```ruby
+v [0] += 1
+```
+
+An earlier assignment or a parameter binding makes the spaced form valid Ruby:
+
+```ruby
+v = []
+v [0] = 1
+v [0] += 1
+
+def update(v)
+  v [0] += 1
+end
+```
+
+The grammar accepts both the declared and undeclared forms without an `ERROR`
+node. It produces an `assignment` or `operator_assignment` whose `left` field is
+an `element_reference` with an `identifier` in its `object` field. The unspaced
+form, `v[0] = 1`, has the same named-node structure and is syntactically valid
+Ruby without a prior binding; its receiver can be a method call at runtime.
+Without an assignment operator, this grammar parses `v [0]` as a `call` with an
+array in its `argument_list`.
+
+Consumers that need Ruby-valid syntax must perform additional validation. For
+this bare-identifier ambiguity, inspect the fields above and compare the
+object's end byte with the opening `[` token's start byte: a gap distinguishes
+the spaced form from `v[0]`. Resolve the name using Ruby's bindings at that source
+position, including parameters, enclosing block scopes, and declaration order.
+A later assignment does not establish an earlier reference, and methods,
+classes, and modules do not inherit outer local variables. Registration happens
+during parsing rather than execution: `v = [] if false` still registers `v` for
+subsequent statements. See [Ruby's local-variable rules](https://docs.ruby-lang.org/en/4.0/syntax/assignment_rdoc.html#label-Local+Variables+and+Methods).
+
+The captures in [`queries/locals.scm`](queries/locals.scm) can help a binding
+analysis, but do not implement all Ruby registration and scope rules. The check
+above is specific to bare identifiers, not a complete rule for all receiver
+forms: for example, the grammar also accepts `Foo [0] = 1` and `obj.foo [0] = 1`,
+which Ruby rejects. An AST without `ERROR` nodes is not a guarantee of Ruby
+syntax validity. These limitations should be revisited if binding-aware parsing
+is introduced.
+
 ## Prerequisites
 
 ```bash
