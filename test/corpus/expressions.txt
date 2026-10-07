@@ -1948,10 +1948,10 @@ end
               (identifier))
             body: (block_body
               (identifier))))
-        method: (identifier)
-        block: (do_block
-          body: (body_statement
-            (identifier)))))))
+        method: (identifier)))
+    block: (do_block
+      body: (body_statement
+        (identifier)))))
 
 ===============================
 method calls in binary expression

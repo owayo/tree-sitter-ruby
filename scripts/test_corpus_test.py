@@ -256,6 +256,18 @@ class CorpusTestScriptTests(unittest.TestCase):
             corpus_test.normalize_tree(expected),
         )
 
+    def test_normalize_tree_can_preserve_fields(self):
+        """フィールドの保持を指定すると左右の入れ替わりを検出する。"""
+        expected = "(assignment left: (identifier) right: (integer))"
+        swapped = "(assignment right: (identifier) left: (integer))"
+        self.assertNotEqual(
+            corpus_test.normalize_tree(expected, keep_fields=True),
+            corpus_test.normalize_tree(swapped, keep_fields=True),
+        )
+        self.assertEqual(
+            corpus_test.normalize_tree(expected), corpus_test.normalize_tree(swapped)
+        )
+
     def test_summarize_command_failure_prefers_error_line(self):
         output = textwrap.dedent(
             """\
@@ -2895,6 +2907,38 @@ class MainEnvironmentTests(unittest.TestCase):
         self.assertNotIn("expected ERROR but parsed OK", output)
         self.assertIn("Failed to load language", output)
         self.assertIn("root cause: The specified module could not be found.", output)
+
+
+class MainFieldComparisonTests(unittest.TestCase):
+    def test_expected_fields_are_checked_but_can_be_omitted(self):
+        """指定したフィールドの退行を検出し、フィールド省略形式にも対応する。"""
+        expected = "(program (assignment left: (identifier) right: (integer)))"
+        swapped = "(program (assignment right: (identifier) left: (integer)))"
+        unlabelled = "(program (assignment (identifier) (integer)))"
+        for expected_ast, actual_ast, status in [
+            (expected, expected, 0),
+            (expected, swapped, 1),
+            (unlabelled, swapped, 0),
+        ]:
+            with self.subTest(expected=expected_ast, actual=actual_ast):
+                with tempfile.TemporaryDirectory() as corpus_dir:
+                    Path(corpus_dir, "fields.txt").write_text(
+                        "==================\nfields\n==================\nx = 1\n"
+                        "---\n" + expected_ast + "\n",
+                        encoding="utf-8",
+                    )
+                    result = subprocess.CompletedProcess(
+                        args=[], returncode=0, stdout=actual_ast, stderr=""
+                    )
+                    with patch.multiple(
+                        corpus_test,
+                        CORPUS_DIR=corpus_dir,
+                        check_tree_sitter_cli=Mock(return_value=None),
+                        resolve_library_path=Mock(return_value=__file__),
+                        run_with_memory_guard=Mock(return_value=result),
+                    ):
+                        with redirect_stdout(io.StringIO()):
+                            self.assertEqual(corpus_test.main(), status)
 
 
 if __name__ == "__main__":

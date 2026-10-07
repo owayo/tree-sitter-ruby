@@ -45,6 +45,10 @@ typedef enum {
     LAMBDA_BODY_BRACE,
     COMMAND_BLOCK_BRACE,
     RANGE_OPERAND,
+    UNARY_PLUS_NUM,
+    UNARY_PLUS,
+    BINARY_PLUS,
+    JUMP_ARGUMENT,
 
     NONE
 } TokenType;
@@ -64,6 +68,8 @@ typedef struct {
     bool end_word_indentation_allowed;
     bool allows_interpolation;
     bool started;
+    // 本文トークンを返した位置が終端行の先頭かどうかを保持する。
+    bool end_line_pending;
 } Heredoc;
 
 typedef struct {
@@ -145,8 +151,8 @@ static inline void reset(Scanner *scanner) {
     array_delete(&scanner->open_heredocs);
 }
 
-static inline bool can_serialize_heredocs_with(Scanner *scanner, const Heredoc *new_heredoc) {
-    size_t size = 2 + scanner->literal_stack.size * SERIALIZED_LITERAL_SIZE;
+static inline bool can_serialize_with(Scanner *scanner, const Heredoc *new_heredoc, unsigned extra_literals) {
+    size_t size = 2 + ((size_t)scanner->literal_stack.size + extra_literals) * SERIALIZED_LITERAL_SIZE;
     for (uint32_t i = 0; i < scanner->open_heredocs.size; i++) {
         Heredoc *heredoc = array_get(&scanner->open_heredocs, i);
         size += SERIALIZED_HEREDOC_HEADER_SIZE + heredoc->word.size;
@@ -166,10 +172,7 @@ static inline bool can_serialize_heredocs_with(Scanner *scanner, const Heredoc *
 static inline unsigned serialize(Scanner *scanner, char *buffer) {
     unsigned size = 0;
 
-    if (scanner->literal_stack.size * SERIALIZED_LITERAL_SIZE + 2 > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) {
-        return 0;
-    }
-    if (!can_serialize_heredocs_with(scanner, NULL)) {
+    if (!can_serialize_with(scanner, NULL, 0)) {
         return 0;
     }
 
@@ -196,10 +199,13 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
         }
         buffer[size++] = (char)heredoc->end_word_indentation_allowed;
         buffer[size++] = (char)heredoc->allows_interpolation;
-        buffer[size++] = (char)heredoc->started;
+        // フラグを同じバイトに詰め、終端語を保存できる容量を維持する。
+        buffer[size++] = (char)(heredoc->started | (heredoc->end_line_pending << 1));
         memcpy(&buffer[size], &heredoc->word.size, sizeof(uint32_t));
         size += sizeof(uint32_t);
-        memcpy(&buffer[size], heredoc->word.contents, heredoc->word.size);
+        if (heredoc->word.size > 0) {
+            memcpy(&buffer[size], heredoc->word.contents, heredoc->word.size);
+        }
         size += heredoc->word.size;
     }
 
@@ -218,7 +224,7 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
     uint8_t literal_depth = buffer[size++];
     for (unsigned j = 0; j < literal_depth; j++) {
         // リテラル 1 件あたり SERIALIZED_LITERAL_SIZE バイト必要
-        if (size + SERIALIZED_LITERAL_SIZE > length) return;
+        if (size + SERIALIZED_LITERAL_SIZE > length) goto invalid;
         Literal literal = {0};
         literal.type = (TokenType)(buffer[size++]);
         literal.open_delimiter = (unsigned char)buffer[size++];
@@ -231,15 +237,17 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         array_push(&scanner->literal_stack, literal);
     }
 
-    if (size >= length) return;
+    if (size >= length) goto invalid;
     uint8_t open_heredoc_count = buffer[size++];
     for (unsigned j = 0; j < open_heredoc_count; j++) {
         // heredoc ヘッダー: フラグ 3 バイト + word_length 4 バイト = 最低 7 バイト
-        if (size + SERIALIZED_HEREDOC_HEADER_SIZE > length) return;
+        if (size + SERIALIZED_HEREDOC_HEADER_SIZE > length) goto invalid;
         Heredoc heredoc = {0};
         heredoc.end_word_indentation_allowed = buffer[size++];
         heredoc.allows_interpolation = buffer[size++];
-        heredoc.started = buffer[size++];
+        uint8_t flags = (uint8_t)buffer[size++];
+        heredoc.started = flags & 1;
+        heredoc.end_line_pending = flags & 2;
 
         heredoc.word = (String)array_new();
         uint32_t word_length;
@@ -253,16 +261,23 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         // 保証されているので length - size は安全に計算できる。
         if (word_length > length - size) {
             array_delete(&heredoc.word);
-            return;
+            goto invalid;
         }
-        array_reserve(&heredoc.word, word_length);
-        memcpy(heredoc.word.contents, &buffer[size], word_length);
+        if (word_length > 0) {
+            array_reserve(&heredoc.word, word_length);
+            memcpy(heredoc.word.contents, &buffer[size], word_length);
+        }
         heredoc.word.size = word_length;
         size += word_length;
         array_push(&scanner->open_heredocs, heredoc);
     }
 
-    assert(size == length);
+    if (size != length) goto invalid;
+    return;
+
+invalid:
+    // 破損した入力では、途中まで復元した状態と確保した終端語をすべて破棄する。
+    reset(scanner);
 }
 
 static inline bool is_iden_char(int32_t c) {
@@ -565,6 +580,11 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
     return true;
 }
 
+// 範囲演算子と return・break・next の後は、空白に依存せず引数の式が始まる。
+static inline bool is_expression_start(const bool *valid_symbols) {
+    return valid_symbols[RANGE_OPERAND] || valid_symbols[JUMP_ARGUMENT];
+}
+
 static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal *literal, const bool *valid_symbols) {
     switch (lexer->lookahead) {
         case '"':
@@ -599,10 +619,10 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
             literal->open_delimiter = literal->close_delimiter = lexer->lookahead;
             literal->allows_interpolation = true;
             advance(lexer);
-            // 範囲演算子の直後は Ruby の EXPR_BEG 状態で、`/` は必ず正規表現の開始になる。
-            // `_range_operand` はマッチしないトークンで、その位置に立っていることを
+            // 範囲演算子と制御キーワードの直後は式の開始位置で、`/` は必ず正規表現の開始になる。
+            // `_range_operand` / `_jump_argument` はマッチしないトークンで、その位置を
             // スキャナーに伝えるためだけに文法へ置いてある (`/a/../b/` が `(/a/../b/)`)。
-            if (valid_symbols[FORWARD_SLASH] && !valid_symbols[RANGE_OPERAND]) {
+            if (valid_symbols[FORWARD_SLASH] && !is_expression_start(valid_symbols)) {
                 // `//` と連続する場合は空の正規表現リテラル。
                 // 除算演算子として読むと右辺が正規表現の開始になり、
                 // 閉じない (`a // b` は Ruby でも構文エラー) ので、
@@ -991,22 +1011,28 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
     size_t position_in_word = 0;
     bool look_for_heredoc_end = true;
     bool has_content = false;
-    // 終端語が空の heredoc (`<<""`) は空行で終わる。終端語が空だと
-    // `position_in_word == word.size` が常に成立してしまうため、行頭に
-    // いるときだけ終端判定を行う。最初の呼び出しでは開始行の改行の直前に
-    // いるので、その改行を消費するまでは終端しない。
-    bool at_line_start = heredoc->word.size > 0 || lexer->get_column(lexer) == 0;
+    // interpolation・エスケープの直後は行途中なので終端語として扱わない。
+    // 本文を返す前に見つけた終端行は、インデントの分だけ列が 0 でない
+    // 場合もあるため、get_column() ではなく保存した状態で判定する。
+    bool at_line_start = heredoc->end_line_pending;
+    heredoc->end_line_pending = false;
 
     for (;;) {
         if (position_in_word == heredoc->word.size && at_line_start && look_for_heredoc_end) {
             if (!has_content) {
                 lexer->mark_end(lexer);
             }
-            while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
+            // 空の終端語では、改行後の EOF だけを架空の空行とみなさない。
+            bool at_line_end = lexer->lookahead == '\n' ||
+                (lexer->eof(lexer) && (heredoc->word.size > 0 || lexer->get_column(lexer) > 0));
+            if (lexer->lookahead == '\r') {
+                // CRLF は行末だが、単独 CR や終端語の後の空白は本文に残す。
                 advance(lexer);
+                at_line_end = lexer->lookahead == '\n';
             }
-            if (lexer->lookahead == '\n' || lexer->lookahead == '\r' || lexer->eof(lexer)) {
+            if (at_line_end) {
                 if (has_content) {
+                    heredoc->end_line_pending = true;
                     lexer->result_symbol = HEREDOC_CONTENT;
                 } else {
                     array_delete(&heredoc->word);
@@ -1039,11 +1065,14 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
             advance(lexer);
             position_in_word += matched_bytes;
         } else {
+            // 終端語の一部と一致した文字も、照合に失敗すれば本文になる。
+            has_content = has_content || position_in_word > 0;
             position_in_word = 0;
             look_for_heredoc_end = false;
 
             if (heredoc->allows_interpolation && lexer->lookahead == '\\') {
                 if (has_content) {
+                    lexer->mark_end(lexer);
                     lexer->result_symbol = HEREDOC_CONTENT;
                     return true;
                 }
@@ -1063,15 +1092,8 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
                 if (scan_short_interpolation(lexer, has_content, HEREDOC_CONTENT)) {
                     return true;
                 }
-            } else if (lexer->lookahead == '\r' || lexer->lookahead == '\n') {
-                if (lexer->lookahead == '\r') {
-                    advance(lexer);
-                    if (lexer->lookahead == '\n') {
-                        advance(lexer);
-                    }
-                } else {
-                    advance(lexer);
-                }
+            } else if (lexer->lookahead == '\n') {
+                advance(lexer);
                 has_content = true;
                 look_for_heredoc_end = true;
                 at_line_start = true;
@@ -1268,7 +1290,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                         heredoc.end_word_indentation_allowed = true;
                     }
                     if (scan_heredoc_word(lexer, &heredoc)) {
-                        if (can_serialize_heredocs_with(scanner, &heredoc)) {
+                        if (can_serialize_with(scanner, &heredoc, 0)) {
                             lexer->mark_end(lexer);
                             array_push(&scanner->open_heredocs, heredoc);
                             lexer->result_symbol = HEREDOC_START;
@@ -1336,17 +1358,45 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             }
             break;
 
+        case '+':
+            if (valid_symbols[UNARY_PLUS] || valid_symbols[UNARY_PLUS_NUM] || valid_symbols[BINARY_PLUS]) {
+                advance(lexer);
+                if (lexer->lookahead == '=') {
+                    return false;
+                }
+                // 数値に隣接する符号だけをリテラルに結び付ける。式の開始位置では二項演算にしない。
+                if (valid_symbols[UNARY_PLUS_NUM] &&
+                    (is_expression_start(valid_symbols) || !valid_symbols[BINARY_STAR] || scanner->has_leading_whitespace) &&
+                    lexer->lookahead >= '0' && lexer->lookahead <= '9') {
+                    lexer->result_symbol = UNARY_PLUS_NUM;
+                    return true;
+                }
+                if (valid_symbols[UNARY_PLUS] &&
+                    (is_expression_start(valid_symbols) ||
+                     (scanner->has_leading_whitespace && !iswspace(lexer->lookahead)))) {
+                    lexer->result_symbol = UNARY_PLUS;
+                } else if (valid_symbols[BINARY_PLUS]) {
+                    lexer->result_symbol = BINARY_PLUS;
+                } else {
+                    lexer->result_symbol = UNARY_PLUS;
+                }
+                return true;
+            }
+            break;
+
         case '-':
             if (valid_symbols[UNARY_MINUS] || valid_symbols[UNARY_MINUS_NUM] || valid_symbols[BINARY_MINUS]) {
                 advance(lexer);
                 if (lexer->lookahead != '=' && lexer->lookahead != '>') {
                     if (valid_symbols[UNARY_MINUS_NUM] &&
-                        (!valid_symbols[BINARY_STAR] || scanner->has_leading_whitespace) &&
+                        (is_expression_start(valid_symbols) || !valid_symbols[BINARY_STAR] || scanner->has_leading_whitespace) &&
                         iswdigit(lexer->lookahead)) {
                         lexer->result_symbol = UNARY_MINUS_NUM;
                         return true;
                     }
-                    if (valid_symbols[UNARY_MINUS] && scanner->has_leading_whitespace && !iswspace(lexer->lookahead)) {
+                    if (valid_symbols[UNARY_MINUS] &&
+                        (is_expression_start(valid_symbols) ||
+                         (scanner->has_leading_whitespace && !iswspace(lexer->lookahead)))) {
                         lexer->result_symbol = UNARY_MINUS;
                     } else if (valid_symbols[BINARY_MINUS]) {
                         lexer->result_symbol = BINARY_MINUS;
@@ -1372,6 +1422,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                         literal.open_delimiter = '"';
                         literal.close_delimiter = '"';
                         literal.allows_interpolation = true;
+                        if (!can_serialize_with(scanner, NULL, 1)) return false;
                         array_push(&scanner->literal_stack, literal);
                         lexer->result_symbol = SYMBOL_START;
                         return true;
@@ -1381,6 +1432,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                         literal.open_delimiter = '\'';
                         literal.close_delimiter = '\'';
                         literal.allows_interpolation = false;
+                        if (!can_serialize_with(scanner, NULL, 1)) return false;
                         array_push(&scanner->literal_stack, literal);
                         lexer->result_symbol = SYMBOL_START;
                         return true;
@@ -1470,7 +1522,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             }
             // 状態に保存できない長さの終端語は、後続行を誤って通常コードとして
             // パースしないため heredoc 開始自体を不成立にする。
-            if (!can_serialize_heredocs_with(scanner, &heredoc)) {
+            if (!can_serialize_with(scanner, &heredoc, 0)) {
                 array_delete(&heredoc.word);
                 return false;
             }
@@ -1480,6 +1532,8 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
         }
 
         if (scan_open_delimiter(scanner, lexer, &literal, valid_symbols)) {
+            // リテラルの追加でも、開いている heredoc と合わせた保存容量を確認する。
+            if (!can_serialize_with(scanner, NULL, 1)) return false;
             array_push(&scanner->literal_stack, literal);
             lexer->result_symbol = literal.type;
             return true;

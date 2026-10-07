@@ -4,6 +4,9 @@
 
 [tree-sitter](https://github.com/tree-sitter/tree-sitter) 用の Ruby 文法パーサー。Ruby 3/4 構文に対応。
 
+検証したリポジトリの版、回帰確認、残る構文上の制約は
+[構文検証レポート](docs/validation.md)に記録しています。
+
 ## 使い方 (Rust)
 
 `Cargo.toml` に追加:
@@ -114,131 +117,66 @@ mise exec -- pnpm exec tree-sitter parse example.rb
 
 ### テスト
 
-> **警告:** `tree-sitter test` は、このパーサーでは過剰なメモリを消費します（RSS 8GB+、VSIZE 400GB+）。パーサーテーブルが大きいため（現在 parser.c 約21MB、STATE_COUNT 8235）、`test` サブコマンドが内部でパースツリー全体を S 式文字列に変換し差分比較を行うことで、大量のメモリ確保が発生します。`tree-sitter parse` は影響を受けません（約10MB RSS）。これは特定の upstream issue としては追跡されていませんが、関連するメモリ問題が [tree-sitter#1890](https://github.com/tree-sitter/tree-sitter/issues/1890)、[tree-sitter#1185](https://github.com/tree-sitter/tree-sitter/issues/1185)、[zed#47880](https://github.com/zed-industries/zed/issues/47880) で報告されています。代わりに以下のテストランナーを使用してください。
+**`tree-sitter test` は実行しないでください。** この大規模パーサーでは
+RSS 8GB+、VSIZE 400GB+ を消費してハングします。以下の parse ベースの
+コーパスランナーを使い、共有ライブラリを先にビルドしてください。
+ランナーはライブラリを暗黙に再ビルドしません。
 
 ```bash
-# 推奨: tree-sitter parse によるコーパステスト（低メモリ）
-# - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
-# - Ruby 4.0 の `*nil` splat パースもここで確認する
-# - Ruby 3.4 の index assignment で keyword / block 引数を拒否する回帰もここで確認する
-# - 空白付き添字代入の括弧内にある改行・コメントと、改行を含む配列引数との区別も確認する
-# - `%=` 文字列、空 heredoc 終端語、不正な regexp option、
-#   不正な `..` method/operator 名の scanner 回帰もここで確認する
-# - Ruby 4.0 の行頭論理演算子による式・if 条件の行継続もここで確認する
-#   （if 条件内の `and` / `or` キーワード演算子を含む）
-# - scanner.c の行継続判定（行頭 `and` / `or` キーワードと識別子、
-#   行頭 `||` / `&&` 演算子、継続しない単独 `&`、行頭 `..`）の回帰もここで確認する
-# - scanner.c の `is_iden_char` が ASCII 外の Unicode 識別子文字
-#   （例: `:Ĩ` U+0128 や `:漢字`）を char 切り詰めで誤って
-#   NON_IDENTIFIER_CHARS に衝突させない symbol パース回帰もここで確認する
-# - tree-sitter-cli 0.26.11 が生成時に汎用文字集合から除外していた
-#   `ſ`（U+017F）と `K`（U+212A）を含む正当な Ruby 識別子も回帰確認する
-#   （0.27.0 では除外されなくなったが、明示許可は保険として残している）
-# - endless method definition（`def m = foo 1`）の括弧なしコマンド呼び出しと
-#   その rescue 修飾・splat / block 引数もここで確認する
-# - scanner.c の正規表現オプション判定が ASCII 外 Unicode 文字
-#   （`ど` U+3069 / `ũ` U+0169 は下位 8 bit が 0x69 = 'i'）を
-#   char 切り詰めで誤って消費しないこともここで確認する
-# - scanner.c の短縮 interpolation 判定が EOF 直後の `$` を
-#   特殊グローバル変数として誤判定しないこともここで確認する
-# - scanner.c の短縮 interpolation 判定が ASCII 外 Unicode 文字
-#   （`Ĥ` U+0124 や `Ŀ` U+0140 など）を char 切り詰めで `@` / `$` と
-#   誤一致させないこともここで確認する
-# - 非引用・引用付き Unicode heredoc 終端語を UTF-8 のまま照合できることを確認する
-# - `$名前` や `$-名` などの Unicode グローバル変数と短縮 interpolation を確認する
-# - Ruby 3.4 の `it` 暗黙ブロックパラメータも回帰確認する
-# - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
-# - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
-# - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
-python3 scripts/corpus_test.py
-
-# scripts/corpus_test.py のユニットテスト
-# - 壊れた corpus 入力の抽出（空ファイル、空白のみコード、:error タグ）
-# - tree-sitter CLI の setup error / 一般失敗 / PermissionError 伝播
-# - expected ERROR / TIMEOUT / 非 .txt スキップの分岐
-# - パス/失敗混在時の集計結果、複数ファイルまたぎの集計
-# - 区切り線検出・コマンド失敗要約の境界値テスト
-# - エッジケース: 空の AST セクション、AST なし連続テスト、空の corpus
-# - 追加カバレッジ: 空テスト名、末尾改行なし、MISSING のみ検出、
-#   bool/float/空文字列の失敗詳細、ノイズ後の有意行抽出
-# - :error タグ単独動作、コード内区切り線、複数 ERROR/MISSING カウント、
-#   パース中 PermissionError 伝播
-# - __main__ ガード呼び出し、期待 ERROR だがパース成功、
-#   非ゼロ終了でエラーノードなし
-# - コード内 --- 区切り、ヘッダー区切りでファイル終端、
-#   インデント付き Error: 行、stderr のみのエラー、長い区切り線、
-#   複数 error タグテスト、期待 ERROR が MISSING で一致
-# - CLI タイムアウト直接テスト、複数空行名前セクション、
-#   KeyboardInterrupt 伝播、Emitted 'error' event のみ出力、
-#   コード末尾空白トリム、空コードテストのスキップ確認
-# - corpus ディレクトリ不在時の setup error、
-#   一時ファイル作成失敗時の OSError 伝播（UnboundLocalError 防止）
-# - tree-sitter CLI 解決（TREE_SITTER_CLI 上書き、ローカルネイティブバイナリ、
-#   ローカル shim、PATH フォールバック）、AST 正規化、単独 CR 保持の検証
-# - 隠し .txt / .txt ディレクトリのスキップと、
-#   一時ファイル削除時の OSError が握りつぶされてクラッシュしないことの検証
-# - summarize_command_failure の空 output / 全フィルター行のみの場合に exit code のみ返すことの検証
-# - _resolve_memory_limit_mb の TS_MEMORY_LIMIT_MB 解析（未設定 / 空文字 / 数値以外 /
-#   非有限値 / 0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
-# - Windows tasklist CSV の引用符付き桁区切りと POSIX プロセスグループ合算を含む
-#   OS ごとの RSS 解析検証
-# - run_with_memory_guard の正常終了、大きな pipe 出力での非デッドロック、
-#   子プロセス RSS 超過 kill、タイムアウト強制終了（kill_reason 設定）の検証
-# - Windows の taskkill / POSIX のプロセスグループ kill が失敗した場合に、
-#   対象プロセスの直接 kill へフォールバックすることの検証
-pnpm run test:unit
-
-# パーサーライブラリの事前コンパイル（parse ベーステストに必要）
+# macOS: parse 用の共有ライブラリを先に作成する
 mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
-# Rust バインディングテスト（文法ロード、パース、クエリ検証、
-# locals クエリの singleton_method/for/as_pattern/block/do_block/lambda キャプチャ検証、
-# locals クエリの keyword/optional/splat/hash_splat/block/destructured
-# パラメータ、パターンマッチ束縛、rescue 例外変数の definition キャプチャ検証、
-# highlights クエリのキーワード・演算子・グローバル変数キャプチャ検証、
-# tags クエリのネスト定義・method/alias 定義・組み込み擬似メソッド除外の回帰検証、
-# tags クエリの擬似定数（__FILE__/__LINE__/__ENCODING__）の reference.call 除外検証、
-# scanner.c の特殊グローバル変数シンボル（:$" :$; :$$ 等）のパース回帰検証、
-# Ruby 4.0 の `*nil` splat パースの corpus 回帰検証、
-# heredoc EOF/引用/空終端語境界、深いリテラルネストのシリアライズ、
-# 長すぎる heredoc 終端語、symbol setter suffix、regexp option、`%=` 文字列の scanner 回帰検証、
-# scanner.c のバックスラッシュ行継続が CRLF 改行（\\\r\n）でも動作する回帰検証、
-# 行頭 `&.` （safe navigation）が改行継続として扱われる scanner.c 改行判定の回帰検証、
-# scanner.c の `is_iden_char` が ASCII 外 Unicode 識別子文字を char 切り詰めで
-# NON_IDENTIFIER_CHARS と誤一致させない symbol パース回帰検証、
-# scanner.c の `scan_short_interpolation` が ASCII 外 Unicode 文字
-# （`Ĥ` U+0124、`Ŀ` U+0140 など）を `@` / `$` と誤判定しない回帰検証、
-# Unicode heredoc 終端語を UTF-8 バイト列として保持・照合する回帰検証、
-# `$名前` / `$-名` の通常参照と短縮 interpolation の回帰検証、
-# Ruby 3.4 の `it` 暗黙ブロックパラメータのパース検証、
-# Ruby 3.4 の index assignment（`arr[i, k: v] = x` / `arr[i, &b] = x`）拒否の検証、
-# Ruby 4.0 の `*nil` splat 引数のパース検証、
-# Ruby 4.0 の行頭論理演算子（`||` / `&&` / `and` / `or`）による行継続のパース検証、
-# if 条件内のキーワード演算子を含む、
-# 正規表現オプション読み（imxouesn）が末尾に改行のない EOF 直後で終わる正規表現
-# （`a = /x/` 等）で strchr の終端 NUL マッチによる無限ループに陥らないことの検証、
-# endless method definition の括弧なしコマンド呼び出しのパース検証と
-# `def m = foo 1 rescue 2` の rescue が本体側に束縛されることの検証、
-# ブロック付きコマンド呼び出しのチェーン（`1.upto 0 do end.foo(1)`）の回帰検証、
-# 正規表現オプション判定（imxouesn）が ASCII 外 Unicode 文字を char 切り詰めで
-# 誤って消費せず、正当なオプションと EOF は従来どおり扱われることの検証）
-cargo test
+# コーパス・ランナー・Rust バインディングを検証する
+mise exec -- python3 scripts/corpus_test.py
+mise exec -- pnpm run test:unit
+mise exec -- cargo test
 
-# tree-sitter-cli の install script は `pnpm-workspace.yaml` の `allowBuilds` で
-# 許可済みなので通常は不要。何らかの理由で止まったときだけ手動で取得する。
-# install.js はカレントディレクトリに tree-sitter を書き出すため、
-# 必ずパッケージディレクトリで実行する（リポジトリルートで実行すると
-# 18MB のバイナリが作業ツリーに落ちる。`.gitignore` 済み）。
-(cd node_modules/tree-sitter-cli && node install.js)
+# lint とフォーマットを確認する
+mise exec -- pnpm run lint
+mise exec -- ruff check scripts
+mise exec -- ruff format --check scripts
+mise exec -- cargo fmt --check
 ```
 
-`pnpm run test` はコーパス実行前に `tree-sitter --version` を確認し、CLI が見つからない場合や 10 秒以内に起動できない場合は setup error で終了します。関連する setup/failure 分岐は `pnpm run test:unit` で回帰確認できます。
+Linux では `ruby.so`、Windows では `ruby.dll` を作成します。
+別のファイルを使う場合は `TREE_SITTER_LIB_PATH` を指定してください。
+未指定の場合は `TREE_SITTER_LIBDIR`、次に POSIX の `/tmp/ts-lib` または
+Windows のネイティブ TEMP 配下を使います。Windows のネイティブプログラムには
+ネイティブパスを渡す必要があるため、CI では Git Bash のパスを
+`cygpath -am` で変換しています。
 
-`scripts/corpus_test.py` を直接実行する場合、CLI は
-`TREE_SITTER_CLI`、`node_modules/tree-sitter-cli/tree-sitter`、`node_modules/.bin/tree-sitter`、
-PATH 上の `tree-sitter` の順に解決します。依存関係をインストール済みの環境では、
-`python3 scripts/corpus_test.py` の直接実行でもプロジェクトで固定した CLI を使います。
+コーパスでは Ruby 3/4 構文、Unicode 識別子、引数転送、endless method、
+行継続、リテラル、heredoc を検証します。期待 AST にフィールド名がある場合は、
+ノード構造に加えてフィールド名も比較します。フィールド名のない既存ケースでは
+従来の比較方法を維持します。Rust テストはクエリのキャプチャ、heredoc の
+増分パース、リテラルと heredoc の合計保存容量、切り詰められた保存状態や
+余分な末尾データも検証します。ランナーのユニットテストはセットアップ失敗、
+タイムアウト、メモリ上限、出力のデコード、AST 比較を検証します。
+
+CLI は `TREE_SITTER_CLI`、ローカルのネイティブバイナリ、pnpm の shim、
+PATH の順に解決します。共有ライブラリがない場合や CLI が 10 秒以内に
+起動できない場合は、コーパス実行前にセットアップエラーで終了します。
+
+### C バインディング
+
+CMake はコミット済みのパーサーをビルドするため、通常のビルドに CLI は不要です。
+C/C++ ヘッダー、ライブラリ、pkg-config メタデータをインストールします。
+配布物のバージョンは `Cargo.toml` と同期します。
+
+```bash
+cmake -S . -B build/c -DCMAKE_INSTALL_PREFIX="$HOME/.local"
+cmake --build build/c
+cmake --install build/c
+
+# Python 3.7 以降と tree-sitter CLI がある環境でコーパスを検証する
+cmake --build build/c --target ts-test
+```
+
+`ts-test` はビルドしたライブラリのパスを `scripts/corpus_test.py` に渡します。
+Python が見つかった共有ライブラリビルドで利用できます。静的ライブラリを
+作る場合は `BUILD_SHARED_LIBS=OFF` を指定してください。CLI が見つかった場合の
+`ts-generate` は、明示的に実行したときだけ `grammar.js` から再生成します。
 
 ### スキャナー
 

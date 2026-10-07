@@ -150,15 +150,16 @@ def strip_line_ending(text):
     return text
 
 
-def normalize_tree(tree):
-    """AST 比較用に空白・フィールド名・parse 統計行を正規化する。"""
+def normalize_tree(tree, keep_fields=False):
+    """AST 比較用に空白・parse 統計行を除き、必要ならフィールド名を保持する。"""
     ast_lines = []
     for line in tree.splitlines():
         if "\tParse:" in line:
             continue
         ast_lines.append(line)
     ast = "\n".join(ast_lines)
-    ast = re.sub(r"\b[A-Za-z_][A-Za-z0-9_]*:\s*", "", ast)
+    if not keep_fields:
+        ast = re.sub(r"\b[A-Za-z_][A-Za-z0-9_]*:\s*", "", ast)
     return re.sub(r"\s+", "", ast)
 
 
@@ -646,8 +647,12 @@ def main():
                     continue
 
                 has_error = "(ERROR" in output or "(MISSING" in output
-                expected_norm = normalize_tree(expected_ast)
-                actual_norm = normalize_tree(output)
+                # 期待値にフィールドを指定したケースでは、その束縛も比較する。
+                keep_fields = (
+                    re.search(r"\b[A-Za-z_][A-Za-z0-9_]*:", expected_ast) is not None
+                )
+                expected_norm = normalize_tree(expected_ast, keep_fields=keep_fields)
+                actual_norm = normalize_tree(output, keep_fields=keep_fields)
                 ast_matches = not expected_ast.strip() or actual_norm == expected_norm
                 if expects_error:
                     # ERROR を期待するケースは「構文エラーになること」だけを見て、

@@ -1,0 +1,229 @@
+========================================
+ブロック付きコマンド後の括弧付き引数と連結
+========================================
+
+1.upto 0 do end.foo(1, 2).bar
+
+---
+
+(program
+  (call
+    receiver: (call
+      receiver: (call
+        receiver: (integer)
+        method: (identifier)
+        arguments: (argument_list
+          (integer))
+        block: (do_block))
+      method: (identifier)
+      arguments: (argument_list
+        (integer)
+        (integer)))
+    method: (identifier)))
+
+========================================
+ブロック付きコマンド後の safe navigation とブロック
+========================================
+
+1.upto 0 do end&.foo 1 do end
+
+---
+
+(program
+  (call
+    receiver: (call
+      receiver: (integer)
+      method: (identifier)
+      arguments: (argument_list
+        (integer))
+      block: (do_block))
+    method: (identifier)
+    arguments: (argument_list
+      (integer))
+    block: (do_block)))
+
+========================================
+for の列挙対象の括弧なしコマンド呼び出し
+========================================
+
+for item in build 1
+end
+
+---
+
+(program
+  (for
+    pattern: (identifier)
+    value: (in
+      (call
+        method: (identifier)
+        arguments: (argument_list
+          (integer))))
+    body: (do)))
+
+========================================
+非ローカル変数直後の三項演算子
+========================================
+
+$a?0:1
+@a?0:1
+@@a?0:1
+
+---
+
+(program
+  (conditional
+    condition: (global_variable)
+    consequence: (integer)
+    alternative: (integer))
+  (conditional
+    condition: (instance_variable)
+    consequence: (integer)
+    alternative: (integer))
+  (conditional
+    condition: (class_variable)
+    consequence: (integer)
+    alternative: (integer)))
+
+========================================
+文字リテラルと引用文字列の暗黙連結
+========================================
+
+?:'image/gif'
+?a "#{1}"
+
+---
+
+(program
+  (chained_string
+    (character)
+    (string
+      (string_content)))
+  (chained_string
+    (character)
+    (string
+      (interpolation
+        (integer)))))
+
+========================================
+数値の符号と空白によるメソッド呼び出しの束縛
+========================================
+
++1.second
++ 1.second
+-1.second
+- 1.second
+
+---
+
+(program
+  (call
+    receiver: (unary
+      operand: (integer))
+    method: (identifier))
+  (unary
+    operand: (call
+      receiver: (integer)
+      method: (identifier)))
+  (call
+    receiver: (unary
+      operand: (integer))
+    method: (identifier))
+  (unary
+    operand: (call
+      receiver: (integer)
+      method: (identifier))))
+
+========================================
+正の数値リテラルと空白付き単項演算の冪乗
+========================================
+
++1 ** 2
++ 1 ** 2
+
+---
+
+(program
+  (binary
+    left: (unary
+      operand: (integer))
+    right: (integer))
+  (binary
+    left: (unary
+      operand: (integer))
+    right: (integer)))
+
+========================================
+コマンド引数の符号と二項演算子の空白の区別
+========================================
+
+foo +value
+foo + value
+foo -value
+foo - value
+
+---
+
+(program
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (unary
+        operand: (identifier))))
+  (binary
+    left: (identifier)
+    right: (identifier))
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (unary
+        operand: (identifier))))
+  (binary
+    left: (identifier)
+    right: (identifier)))
+
+========================================
+空白付き二項演算子をコマンド引数として拒否
+:error
+========================================
+
+foo + 1.abs, 2
+foo - 1.abs, 2
+
+---
+
+(ERROR)
+
+========================================
+return・break・next の引数の符号と改行
+========================================
+
+return-1
+return + value
+break - value
+next+value
+return
+-1
+
+---
+
+(program
+  (return
+    (argument_list
+      (unary
+        operand: (integer))))
+  (return
+    (argument_list
+      (unary
+        operand: (identifier))))
+  (break
+    (argument_list
+      (unary
+        operand: (identifier))))
+  (next
+    (argument_list
+      (unary
+        operand: (identifier))))
+  (return)
+  (unary
+    operand: (integer)))

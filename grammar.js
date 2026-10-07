@@ -94,20 +94,27 @@ module.exports = grammar({
 		$._lambda_body_brace,
 		$._command_block_brace,
 		$._range_operand,
+		$._unary_plus_num,
+		$._unary_plus,
+		$._binary_plus,
+		$._jump_argument,
 	],
 
 	extras: ($) => [$.comment, $.heredoc_body, /\s/, /\\\r?\n/],
 
 	word: ($) => $.identifier,
 
-	// `when` must not fall back to an identifier outside a case clause.
-	// Legal method names and labels explicitly accept the keyword instead of
-	// disabling reservation, which can leak into other items in the same LR state.
+	// `when` を case 節の外で識別子として受理しない。
+	// 同じ LR 状態の他のルールに影響する予約解除は行わず、
+	// メソッド名やラベルとして有効な位置でだけ明示的に許可する。
 	reserved: {
 		global: (_) => ["when"],
 	},
 
 	conflicts: ($) => [
+		[$._bare_call_method, $._variable],
+		[$._pattern_constant, $._bare_call_method, $._variable],
+		[$._pattern_expr_basic, $._bare_call_method, $._variable],
 		[$._assignment_lhs, $._lhs],
 		[$._argument, $._index_assignment_argument],
 		[$.element_reference, $._element_reference_assignment],
@@ -240,7 +247,7 @@ module.exports = grammar({
 			seq(
 				choice(
 					$._call,
-					field("method", choice($._variable, $._function_identifier)),
+					field("method", choice($._bare_call_method, $._function_identifier)),
 				),
 				field(
 					"arguments",
@@ -378,18 +385,19 @@ module.exports = grammar({
 				"end",
 			),
 
+		// return・break・next の直後は、式の開始位置を示す未消費のヒントを渡す。
 		return_command: ($) =>
-			prec.left(seq("return", alias($.command_argument_list, $.argument_list))),
+			prec.left(seq("return", optional($._jump_argument), alias($.command_argument_list, $.argument_list))),
 		yield_command: ($) =>
 			prec.left(seq("yield", alias($.command_argument_list, $.argument_list))),
 		break_command: ($) =>
-			prec.left(seq("break", alias($.command_argument_list, $.argument_list))),
+			prec.left(seq("break", optional($._jump_argument), alias($.command_argument_list, $.argument_list))),
 		next_command: ($) =>
-			prec.left(seq("next", alias($.command_argument_list, $.argument_list))),
-		return: ($) => prec.left(seq("return", optional($.argument_list))),
+			prec.left(seq("next", optional($._jump_argument), alias($.command_argument_list, $.argument_list))),
+		return: ($) => prec.left(seq("return", optional($._jump_argument), optional($.argument_list))),
 		yield: ($) => prec.left(seq("yield", optional($.argument_list))),
-		break: ($) => prec.left(seq("break", optional($.argument_list))),
-		next: ($) => prec.left(seq("next", optional($.argument_list))),
+		break: ($) => prec.left(seq("break", optional($._jump_argument), optional($.argument_list))),
+		next: ($) => prec.left(seq("next", optional($._jump_argument), optional($.argument_list))),
 		redo: ($) => prec.left(seq("redo", optional($.argument_list))),
 		retry: ($) => prec.left(seq("retry", optional($.argument_list))),
 
@@ -457,7 +465,8 @@ module.exports = grammar({
 				field("body", $.do),
 			),
 
-		in: ($) => seq("in", $._arg),
+		// for の列挙対象には、括弧なしコマンド呼び出しも置ける。
+		in: ($) => seq("in", $._statement),
 		do: ($) => seq(choice("do", $._terminator), optional($._statements), "end"),
 
 		case: ($) =>
@@ -811,6 +820,7 @@ module.exports = grammar({
 				alias($.command_call, $.call),
 				alias($.command_call_with_block, $.call),
 				prec.left(alias($._chained_command_call, $.call)),
+				alias($._chained_command_call_with_block, $.call),
 				alias($.return_command, $.return),
 				alias($.yield_command, $.yield),
 				alias($.break_command, $.break),
@@ -964,8 +974,8 @@ module.exports = grammar({
 			seq(
 				choice(
 					$._call,
-					$._chained_command_call,
-					field("method", choice($._variable, $._function_identifier)),
+					$._chained_command_call_head,
+					field("method", choice($._bare_call_method, $._function_identifier)),
 				),
 				field("arguments", alias($.command_argument_list, $.argument_list)),
 			),
@@ -973,7 +983,7 @@ module.exports = grammar({
 		command_call_with_block: ($) => {
 			const receiver = choice(
 				$._call,
-				field("method", choice($._variable, $._function_identifier)),
+				field("method", choice($._bare_call_method, $._function_identifier)),
 			);
 			const args = field(
 				"arguments",
@@ -987,9 +997,13 @@ module.exports = grammar({
 			);
 		},
 
-		_chained_command_call: ($) =>
+		_chained_command_call_head: ($) =>
 			seq(
-				field("receiver", alias($.command_call_with_block, $.call)),
+				// 通常の call の入口を広げず、ブロック付きコマンド後の連結だけを扱う。
+				field("receiver", choice(
+					alias($.command_call_with_block, $.call),
+					alias($.chained_command_call, $.call),
+				)),
 				field("operator", $._call_operator),
 				field(
 					"method",
@@ -1002,10 +1016,28 @@ module.exports = grammar({
 				),
 			),
 
+		_chained_command_call: ($) =>
+			prec.right(seq(
+				$._chained_command_call_head,
+				optional(field("arguments", $.argument_list)),
+				optional(field("block", choice($.block, $.do_block))),
+			)),
+
+		// 再帰するレシーバは named rule を挟み、内側の method フィールドの継承を止める。
+		chained_command_call: ($) => choice($._chained_command_call, $._chained_command_call_with_block),
+
+		_chained_command_call_with_block: ($) =>
+			prec(PREC.DO_BLOCK, seq(
+				$._chained_command_call_head,
+				field("arguments", alias($.command_argument_list, $.argument_list)),
+				// do は引数側の呼び出しより、外側のコマンド呼び出しに束縛する。
+				field("block", $.do_block),
+			)),
+
 		call: ($) => {
 			const receiver = choice(
 				$._call,
-				field("method", choice($._variable, $._function_identifier)),
+				field("method", choice($._bare_call_method, $._function_identifier)),
 			);
 
 			const args = field("arguments", $.argument_list);
@@ -1270,7 +1302,11 @@ module.exports = grammar({
 				[prec.left, PREC.COMPARISON, choice("<", "<=", ">", ">=")],
 				[prec.left, PREC.BITWISE_AND, alias($._binary_ampersand, "&")],
 				[prec.left, PREC.BITWISE_OR, choice("^", "|")],
-				[prec.left, PREC.ADDITIVE, choice("+", alias($._binary_minus, "-"))],
+				[
+					prec.left,
+					PREC.ADDITIVE,
+					choice(alias($._binary_plus, "+"), alias($._binary_minus, "-")),
+				],
 				[
 					prec.left,
 					PREC.MULTIPLICATIVE,
@@ -1316,9 +1352,9 @@ module.exports = grammar({
 				[
 					prec.right,
 					PREC.UNARY_MINUS,
-					choice(alias($._unary_minus, "-"), alias($._binary_minus, "-"), "+"),
+					alias($._unary_minus, "-"),
 				],
-				[prec.right, PREC.COMPLEMENT, choice("!", "~")],
+				[prec.right, PREC.COMPLEMENT, choice("!", "~", alias($._unary_plus, "+"))],
 			];
 			// @ts-expect-error
 			return choice(
@@ -1339,8 +1375,8 @@ module.exports = grammar({
 			const operators = [
 				[prec, PREC.DEFINED, "defined?"],
 				[prec.right, PREC.NOT, "not"],
-				[prec.right, PREC.UNARY_MINUS, choice(alias($._unary_minus, "-"), "+")],
-				[prec.right, PREC.COMPLEMENT, choice("!", "~")],
+				[prec.right, PREC.UNARY_MINUS, alias($._unary_minus, "-")],
+				[prec.right, PREC.COMPLEMENT, choice("!", "~", alias($._unary_plus, "+"))],
 			];
 			// @ts-expect-error
 			return choice(
@@ -1370,7 +1406,10 @@ module.exports = grammar({
 			prec.right(
 				PREC.UNARY_MINUS,
 				seq(
-					field("operator", choice(alias($._unary_minus_num, "-"), "+")),
+					field(
+						"operator",
+						choice(alias($._unary_minus_num, "-"), alias($._unary_plus_num, "+")),
+					),
 					field("operand", $._simple_numeric),
 				),
 			),
@@ -1402,6 +1441,12 @@ module.exports = grammar({
 		destructured_left_assignment: ($) => prec(-1, seq("(", $._mlhs, ")")),
 
 		rest_assignment: ($) => prec(-1, seq("*", optional($._assignment_lhs))),
+
+		// 非ローカル変数や self は裸のメソッド名にならない。
+		// これらを許すと `$a?0:1` の `?0` を文字リテラル引数と誤認する。
+		// 両方の解釈が成立するときは、減算や外側の do を保つ変数参照側を優先する。
+		_bare_call_method: ($) =>
+			prec.dynamic(-1, prec.right(choice($.identifier, $.constant, $.super))),
 
 		_function_identifier: ($) =>
 			choice(
@@ -1565,7 +1610,8 @@ module.exports = grammar({
 				),
 			),
 
-		chained_string: ($) => seq($.string, repeat1($.string)),
+		// 文字リテラルも文字列なので、直後の引用文字列と暗黙に連結できる。
+		chained_string: ($) => seq(choice($.string, $.character), repeat1($.string)),
 
 		character: (_) =>
 			/\?(\\\S(\{[0-9A-Fa-f]*\}|[0-9A-Fa-f]*|-\S([MC]-\S)?)?|\S)/,
@@ -1785,7 +1831,7 @@ function commaSep(rule) {
 }
 
 /**
- * Build a name choice without weakening the reserved-word set for its LR state.
+ * LR 状態の予約語集合を変更せず、名前として使える候補を組み立てる。
  *
  * @param {GrammarSymbols<string>} $
  * @returns {ChoiceRule}

@@ -4,6 +4,9 @@
 
 Ruby grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter) with Ruby 3/4 syntax support.
 
+See the [syntax validation report](docs/validation.md) for tested repository
+snapshots, regression checks and remaining parsing limitations.
+
 ## Usage (Rust)
 
 Add to your `Cargo.toml`:
@@ -116,131 +119,64 @@ mise exec -- pnpm exec tree-sitter parse example.rb
 
 ### Testing
 
-> **Warning:** `tree-sitter test` consumes excessive memory (RSS 8GB+, VSIZE 400GB+) with this parser due to the large parser table size (currently parser.c ~21MB, STATE_COUNT 8235). The `test` subcommand internally converts the entire parse tree to an S-expression string for diff comparison, which triggers massive memory allocation with large grammars. `tree-sitter parse` is unaffected (~10MB RSS). This is not tracked as a specific upstream issue, but related memory problems have been reported in [tree-sitter#1890](https://github.com/tree-sitter/tree-sitter/issues/1890), [tree-sitter#1185](https://github.com/tree-sitter/tree-sitter/issues/1185), and [zed#47880](https://github.com/zed-industries/zed/issues/47880). Use the alternative test runner instead.
+**Do not run `tree-sitter test`.** It hangs with excessive memory use on this
+large parser (RSS 8GB+, VSIZE 400GB+). Use the parse-based corpus runner below.
+Build the shared library first; the runner never rebuilds it implicitly.
 
 ```bash
-# Recommended: corpus tests via tree-sitter parse (low memory)
-# - covers recent Ruby syntax regressions such as anonymous *, **, & forwarding
-# - covers Ruby 4.0 `*nil` splat parsing
-# - covers Ruby 3.4 index assignment rejecting keyword/block arguments
-# - covers spaced index assignment with newlines and comments inside the brackets,
-#   while keeping multiline array arguments as method-call arguments
-# - covers scanner regressions for `%=` strings, empty heredoc delimiters,
-#   invalid regexp options, and invalid `..` method/operator names
-# - covers Ruby 4.0 leading logical-operator continuations in expressions and if conditions,
-#   including keyword operators (`and` / `or`)
-# - covers scanner line-continuation boundaries (leading `and`/`or` keywords vs identifiers,
-#   leading `||`/`&&` operators, non-continuing single `&`, leading `..`)
-# - covers scanner.c `is_iden_char` regression for non-ASCII Unicode identifier symbols
-#   (e.g. `:Ĩ` U+0128 and `:漢字`) so char truncation cannot collide with NON_IDENTIFIER_CHARS
-# - covers valid Ruby identifiers containing `ſ` (U+017F) and `K` (U+212A),
-#   which tree-sitter-cli 0.26.11 removed from generic character sets during generation
-#   (0.27.0 no longer strips them, but the explicit allowance is kept as a safety net)
-# - covers endless method definitions with parenthesis-less command calls
-#   (`def m = foo 1`), including their rescue modifier and splat / block arguments
-# - covers regex option scanning so non-ASCII characters whose low 8 bits collide with
-#   an option letter (`ど` U+3069, `ũ` U+0169 -> 0x69 = 'i') are not consumed
-# - covers scanner short-interpolation handling so `$` immediately before EOF is not
-#   mistaken for a one-character special global variable
-# - covers scanner short-interpolation handling so non-ASCII Unicode characters
-#   (e.g. `Ĥ` U+0124, `Ŀ` U+0140) are not misclassified as `@`/`$` interpolation
-#   starts via char truncation
-# - covers unquoted and quoted Unicode heredoc terminators, including a code point
-#   whose low 8 bits collide with an ASCII delimiter
-# - covers Unicode global variables such as `$名前` and `$-名`, including short interpolation
-# - covers Ruby 3.4 `it` implicit block parameter
-# - covers expression-based scope resolution used by Ruby Box examples (`box::Foo`)
-# - compares normalized AST output from `tree-sitter parse --no-ranges`
-# - preserves single CR characters in corpus source sections
-python3 scripts/corpus_test.py
-
-# Unit tests for scripts/corpus_test.py
-# - malformed corpus extraction (empty files, whitespace-only code, :error tags)
-# - tree-sitter CLI setup / generic failure / PermissionError propagation
-# - expected ERROR / TIMEOUT / non-.txt branches in the runner
-# - mixed pass/fail result aggregation, multi-file corpus aggregation
-# - boundary values for separator detection and command failure summaries
-# - edge cases: empty AST sections, consecutive tests without AST, empty corpus
-# - additional coverage: empty test names, no trailing newline, MISSING-only detection,
-#   bool/float/empty-string failure details, meaningful lines after noise
-# - :error tag behavior without ERROR in AST, separator-like lines in code,
-#   multiple ERROR/MISSING node counting, PermissionError during parse
-# - __main__ guard invocation, expected ERROR but parsed OK,
-#   non-zero exit without error nodes
-# - dash separator in code, file ending with header separator,
-#   indented Error: lines, stderr-only errors, very long separators,
-#   multiple error tag tests, expected ERROR matched by MISSING
-# - CLI timeout direct test, multi-blank-line name sections,
-#   KeyboardInterrupt propagation, Emitted 'error' event only output,
-#   code trailing whitespace trimming, empty code test skipping
-# - missing corpus directory setup error,
-#   OSError propagation on temp file creation failure (UnboundLocalError prevention)
-# - tree-sitter CLI resolution (TREE_SITTER_CLI override, local native binary,
-#   local shim, PATH fallback), AST normalization, and single-CR preservation
-# - hidden .txt / .txt directory skipping, and OSError suppression during temp file cleanup
-# - summarize_command_failure returning exit code only for empty / fully-filtered output
-# - _resolve_memory_limit_mb parsing of TS_MEMORY_LIMIT_MB (unset / blank / non-numeric /
-#   non-finite / zero-or-negative / valid / os.environ fallback) boundary cases
-# - OS-specific RSS parsing, including quoted thousands separators in Windows tasklist CSV
-#   and POSIX process-group aggregation
-# - run_with_memory_guard normal completion, large pipe output without deadlock,
-#   child-process RSS kill, and timeout-triggered kill (kill_reason set)
-# - direct-process kill fallback when Windows taskkill or POSIX process-group kill fails
-pnpm run test:unit
-
-# Pre-compile parser library (required for parse-based testing)
+# macOS: parse 用の共有ライブラリを先に作成する
 mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
-# Rust binding tests (grammar loading, parsing, query validation,
-# locals query captures for singleton_method/for/as_pattern/block/do_block/lambda,
-# locals query captures for keyword/optional/splat/hash_splat/block/destructured
-# parameter identifiers, pattern-match bindings, and rescue exception variables,
-# highlights query captures keywords, operators, and global variables,
-# tags query regression for nested definitions, method/alias definitions,
-# builtin pseudo-method filtering, and pseudo-constant filtering for
-# __FILE__/__LINE__/__ENCODING__ in reference.call captures;
-# scanner regression for special global-variable symbols like
-# :$", :$;, :$$ and friends;
-# corpus regression for Ruby 4.0 `*nil` splat parsing;
-# scanner regression for heredoc EOF/quote/empty-delimiter boundaries,
-# deep literal nesting serialization, oversized heredoc delimiters,
-# symbol setter suffix validation, regexp option validation, and `%=` strings;
-# scanner backslash continuation across CRLF line endings (\\\r\n);
-# leading `&.` safe navigation treated as line continuation by the scanner;
-# scanner.c `is_iden_char` accepting non-ASCII Unicode identifier symbols
-# without colliding with NON_IDENTIFIER_CHARS via char truncation;
-# scanner.c `scan_short_interpolation` not misclassifying non-ASCII Unicode characters
-# whose low 8 bits collide with `@` (0x40) or `$` (0x24) as interpolation starts;
-# Unicode heredoc terminators retained and compared as UTF-8 byte sequences;
-# Unicode global variables, including `$名前` and `$-名` short interpolation;
-# Ruby 3.4 `it` implicit block parameter parsing;
-# Ruby 3.4 index assignment rejecting keyword/block arguments;
-# Ruby 4.0 `*nil` splat argument parsing;
-# Ruby 4.0 leading logical-operator (`||`, `&&`, `and`, `or`) continuations,
-# including keyword operators in if conditions;
-# regex option scanning (imxouesn) not hanging on a regex ending at EOF without a
-# trailing newline such as `a = /x/`, where strchr would otherwise match the terminating NUL;
-# endless method definitions with parenthesis-less command calls, and `def m = foo 1 rescue 2`
-# binding the rescue modifier to the method body;
-# block-call chains such as `1.upto 0 do end.foo(1)` as a regression guard;
-# regex option scanning rejecting non-ASCII characters that collide with an option letter
-# after char truncation, while still accepting valid options and EOF)
-cargo test
+# コーパス・ランナー・Rust バインディングを検証する
+mise exec -- python3 scripts/corpus_test.py
+mise exec -- pnpm run test:unit
+mise exec -- cargo test
 
-# tree-sitter-cli's install script is allow-listed in `pnpm-workspace.yaml`, so this is
-# normally unnecessary. Run it only if the script was skipped for some reason.
-# Run from the package directory; install.js writes tree-sitter into the current directory
-# (running it from the repository root drops an 18MB binary into the work tree; gitignored).
-(cd node_modules/tree-sitter-cli && node install.js)
+# lint とフォーマットを確認する
+mise exec -- pnpm run lint
+mise exec -- ruff check scripts
+mise exec -- ruff format --check scripts
+mise exec -- cargo fmt --check
 ```
 
-`pnpm run test` verifies `tree-sitter --version` before executing corpus cases and exits with a setup error if the CLI is missing or does not start within 10 seconds. The corresponding setup and failure branches are covered by `pnpm run test:unit`.
+On Linux, build `ruby.so` instead of `ruby.dylib`; on Windows, build `ruby.dll`.
+Set `TREE_SITTER_LIB_PATH` to use a different library file. Otherwise the runner
+uses `TREE_SITTER_LIBDIR`, then `/tmp/ts-lib` on POSIX or the native temporary
+directory on Windows. Paths passed to native Windows programs must be native
+paths; the CI workflow converts Git Bash paths with `cygpath -am`.
 
-When `scripts/corpus_test.py` is run directly, it resolves the CLI in this order:
-`TREE_SITTER_CLI`, `node_modules/tree-sitter-cli/tree-sitter`, `node_modules/.bin/tree-sitter`,
-then `tree-sitter` from `PATH`. This keeps direct `python3 scripts/corpus_test.py` runs aligned
-with the project-pinned CLI when dependencies are installed.
+Corpus tests cover Ruby 3/4 syntax, Unicode identifiers, forwarding, endless
+methods, line continuation, literals and heredocs. Expected ASTs with field
+names compare those names as well as node structure; fieldless expected ASTs
+retain the legacy comparison behavior. Rust tests also cover query captures,
+heredoc edits during incremental parsing, the combined literal/heredoc storage
+limit, and truncated or trailing scanner state data. Runner unit tests cover
+setup failures, timeouts, memory limits, output decoding and AST comparison.
+
+The runner resolves the CLI from `TREE_SITTER_CLI`, the local native binary,
+the local pnpm shim, then `PATH`. A missing library or a CLI that cannot start
+within ten seconds causes a setup error before corpus cases run.
+
+### C binding
+
+CMake builds the committed parser sources without requiring the CLI or
+regenerating files. It installs a C/C++ header, the library and pkg-config
+metadata. The package version follows `Cargo.toml`.
+
+```bash
+cmake -S . -B build/c -DCMAKE_INSTALL_PREFIX="$HOME/.local"
+cmake --build build/c
+cmake --install build/c
+
+# Python 3.7 以降と tree-sitter CLI がある環境でコーパスを検証する
+cmake --build build/c --target ts-test
+```
+
+`ts-test` uses `scripts/corpus_test.py` with the built library's exact path.
+It is available for shared builds when Python is found. Set
+`BUILD_SHARED_LIBS=OFF` for a static library. The optional `ts-generate` target
+regenerates `grammar.js` only when explicitly requested and the CLI is found.
 
 ### Scanner
 

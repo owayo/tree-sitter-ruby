@@ -13,7 +13,7 @@ Ruby の tree-sitter 文法パーサー。
 | `queries/highlights.scm` | シンタックスハイライトクエリ |
 | `queries/tags.scm` | コードナビゲーション用タグクエリ（定義・参照） |
 | `queries/locals.scm` | ローカル変数スコープクエリ |
-| `bindings/` | Rust/Node.js バインディング |
+| `bindings/` | Rust バインディングと C/C++ ヘッダー・pkg-config テンプレート |
 | `test/corpus/` | パーサーのコーパステスト |
 | `test/highlight/` | ハイライトクエリのテスト |
 | `test/tags/` | タグクエリのテスト |
@@ -29,11 +29,15 @@ mise exec -- pnpm run lint                # lint チェック（Biome）
 
 ### テスト実行
 
-**`tree-sitter test` は直接実行禁止。** tree-sitter-cli は大規模パーサー（現在 parser.c 21MB / STATE_COUNT 8235）で RSS 8GB+/VSIZE 400GB+ を消費しハングする既知の問題がある。0.26 系で確認し、0.27 系でも解消していない。
+**`tree-sitter test` は直接実行禁止。** tree-sitter-cli は大規模パーサーで RSS 8GB+/VSIZE 400GB+ を消費しハングする既知の問題がある。0.26 系で確認し、0.27 系でも解消していない。
 
 代わりに以下の方法でテストすること:
 
 ```bash
+# 共有ライブラリを先にビルドする（macOS。Linux は ruby.so、Windows は ruby.dll）
+mkdir -p /tmp/ts-lib
+cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
+
 # コーパステスト（推奨）— tree-sitter parse ベース、低メモリ
 # - 匿名 `*` / `**` / `&` 転送のような最近の Ruby 構文回帰もここで確認する
 # - Ruby 4.0 の `*nil` splat パースもここで確認する
@@ -66,6 +70,7 @@ mise exec -- pnpm run lint                # lint チェック（Biome）
 # - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
+# - heredoc の行途中・末尾空白・単独 CR・部分一致直後のエスケープを確認する
 python3 scripts/corpus_test.py
 
 # corpus_test.py のユニットテスト
@@ -116,6 +121,7 @@ python3 scripts/corpus_test.py
 #   共有ライブラリ不在を setup error（exit 2）で即座に報告すること
 # - ツリーが出ないままの非 0 終了を、期待 ERROR ケースでも
 #   「expected ERROR but parsed OK」と誤分類しないこと
+# - 期待 AST にフィールド名がある場合の保持・入れ替わり・欠落を検証する
 pnpm run test:unit
 
 # Rust バインディングテスト
@@ -162,7 +168,13 @@ pnpm run test:unit
 # - scanner.c の正規表現オプション判定（imxouesn）が ASCII 外 Unicode 文字を
 #   char 切り詰めで誤って消費しないこと、正当なオプションと EOF は
 #   従来どおり扱われることの検証
+# - heredoc の増分パースと、リテラル追加時の合計保存容量超過を検証する
+# - scanner 保存状態の空終端語・Unicode・容量上限の往復、切り詰め・末尾ゴミを検証する
 cargo test
+
+# C バインディング: ビルド済みライブラリを使う低メモリのコーパステスト
+cmake -S . -B build/c
+cmake --build build/c --target ts-test
 
 # 個別ファイルのパース検証
 TREE_SITTER_LIBDIR=/tmp/ts-lib tree-sitter parse example.rb
@@ -181,8 +193,8 @@ TREE_SITTER_LIBDIR=/tmp/ts-lib tree-sitter parse example.rb
 プリコンパイル済み dylib が `/tmp/ts-lib/ruby.dylib` に必要:
 
 ```bash
+mkdir -p /tmp/ts-lib
 cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
-touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 ```
 
 `corpus_test.py` はこの共有ライブラリを `tree-sitter parse --lib-path <lib> --lang-name ruby` で
@@ -205,6 +217,12 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - tree-sitter-cli 0.26.11 は `ſ`（U+017F）と `K`（U+212A）を汎用 lexer 文字集合から除外していたが、Ruby では有効な識別子文字である。0.27.0 ではこの除外が無くなり、明示許可の有無で parser.c は 1 バイトも変わらない（no-op）。ただし CLI 側で再発したときに黙って壊れないよう明示許可は残し、`test/corpus/identifiers.txt` の回帰ケースと同期すること
 - endless method definition (`def m = ...`) の本体に括弧なしコマンド呼び出しを許すルールは、既存の `command_call` を流用せず専用の `_endless_command_call` / `_endless_command_argument_list` / `_endless_command_argument` で入口を絞ってある。`command_call` を直接持ち込むと引数リストが `_expression` へ戻る相互再帰でパターン構文まで流れ込み、LR conflict が連鎖するため。引数に `pair`（`def m = foo a: 1`）を足すと parser.c が 21MB から 32MB へ膨らむので意図的に除外している（括弧付き `def m = foo(a: 1)` は従来どおり解析できる）
 - `call` / `command_call_with_block` のレシーバに `_chained_command_call` を足してはならない。`1.upto 0 do end.foo(1)` の AST は改善するが、Rails / Homebrew / ruby 本体で広範なパース失敗（ファイル全体が ERROR）を引き起こし、parser.c も 37MB へ倍増する
+- ブロック付きコマンド後の連結は専用ルール内で扱う。再帰するレシーバには named rule `chained_command_call` を挟み、内側の method フィールドが外側の `child_by_field_name()` に漏れないことを Rust テストで確認する
+- 裸の呼び出しの method には identifier・constant・super とメソッド名の suffix だけを許可する。self・非ローカル変数を許すと空白なし三項演算子を文字リテラル引数と誤認する
+- `+` / `-` の単項・二項トークンを混同しない。`foo +value` は引数、`foo + value` は二項演算で、`foo + value, 2` は構文エラー。数値直結の符号と空白付きの符号では、後続メソッドの束縛も異なる
+- 単項 `+` は `**` より強く、単項 `-` は弱く結合する。範囲演算子の後は `_range_operand` のヒントで式の開始として扱い、`1..-1` / `1..+value` を二項演算と誤認しない
+- `return` / `break` / `next` の直後も `_jump_argument` で式の開始を伝える。符号や正規表現をキーワードの外側の演算とせず、改行では引数を継続しない。`yield` は同じ字句状態ではない
+- 外部トークンを追加するときは `externals` と `TokenType` の末尾へ同じ順序で追加し、保存状態に入る既存のリテラルトークンの番号を変えない
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `python3 scripts/corpus_test.py` で確認する
@@ -212,7 +230,10 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - `global_variable` の名前部分は共通の Unicode 識別子文字ルールと同期し、`scan_short_interpolation()` の `$name` / `$-x` 判定でも ASCII 外文字を locale 非依存で許可すること
 - tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う
 - scanner serialization buffer の上限ぴったりに収まる状態は有効として扱い、超過した場合だけ ERROR として扱う
+- リテラル追加時も開いている heredoc と合計した保存容量を確認する。終端行の再開フラグは既存の started バイトに詰め、7 バイトのヘッダーサイズを維持する
+- heredoc 終端語は物理行の先頭でだけ認識し、直後は LF・CRLF・EOF に限る。末尾空白や単独 CR は本文とし、空終端語の EOF を架空の空行として受理しない
 - `src/scanner.c` の `deserialize()` はバッファ境界チェックを行うため、新しいフィールドを追加する際は対応する境界チェックも追加すること
+- 破損した保存状態は途中まで復元したリテラル・heredoc もすべて破棄する。余分な末尾データを assert で処理してはならない
 - `deserialize()` のバッファ境界チェックで `size + word_length > length` のような符号なし整数の和を使うと、`word_length` が極端に大きい場合に整数オーバーフローしてチェックを潜り抜けるため、`word_length > length - size` の引き算で比較すること（`size <= length` は手前のヘッダーサイズチェックで保証されている前提）
 - `tree-sitter test` をメモリ監視なしで実行してはならない
 - `scripts/` 配下の Python コードは Python 3.7 互換を維持するため、`ruff.toml` で `target-version = "py37"` を指定している。parenthesized context manager などの新しい構文を自動書き換えされないよう、新規コードでも Python 3.7 互換を崩さないこと
@@ -220,6 +241,6 @@ touch -t 209901010000 /tmp/ts-lib/ruby.dylib
 - POSIX パス（`/tmp/ts-lib` など）をネイティブ Windows プロセスに渡してはならない。Git Bash が解決する `/tmp` とネイティブプロセスが解決する `/tmp`（ドライブレターの無い root 相対パスとしてカレントドライブ基準になる）は別物で、共有ライブラリを見失う。CI では `cygpath -am` で変換したパスを `GITHUB_ENV` 経由で渡すこと
 - Windows の Python は stdout の既定エンコーディングが cp1252/cp932 のため、日本語を含むコーパスのテスト名を print すると `UnicodeEncodeError` でランナーごと落ちる。`scripts/` の出力側は `configure_stdio_encoding()` で UTF-8 化し、CI では `PYTHONUTF8=1` / `PYTHONIOENCODING=utf-8` も設定すること
 - tree-sitter CLI はパイプ出力でも `Error:` 行を着色し、`NO_COLOR` でも抑止できない。CLI 出力を解析する場合は ANSI エスケープを除去してから判定すること。真の失敗理由は `Caused by:` チェーンの最深部にあるため、先頭の `Error:` 行だけを見ないこと
-- `.github/workflows/ci.yml` の `paths` フィルターには `scripts/**`、`tests/**`（cargo test の統合テスト）、`queries/**`、`Cargo.lock`、`.github/workflows/ci.yml` 自身を含めること。含めないと CI 自体・テストランナー・クエリだけを変更した push で CI が起動しない
+- `.github/workflows/ci.yml` の `paths` フィルターには `scripts/**`、`tests/**`（cargo test の統合テスト）、`queries/**`、`Cargo.lock`、`bindings/c/**`、`CMakeLists.txt`、`tree-sitter.json`、`.github/workflows/ci.yml` 自身を含めること。含めないと CI 自体・テストランナー・クエリ・C バインディングだけを変更した push で CI が起動しない
 - `src/scanner.c` で `strchr(set, lexer->lookahead)` を直接呼ばないこと。strchr は第 2 引数を `char` へ変換するため、(1) `lexer->lookahead == 0`（EOF）が終端の NUL に一致して無限ループになり、(2) 下位 8 bit が一致する ASCII 外の文字（`ど` U+3069 / `ũ` U+0169 → 0x69 = `'i'`）が誤って一致する。文字集合が小さければ `is_regex_option_char()` のように `int32_t` のまま列挙比較し、大きければ `is_special_global_variable_char()` のように `c > 0 && c < 0x80` で ASCII 範囲へ絞り込んでから照合すること
 - `src/scanner.c` で `lexer->lookahead`（`int32_t`）を ASCII 文字と比較するときは `char` に切り詰めないこと。Unicode コードポイントの下位 8 bit が ASCII 制御文字（`'@'` 0x40, `'$'` 0x24, `'('` 0x28 など）と一致すると、`Ĥ` (U+0124) / `Ŀ` (U+0140) / `Ĩ` (U+0128) のような文字が誤判定されてしまう（短縮 interpolation 起点や識別子文字判定の誤動作の原因になる）。`int32_t` のまま比較するか、ASCII 範囲（`< 0x80`）を事前に切り分けること

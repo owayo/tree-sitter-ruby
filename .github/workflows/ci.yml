@@ -12,6 +12,9 @@ on:
       - tests/**
       - queries/**
       - bindings/rust/**
+      - bindings/c/**
+      - CMakeLists.txt
+      - tree-sitter.json
       - scripts/**
       - Cargo.toml
       - Cargo.lock
@@ -32,6 +35,9 @@ on:
       - tests/**
       - queries/**
       - bindings/rust/**
+      - bindings/c/**
+      - CMakeLists.txt
+      - tree-sitter.json
       - scripts/**
       - Cargo.toml
       - Cargo.lock
@@ -105,10 +111,23 @@ jobs:
           PYTHONUTF8: "1"
           PYTHONIOENCODING: utf-8
         run: python3 scripts/corpus_test.py
+      - name: Run corpus runner unit tests
+        shell: bash
+        env:
+          PYTHONUTF8: "1"
+          PYTHONIOENCODING: utf-8
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: Run Rust tests
         if: runner.os != 'Windows'
         shell: bash
         run: cargo test
+      - name: Build and test C binding
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          cmake -S . -B build/c -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/ruby-c"
+          cmake --build build/c --target ts-test
+          cmake --install build/c
       - name: Parse examples
         uses: tree-sitter/parse-action@v4
         with:

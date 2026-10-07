@@ -1,0 +1,107 @@
+==================
+interpolation 直後の行途中の終端語を本文に残す
+==================
+
+x = <<EOS
+#{1}EOS
+EOS
+
+---
+
+(program
+  (assignment left: (identifier) right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation (integer))
+    (heredoc_content)
+    (heredoc_end)))
+
+==================
+エスケープ直後の行途中の終端語を本文に残す
+==================
+
+x = <<EOS
+a\tEOS
+EOS
+
+---
+
+(program
+  (assignment left: (identifier) right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (escape_sequence)
+    (heredoc_content)
+    (heredoc_end)))
+
+==================
+終端語の一部に続くエスケープを解析する
+==================
+
+x = <<EOS
+E\t
+EOS
+
+---
+
+(program
+  (assignment left: (identifier) right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (escape_sequence)
+    (heredoc_content)
+    (heredoc_end)))
+
+==================
+終端語全体に続くエスケープを本文に残す
+==================
+
+x = <<EOS
+EOS\t
+EOS
+
+---
+
+(program
+  (assignment left: (identifier) right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (escape_sequence)
+    (heredoc_content)
+    (heredoc_end)))
+
+==================
+インデントを許す終端行と interpolation を区別する
+==================
+
+x = <<~EOS
+  #{1}EOS
+  EOS
+
+---
+
+(program
+  (assignment left: (identifier) right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation (integer))
+    (heredoc_content)
+    (heredoc_end)))
+
+==================
+Unicode 終端語の一部に続くエスケープを解析する
+==================
+
+x = <<漢字
+漢\t
+漢字
+
+---
+
+(program
+  (assignment left: (identifier) right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (escape_sequence)
+    (heredoc_content)
+    (heredoc_end)))
