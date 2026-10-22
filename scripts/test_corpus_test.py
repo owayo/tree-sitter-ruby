@@ -2470,7 +2470,7 @@ class GetRssMbTests(unittest.TestCase):
             stderr="",
         )
         with patch.object(corpus_test.sys, "platform", "darwin"):
-            with patch("corpus_test.os.getpgid", return_value=99):
+            with patch("corpus_test.os.getpgid", return_value=99, create=True):
                 with patch("corpus_test.subprocess.run", return_value=result):
                     self.assertEqual(
                         corpus_test._get_process_group_rss_mb(4242),
@@ -2502,14 +2502,20 @@ class KillProcessTreeTests(unittest.TestCase):
         """プロセスグループ終了に失敗しても対象プロセスを直接終了する。"""
         proc = Mock(pid=4242)
         with patch.object(corpus_test.sys, "platform", "darwin"):
-            with patch("corpus_test.os.getpgid", return_value=99) as mock_getpgid:
+            # Windows に無い POSIX API とシグナルもテスト内で用意する。
+            with patch.object(corpus_test, "signal") as mock_signal:
                 with patch(
-                    "corpus_test.os.killpg", side_effect=OSError("killpg failed")
-                ) as mock_killpg:
-                    corpus_test._kill_process_tree(proc)
+                    "corpus_test.os.getpgid", return_value=99, create=True
+                ) as mock_getpgid:
+                    with patch(
+                        "corpus_test.os.killpg",
+                        side_effect=OSError("killpg failed"),
+                        create=True,
+                    ) as mock_killpg:
+                        corpus_test._kill_process_tree(proc)
 
         mock_getpgid.assert_called_once_with(4242)
-        mock_killpg.assert_called_once_with(99, corpus_test.signal.SIGKILL)
+        mock_killpg.assert_called_once_with(99, mock_signal.SIGKILL)
         proc.kill.assert_called_once_with()
 
 
