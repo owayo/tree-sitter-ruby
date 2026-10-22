@@ -139,6 +139,111 @@ fn nonlocal_variables_and_self_are_not_bare_methods() {
 }
 
 #[test]
+fn ternary_percent_array_preserves_literal_content_and_nested_branches() {
+    let source = r#"b(){$1?%w[''~/#{''*}]*1:0?"":''}+'/'"#;
+    let tree = parse(source);
+    let root = tree.root_node();
+    assert!(!root.has_error(), "{}", root.to_sexp());
+    assert_eq!(root.named_child_count(), 1);
+
+    let outer = root.named_child(0).unwrap();
+    assert_eq!(outer.kind(), "binary");
+    assert_eq!(
+        outer
+            .child_by_field_name("operator")
+            .unwrap()
+            .utf8_text(source.as_bytes())
+            .unwrap(),
+        "+"
+    );
+    let call = outer.child_by_field_name("left").unwrap();
+    let body = call
+        .child_by_field_name("block")
+        .unwrap()
+        .child_by_field_name("body")
+        .unwrap();
+    let conditional = body.named_child(0).unwrap();
+    assert_eq!(conditional.kind(), "conditional");
+    let product = conditional.child_by_field_name("consequence").unwrap();
+    assert_eq!(product.kind(), "binary");
+    assert_eq!(
+        product
+            .child_by_field_name("operator")
+            .unwrap()
+            .utf8_text(source.as_bytes())
+            .unwrap(),
+        "*"
+    );
+    let array = product.child_by_field_name("left").unwrap();
+    assert_eq!(array.kind(), "string_array");
+    let word = array.named_child(0).unwrap();
+    assert_eq!(word.kind(), "bare_string");
+    assert_eq!(word.named_child_count(), 1);
+    let content = word.named_child(0).unwrap();
+    // %w は補間しないので、#{''*} も文字列の内容として保持する。
+    assert_eq!(content.kind(), "string_content");
+    assert_eq!(content.utf8_text(source.as_bytes()).unwrap(), "''~/#{''*}");
+    assert_eq!(
+        conditional
+            .child_by_field_name("alternative")
+            .unwrap()
+            .kind(),
+        "conditional"
+    );
+}
+
+#[test]
+fn ternary_percent_literals_are_expressions_in_both_branches() {
+    for (condition, condition_kind) in [
+        ("$1", "global_variable"),
+        ("$value", "global_variable"),
+        ("@value", "instance_variable"),
+        ("@@value", "class_variable"),
+    ] {
+        for (literal, literal_kind) in [
+            ("%w[a]", "string_array"),
+            ("%W[a#{1}]", "string_array"),
+            ("%i[a]", "symbol_array"),
+            ("%I[a#{1}]", "symbol_array"),
+            ("%q[a]", "string"),
+            ("%Q[a#{1}]", "string"),
+            ("%r[a#{1}]", "regex"),
+            ("%s[a]", "delimited_symbol"),
+            ("%x[echo]", "subshell"),
+            ("%[a]", "string"),
+        ] {
+            for (consequence, alternative, consequence_kind, alternative_kind) in [
+                (literal, "0", literal_kind, "integer"),
+                ("0", literal, "integer", literal_kind),
+            ] {
+                for space in ["", " "] {
+                    let source = format!(
+                        "{condition}{space}?{space}{consequence}{space}:{space}{alternative}"
+                    );
+                    let tree = parse(&source);
+                    let root = tree.root_node();
+                    assert!(!root.has_error(), "{source}: {}", root.to_sexp());
+                    assert_eq!(root.named_child_count(), 1, "{source}");
+                    let conditional = root.named_child(0).unwrap();
+                    assert_eq!(conditional.kind(), "conditional", "{source}");
+                    for (field, expected) in [
+                        ("condition", condition_kind),
+                        ("consequence", consequence_kind),
+                        ("alternative", alternative_kind),
+                    ] {
+                        assert_eq!(
+                            conditional.child_by_field_name(field).unwrap().kind(),
+                            expected,
+                            "{source}: {field}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
 fn command_chain_rejects_a_second_argument_list() {
     for source in [
         "1.upto 0 do end.foo(1) 2",

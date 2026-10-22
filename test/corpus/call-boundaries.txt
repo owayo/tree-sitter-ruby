@@ -86,6 +86,91 @@ $a?0:1
     alternative: (integer)))
 
 ========================================
+三項演算子内のパーセントリテラルと入れ子の分岐
+========================================
+
+b(){$1?%w[''~/#{''*}]*1:0?"":''}+'/'
+
+---
+
+(program
+  (binary
+    left: (call
+      method: (identifier)
+      arguments: (argument_list)
+      block: (block
+        body: (block_body
+          (conditional
+            condition: (global_variable)
+            consequence: (binary
+              left: (string_array
+                (bare_string
+                  (string_content)))
+              right: (integer))
+            alternative: (conditional
+              condition: (integer)
+              consequence: (string)
+              alternative: (string))))))
+    right: (string
+      (string_content))))
+
+========================================
+三項演算子の両分岐にあるパーセントリテラル
+========================================
+
+$1?%w[a]:%W[b#{1}]
+@a?%i[a]:%I[b#{1}]
+@@a?%q[a]:%Q[b#{1}]
+$other?%r[a#{1}]:%x[echo]
+$a?%s[a]:%[b]
+
+---
+
+(program
+  (conditional
+    condition: (global_variable)
+    consequence: (string_array
+      (bare_string
+        (string_content)))
+    alternative: (string_array
+      (bare_string
+        (string_content)
+        (interpolation
+          (integer)))))
+  (conditional
+    condition: (instance_variable)
+    consequence: (symbol_array
+      (bare_symbol
+        (string_content)))
+    alternative: (symbol_array
+      (bare_symbol
+        (string_content)
+        (interpolation
+          (integer)))))
+  (conditional
+    condition: (class_variable)
+    consequence: (string
+      (string_content))
+    alternative: (string
+      (string_content)
+      (interpolation
+        (integer))))
+  (conditional
+    condition: (global_variable)
+    consequence: (regex
+      (string_content)
+      (interpolation
+        (integer)))
+    alternative: (subshell
+      (string_content)))
+  (conditional
+    condition: (global_variable)
+    consequence: (delimited_symbol
+      (string_content))
+    alternative: (string
+      (string_content))))
+
+========================================
 文字リテラルと引用文字列の暗黙連結
 ========================================
 
