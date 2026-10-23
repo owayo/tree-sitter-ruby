@@ -2637,3 +2637,179 @@ FF invalid word array delimiter
 ---
 
 (ERROR)
+
+====================
+nested control and meta character escapes
+====================
+
+?\C-\x43
+?\c\103
+?\M-\x43
+?\C-\M-\103
+?\M-\C-\x43
+?\c\M-\x43
+?\M-\c\103
+
+---
+
+(program
+  (character)
+  (character)
+  (character)
+  (character)
+  (character)
+  (character)
+  (character))
+
+====================
+invalid nested character escape 1
+:error
+====================
+
+?\C
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 2
+:error
+====================
+
+?\M
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 3
+:error
+====================
+
+?\c\u0041
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 4
+:error
+====================
+
+?\C-\x
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 5
+:error
+====================
+
+?\M-\xG
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 6
+:error
+====================
+
+?\C-\cA
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 7
+:error
+====================
+
+?\M-\M-A
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 8
+:error
+====================
+
+?\M-\C-\M-A
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 9
+:error
+====================
+
+?\C-\M-\cA
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 10
+:error
+====================
+
+?\C-\u0041
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 11
+:error
+====================
+
+?\M-\u{41}
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 12
+:error
+====================
+
+?\C-\x434
+
+---
+
+(ERROR)
+
+====================
+invalid nested character escape 13
+:error
+====================
+
+?\M-\1034
+
+---
+
+(ERROR)
+
+====================
+static regexp interpolation with a nested character escape
+====================
+
+/#{?\C-\x43}(?<y>.)/ =~ "\x03b"
+
+---
+
+(program (binary left: (regex (interpolation (character)) (string_content)) right: (string (escape_sequence) (string_content))))

@@ -1616,8 +1616,32 @@ module.exports = grammar({
 		// 文字リテラルも文字列なので、直後の引用文字列と暗黙に連結できる。
 		chained_string: ($) => seq(choice($.string, $.character), repeat1($.string)),
 
-		character: (_) =>
-			/\?(\\[\x0b\x0c]|\\\S(\{[0-9A-Fa-f]*\}|[0-9A-Fa-f]*|-\S([MC]-\S)?)?|\S)/,
+		character: (_) => {
+			const numericEscape = choice(/x[0-9a-fA-F]{1,2}/, /[0-7]{1,3}/);
+			const control = choice("\\C-", "\\c");
+			const meta = "\\M-";
+			// control/meta の対象は ASCII の印字文字か空白。バックスラッシュの
+			// 後は escape 全体を読み、予約された C/M/c/u/x と数字は別に扱う。
+			const byteOperand = choice(
+				/[\x09-\x0d\x20-\x5b\x5d-\x7e]/,
+				seq("\\", choice(
+					numericEscape,
+					/[\x09-\x0d\x20-\x2f\x38-\x42\x44-\x4c\x4e-\x62\x64-\x74\x76-\x77\x79-\x7e]/,
+				)),
+			);
+			return token(seq("?", choice(
+				/[^\s\\]/,
+				seq("\\", choice(
+					/[^CMcux0-7]/,
+					numericEscape,
+					/u[0-9a-fA-F]{4}/,
+					/u\{[ \t]*[0-9a-fA-F]{1,6}[ \t]*\}/,
+				)),
+				// control と meta は各 1 回だけ、どちらの順でも指定できる。
+				seq(control, optional(meta), byteOperand),
+				seq(meta, optional(control), byteOperand),
+			)));
+		},
 
 		interpolation: ($) =>
 			choice(
