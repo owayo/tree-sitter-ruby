@@ -2555,3 +2555,85 @@ Cß
   (class_variable)
   (simple_symbol)
   (identifier))
+
+====================
+VT escaped character
+====================
+
+puts ?\
+
+---
+
+(program (call method: (identifier) arguments: (argument_list (character))))
+
+====================
+VT percent string delimiter
+====================
+
+%Qa b
+
+---
+
+(program (string (string_content)))
+
+====================
+VT word array separator
+====================
+
+%w[ab]
+
+---
+
+(program (string_array (bare_string (string_content)) (bare_string (string_content))))
+
+====================
+VT invalid word array delimiter
+:error
+====================
+
+%wa b
+
+---
+
+(ERROR)
+
+====================
+FF escaped character
+====================
+
+puts ?\
+
+---
+
+(program (call method: (identifier) arguments: (argument_list (character))))
+
+====================
+FF percent string delimiter
+====================
+
+%Qa b
+
+---
+
+(program (string (string_content)))
+
+====================
+FF word array separator
+====================
+
+%w[ab]
+
+---
+
+(program (string_array (bare_string (string_content)) (bare_string (string_content))))
+
+====================
+FF invalid word array delimiter
+:error
+====================
+
+%wa b
+
+---
+
+(ERROR)

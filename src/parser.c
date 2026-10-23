@@ -13853,7 +13853,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
           (lookahead < '{' || '~' < lookahead)) ADVANCE(352);
       END_STATE();
     case 95:
-      if (lookahead == '\\') ADVANCE(361);
+      if (lookahead == '\\') ADVANCE(360);
       if (lookahead != 0 &&
           (lookahead < '\t' || '\r' < lookahead) &&
           lookahead != ' ') ADVANCE(357);
@@ -15567,7 +15567,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       END_STATE();
     case 273:
       ACCEPT_TOKEN(anon_sym_QMARK);
-      if (lookahead == '\\') ADVANCE(361);
+      if (lookahead == '\\') ADVANCE(360);
       if (lookahead != 0 &&
           (lookahead < '\t' || '\r' < lookahead) &&
           lookahead != ' ') ADVANCE(357);
@@ -16075,7 +16075,7 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       if (lookahead == '{') ADVANCE(106);
       if (('0' <= lookahead && lookahead <= '9') ||
           ('A' <= lookahead && lookahead <= 'F') ||
-          ('a' <= lookahead && lookahead <= 'f')) ADVANCE(360);
+          ('a' <= lookahead && lookahead <= 'f')) ADVANCE(361);
       END_STATE();
     case 359:
       ACCEPT_TOKEN(sym_character);
@@ -16084,15 +16084,17 @@ static bool ts_lex(TSLexer *lexer, TSStateId state) {
       END_STATE();
     case 360:
       ACCEPT_TOKEN(sym_character);
-      if (('0' <= lookahead && lookahead <= '9') ||
-          ('A' <= lookahead && lookahead <= 'F') ||
-          ('a' <= lookahead && lookahead <= 'f')) ADVANCE(360);
-      END_STATE();
-    case 361:
-      ACCEPT_TOKEN(sym_character);
+      if (lookahead == 0x0b ||
+          lookahead == '\f') ADVANCE(357);
       if (lookahead != 0 &&
           (lookahead < '\t' || '\r' < lookahead) &&
           lookahead != ' ') ADVANCE(358);
+      END_STATE();
+    case 361:
+      ACCEPT_TOKEN(sym_character);
+      if (('0' <= lookahead && lookahead <= '9') ||
+          ('A' <= lookahead && lookahead <= 'F') ||
+          ('a' <= lookahead && lookahead <= 'f')) ADVANCE(361);
       END_STATE();
     case 362:
       ACCEPT_TOKEN(anon_sym_POUND_LBRACE);

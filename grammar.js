@@ -1617,7 +1617,7 @@ module.exports = grammar({
 		chained_string: ($) => seq(choice($.string, $.character), repeat1($.string)),
 
 		character: (_) =>
-			/\?(\\\S(\{[0-9A-Fa-f]*\}|[0-9A-Fa-f]*|-\S([MC]-\S)?)?|\S)/,
+			/\?(\\[\x0b\x0c]|\\\S(\{[0-9A-Fa-f]*\}|[0-9A-Fa-f]*|-\S([MC]-\S)?)?|\S)/,
 
 		interpolation: ($) =>
 			choice(
