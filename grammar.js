@@ -98,6 +98,9 @@ module.exports = grammar({
 		$._unary_plus,
 		$._binary_plus,
 		$._jump_argument,
+		// 行継続で終わる行で開いた heredoc の段の、最後の終端語と終端行の改行
+		$._heredoc_end_continued,
+		$._heredoc_line_end,
 	],
 
 	extras: ($) => [$.comment, $.heredoc_body, /\s/, /\\\r?\n/],
@@ -1672,7 +1675,16 @@ module.exports = grammar({
 			seq(
 				$._heredoc_body_start,
 				repeat(choice($.heredoc_content, $.interpolation, $.escape_sequence)),
-				$.heredoc_end,
+				choice(
+					$.heredoc_end,
+					// 開いた行の改行を `\` でエスケープした段 (`foo(<<~A, \` の直後の改行や、
+					// 配列の語の中の `\` + 改行) では、最後の終端行の改行を heredoc 側に含め、
+					// コードの文の区切りや配列の語の区切りとして扱わせない。
+					seq(
+						alias($._heredoc_end_continued, $.heredoc_end),
+						$._heredoc_line_end,
+					),
+				),
 			),
 
 		_literal_contents: ($) =>

@@ -502,3 +502,211 @@ y
     (heredoc_content)
     (heredoc_end))
   (identifier))
+
+==================
+行継続の行で開いた heredoc の本文の後で行を続ける
+==================
+
+foo(<<~A, \
+  a
+A
+1)
+x = <<~A \
+  a
+A
++ "b"
+y = <<~A \
+  a
+A
+if c
+
+---
+
+(program
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (heredoc_beginning)
+      (heredoc_body
+        (heredoc_content)
+        (heredoc_end))
+      (integer)))
+  (assignment
+    left: (identifier)
+    right: (binary
+      left: (heredoc_beginning)
+      (heredoc_body
+        (heredoc_content)
+        (heredoc_end))
+      right: (string
+        (string_content))))
+  (if_modifier
+    body: (assignment
+      left: (identifier)
+      right: (heredoc_beginning))
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    condition: (identifier)))
+
+==================
+行継続の行で開いた複数の heredoc を順に読む
+==================
+
+foo(<<~A, <<~B, \
+  a
+A
+  b
+B
+1)
+
+---
+
+(program
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (heredoc_beginning)
+      (heredoc_beginning)
+      (heredoc_body
+        (heredoc_content)
+        (heredoc_end))
+      (heredoc_body
+        (heredoc_content)
+        (heredoc_end))
+      (integer))))
+
+==================
+heredoc の開始の後で改行をまたぐリテラルの中から本文を読む
+==================
+
+x = [<<~A, "x
+  a
+A
+y", 'z
+  a
+A
+w']
+r = [<<~A, /x
+  a
+A
+y/]
+s = [<<~A, %w[a
+  a
+A
+b]]
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (array
+      (heredoc_beginning)
+      (string
+        (string_content)
+        (heredoc_body
+          (heredoc_content)
+          (heredoc_end))
+        (string_content))
+      (string
+        (string_content))))
+  (assignment
+    left: (identifier)
+    right: (array
+      (heredoc_beginning)
+      (regex
+        (string_content)
+        (heredoc_body
+          (heredoc_content)
+          (heredoc_end))
+        (string_content))))
+  (assignment
+    left: (identifier)
+    right: (array
+      (heredoc_beginning)
+      (string_array
+        (bare_string
+          (string_content))
+        (heredoc_body
+          (heredoc_content)
+          (heredoc_end))
+        (bare_string
+          (string_content))))))
+
+==================
+文字列の行継続の行で開いた heredoc を次の行から読む
+==================
+
+x = [<<~A, "x\
+  a
+A
+y"]
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (array
+      (heredoc_beginning)
+      (string
+        (string_content)
+        (string_content)
+        (heredoc_body
+          (heredoc_content)
+          (heredoc_end))
+        (string_content)))))
+
+==================
+文字列の補間で開いた heredoc の本文を文字列の改行から読む
+==================
+
+x = "#{<<~A}
+  a
+A
+"
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (string
+      (interpolation
+        (heredoc_beginning))
+      (heredoc_body
+        (heredoc_content)
+        (heredoc_end))
+      (string_content))))
+
+==================
+heredoc 本文の補間の中で改行をまたぐ文字列から入れ子の本文を読む
+==================
+
+x = <<~A
+  #{[<<~C, "x
+    c
+  C
+y"]}
+A
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (array
+        (heredoc_beginning)
+        (string
+          (string_content)
+          (heredoc_body
+            (heredoc_content)
+            (heredoc_end))
+          (string_content))))
+    (heredoc_content)
+    (heredoc_end)))

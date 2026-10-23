@@ -24,6 +24,8 @@ Ruby の tree-sitter 文法パーサー。
 mise install                              # mise.toml の開発ツールを導入
 mise exec -- pnpm install                 # 依存関係と CLI バイナリを導入
 mise exec -- pnpm exec tree-sitter generate # grammar.js からパーサー生成
+# 生成した JSON はタブ字下げで管理している。生成の後に Biome で整形し直す
+mise exec -- pnpm exec biome format --write src/grammar.json src/node-types.json
 mise exec -- pnpm run lint                # lint チェック（Biome）
 ```
 
@@ -74,6 +76,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # - heredoc 本文の補間で開いた heredoc（同じ行の複数 heredoc、同じ本文行の複数 heredoc、
 #   多段、複数行の補間、同じ終端語、補間しない heredoc、修飾子 if、行継続で終わる行、
 #   補間直後の `#`）を Ruby と同じ順に読むことを確認する
+# - heredoc を開いた行がコードの行継続で続く場合（括弧内・二項演算・修飾子 if・複数 heredoc）と、
+#   開始の後で改行をまたぐリテラル（文字列・正規表現・%w・文字列の行継続・補間の中の文字列）で、
+#   本文をその行の次から読み、本文の後で元の行を続けることを確認する
 python3 scripts/corpus_test.py
 
 # corpus_test.py のユニットテスト
@@ -175,7 +180,10 @@ pnpm run test:unit
 # - scanner 保存状態の空終端語・Unicode・容量上限の往復、切り詰め・末尾ゴミを検証する
 # - 入れ子の heredoc 本文の位置（LF・CRLF・単独 CR・行継続）と、入れ子の追加・削除・編集後の
 #   増分パースが新規パースの全ノード範囲と一致することを検証する
-# - 段の印（nested）を含む保存状態の往復と、走査で作られない段の並びの破棄を検証する
+# - 段の印（nested・continued）を含む保存状態の往復と、走査で作られない段の並びの破棄を検証する
+# - コードの行継続の後の本文と終端行の改行の範囲（LF・CRLF）、コード中の単独 CR の後の
+#   外部トークンの範囲、改行をまたぐ各種リテラル（配列の `\` + 改行・単独 CR・FF を含む）の
+#   本文の所属先、それらの編集後の増分パースを検証する
 cargo test
 
 # C バインディング: ビルド済みライブラリを使う低メモリのコーパステスト
@@ -239,7 +247,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 - リテラル追加時も開いている heredoc と合計した保存容量を確認する。終端行の再開フラグは既存の started バイトに詰め、7 バイトのヘッダーサイズを維持する
 - heredoc 終端語は物理行の先頭でだけ認識し、直後は LF・CRLF・EOF に限る。末尾空白や単独 CR は本文とし、空終端語の EOF を架空の空行として受理しない
 - heredoc 本文の補間で開いた heredoc は、開いた行の次の行から、外側の本文の続きや外側の行で開いた後続の heredoc より先に読む（Ruby と同じ順）。`open_heredocs` は同じ行で開いた heredoc の列（段）を外側から順に連結し、index 0 以外の段の先頭にフラグバイトの bit 2（`nested`）を立てる。開始済みになれるのは段の先頭だけで、最後の段以外の先頭は開始済みである。追加と終了は `open_heredoc()` / `close_heredoc()` を通し、本文を読む heredoc は `find_current_heredoc()`、次の改行で本文を始める heredoc は `pending_heredoc()` で求める。外側の本文は入れ子の本文が始まる行末（CRLF は `\r`、単独 CR は本文）の手前で区切る。その行が行継続の `\` で終わるときは、`\` を本文として返して行末を escape_sequence に飲ませない。`deserialize()` は走査で作られない段の並びと未使用のフラグを破棄する
-- heredoc の開始の後に改行をまたぐ文字列リテラル（`[<<~A, "x` の直後の改行）は、トップレベルでも heredoc 本文の中でも未対応。`scan_literal_content()` は改行で heredoc 本文を始めない。コード中の行継続（`foo(<<~A, \` の直後の改行）と単独 CR も、`scan_whitespace()` が従来どおり扱うため、トップレベルと補間の中の両方で本文の開始位置が Ruby と食い違う
+- heredoc の本文は、heredoc を開いた行が改行以外の形で続くときも、その行の次の行から読む。コード中の行継続（`foo(<<~A, \` の直後の改行）、heredoc の開始の後で改行をまたぐリテラル（文字列・正規表現・シンボル・サブシェル・`%w` などの配列。`[<<~A, "x` の直後の改行）、その中の `\` + 改行のどれでも、改行（CRLF は `\r`）の位置の幅 0 の `_heredoc_body_start` から本文を始める。リテラルの中では本文が extra としてリテラルのノードに入り、配列の語の間の空白は改行の手前まで読み飛ばす
+- 行継続（コードの `\`、補間するリテラルの `\`、補間しない配列の `\`）で改行が消えた行で開いた段には、フラグバイトの bit 3（`continued`）を段の先頭に付けて引き継ぐ。その段の最後の終端は `_heredoc_end_continued`（`heredoc_end` の別名）と、終端行の改行を表す隠しトークン `_heredoc_line_end` で返し、終端行の改行をコードやリテラルへ戻さない（戻すと行継続でつながる次の行との間に文の区切りや配列の区切りができる）。「本文の後の改行を読み飛ばす」印を保存状態に持たせてはならない。外部スキャナーの保存状態は最後の外部トークンに結び付くので、内部トークンだけが続くと印が残り、別の改行まで読み飛ばす
+- コード中の単独 CR は Ruby と同じく空白として読み飛ばし、本文は次の改行から始める。CRLF の本文開始位置（`\r`）を保つため、`scan_whitespace()` は `\r` の手前で `mark_end` を呼んでから CR を読む。単独 CR だったときはその終端が残るので、`scan()` が返すトークンは既定の終端（返したときの位置）に頼らず、`accept_token()` などで終端を必ず明示する。新しいトークンを足すときもこの約束を守ること
 - `src/scanner.c` の `deserialize()` はバッファ境界チェックを行うため、新しいフィールドを追加する際は対応する境界チェックも追加すること
 - 破損した保存状態は途中まで復元したリテラル・heredoc もすべて破棄する。余分な末尾データを assert で処理してはならない
 - `deserialize()` のバッファ境界チェックで `size + word_length > length` のような符号なし整数の和を使うと、`word_length` が極端に大きい場合に整数オーバーフローしてチェックを潜り抜けるため、`word_length > length - size` の引き算で比較すること（`size <= length` は手前のヘッダーサイズチェックで保証されている前提）
