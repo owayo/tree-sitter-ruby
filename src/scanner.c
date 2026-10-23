@@ -637,6 +637,7 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
             case ':':
             case '@':
                 advance(lexer);
+                lexer->mark_end(lexer);
                 return true;
             case '.':
             case '=':
@@ -644,6 +645,7 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
                 // 例: scan_operator('.') は `..` を期待し、scan_operator('=')
                 // は `==` または `=~` を期待する。
                 advance(lexer);
+                lexer->mark_end(lexer);
                 return true;
             default:
                 break;
@@ -666,12 +668,15 @@ static inline bool scan_symbol_identifier(TSLexer *lexer) {
         can_have_setter_suffix = false;
     }
 
+    // 終端は明示する (scan() が返すトークンの約束。accept_token を参照)。
     if (can_have_setter_suffix && lexer->lookahead == '=') {
         lexer->mark_end(lexer);
         advance(lexer);
         if (lexer->lookahead != '>') {
             lexer->mark_end(lexer);
         }
+    } else {
+        lexer->mark_end(lexer);
     }
 
     return true;
@@ -1333,6 +1338,15 @@ static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer) {
     }
 }
 
+// トークンを現在位置で終える。scan() が返すトークンは、既定の終端 (返したときの位置) に
+// 頼らず終端を明示する。先読みのために手前で呼んだ mark_end が残っていても、
+// トークンがその位置で終わらないようにするため。
+static inline bool accept_token(TSLexer *lexer, TokenType symbol) {
+    lexer->mark_end(lexer);
+    lexer->result_symbol = symbol;
+    return true;
+}
+
 static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
     scanner->has_leading_whitespace = false;
 
@@ -1362,16 +1376,14 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             // ならない (`-> a=f() { }` の `{` は f のブロックではない)。
             if (valid_symbols[LAMBDA_BODY_BRACE]) {
                 advance(lexer);
-                lexer->result_symbol = LAMBDA_BODY_BRACE;
-                return true;
+                return accept_token(lexer, LAMBDA_BODY_BRACE);
             }
             // 括弧なしメソッド呼び出しの直後の `{` は Ruby では常にブロック。
             // ハッシュを唯一の引数にするには `foo({...})` と括弧が要るため、
             // この位置ではハッシュリテラルの開始として解釈してはならない。
             if (valid_symbols[COMMAND_BLOCK_BRACE]) {
                 advance(lexer);
-                lexer->result_symbol = COMMAND_BLOCK_BRACE;
-                return true;
+                return accept_token(lexer, COMMAND_BLOCK_BRACE);
             }
             break;
 
@@ -1387,12 +1399,10 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 // Ruby はブロック引数の `&` として扱う。
                 if (valid_symbols[BLOCK_AMPERSAND] &&
                     (!iswspace(lexer->lookahead) || !valid_symbols[BINARY_AMPERSAND])) {
-                    lexer->result_symbol = BLOCK_AMPERSAND;
-                    return true;
+                    return accept_token(lexer, BLOCK_AMPERSAND);
                 }
                 if (valid_symbols[BINARY_AMPERSAND]) {
-                    lexer->result_symbol = BINARY_AMPERSAND;
-                    return true;
+                    return accept_token(lexer, BINARY_AMPERSAND);
                 }
                 return false;
             }
@@ -1403,8 +1413,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 advance(lexer);
                 if (lexer->lookahead == '<') {
                     advance(lexer);
-                    lexer->result_symbol = SINGLETON_CLASS_LEFT_ANGLE_LEFT_ANGLE;
-                    return true;
+                    return accept_token(lexer, SINGLETON_CLASS_LEFT_ANGLE_LEFT_ANGLE);
                 }
                 return false;
             }
@@ -1460,40 +1469,32 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                             return false;
                         }
                         if (valid_symbols[BINARY_STAR_STAR] && !scanner->has_leading_whitespace) {
-                            lexer->result_symbol = BINARY_STAR_STAR;
-                            return true;
+                            return accept_token(lexer, BINARY_STAR_STAR);
                         }
                         if (valid_symbols[HASH_SPLAT_STAR_STAR] && !iswspace(lexer->lookahead)) {
-                            lexer->result_symbol = HASH_SPLAT_STAR_STAR;
-                            return true;
+                            return accept_token(lexer, HASH_SPLAT_STAR_STAR);
                         }
                         if (valid_symbols[BINARY_STAR_STAR]) {
-                            lexer->result_symbol = BINARY_STAR_STAR;
-                            return true;
+                            return accept_token(lexer, BINARY_STAR_STAR);
                         }
                         if (valid_symbols[HASH_SPLAT_STAR_STAR]) {
-                            lexer->result_symbol = HASH_SPLAT_STAR_STAR;
-                            return true;
+                            return accept_token(lexer, HASH_SPLAT_STAR_STAR);
                         }
                         return false;
                     }
                     return false;
                 }
                 if (valid_symbols[BINARY_STAR] && !scanner->has_leading_whitespace) {
-                    lexer->result_symbol = BINARY_STAR;
-                    return true;
+                    return accept_token(lexer, BINARY_STAR);
                 }
                 if (valid_symbols[SPLAT_STAR] && !iswspace(lexer->lookahead)) {
-                    lexer->result_symbol = SPLAT_STAR;
-                    return true;
+                    return accept_token(lexer, SPLAT_STAR);
                 }
                 if (valid_symbols[BINARY_STAR]) {
-                    lexer->result_symbol = BINARY_STAR;
-                    return true;
+                    return accept_token(lexer, BINARY_STAR);
                 }
                 if (valid_symbols[SPLAT_STAR]) {
-                    lexer->result_symbol = SPLAT_STAR;
-                    return true;
+                    return accept_token(lexer, SPLAT_STAR);
                 }
                 return false;
             }
@@ -1509,19 +1510,14 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 if (valid_symbols[UNARY_PLUS_NUM] &&
                     (is_expression_start(valid_symbols) || !valid_symbols[BINARY_STAR] || scanner->has_leading_whitespace) &&
                     lexer->lookahead >= '0' && lexer->lookahead <= '9') {
-                    lexer->result_symbol = UNARY_PLUS_NUM;
-                    return true;
+                    return accept_token(lexer, UNARY_PLUS_NUM);
                 }
                 if (valid_symbols[UNARY_PLUS] &&
                     (is_expression_start(valid_symbols) ||
                      (scanner->has_leading_whitespace && !iswspace(lexer->lookahead)))) {
-                    lexer->result_symbol = UNARY_PLUS;
-                } else if (valid_symbols[BINARY_PLUS]) {
-                    lexer->result_symbol = BINARY_PLUS;
-                } else {
-                    lexer->result_symbol = UNARY_PLUS;
+                    return accept_token(lexer, UNARY_PLUS);
                 }
-                return true;
+                return accept_token(lexer, valid_symbols[BINARY_PLUS] ? BINARY_PLUS : UNARY_PLUS);
             }
             break;
 
@@ -1532,19 +1528,14 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                     if (valid_symbols[UNARY_MINUS_NUM] &&
                         (is_expression_start(valid_symbols) || !valid_symbols[BINARY_STAR] || scanner->has_leading_whitespace) &&
                         iswdigit(lexer->lookahead)) {
-                        lexer->result_symbol = UNARY_MINUS_NUM;
-                        return true;
+                        return accept_token(lexer, UNARY_MINUS_NUM);
                     }
                     if (valid_symbols[UNARY_MINUS] &&
                         (is_expression_start(valid_symbols) ||
                          (scanner->has_leading_whitespace && !iswspace(lexer->lookahead)))) {
-                        lexer->result_symbol = UNARY_MINUS;
-                    } else if (valid_symbols[BINARY_MINUS]) {
-                        lexer->result_symbol = BINARY_MINUS;
-                    } else {
-                        lexer->result_symbol = UNARY_MINUS;
+                        return accept_token(lexer, UNARY_MINUS);
                     }
-                    return true;
+                    return accept_token(lexer, valid_symbols[BINARY_MINUS] ? BINARY_MINUS : UNARY_MINUS);
                 }
                 return false;
             }
@@ -1565,8 +1556,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                         literal.allows_interpolation = true;
                         if (!can_serialize_with(scanner, NULL, 1)) return false;
                         array_push(&scanner->literal_stack, literal);
-                        lexer->result_symbol = SYMBOL_START;
-                        return true;
+                        return accept_token(lexer, SYMBOL_START);
 
                     case '\'':
                         advance(lexer);
@@ -1575,8 +1565,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                         literal.allows_interpolation = false;
                         if (!can_serialize_with(scanner, NULL, 1)) return false;
                         array_push(&scanner->literal_stack, literal);
-                        lexer->result_symbol = SYMBOL_START;
-                        return true;
+                        return accept_token(lexer, SYMBOL_START);
 
                     default:
                         if (scan_symbol_identifier(lexer)) {
@@ -1632,8 +1621,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
         } else if (valid_symbols[validIdentifierSymbol] && lexer->lookahead == '!') {
             advance(lexer);
             if (lexer->lookahead != '=') {
-                lexer->result_symbol = validIdentifierSymbol;
-                return true;
+                return accept_token(lexer, validIdentifierSymbol);
             }
         }
 
@@ -1668,16 +1656,14 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 return false;
             }
             open_heredoc(scanner, heredoc);
-            lexer->result_symbol = HEREDOC_START;
-            return true;
+            return accept_token(lexer, HEREDOC_START);
         }
 
         if (scan_open_delimiter(scanner, lexer, &literal, valid_symbols)) {
             // リテラルの追加でも、開いている heredoc と合わせた保存容量を確認する。
             if (!can_serialize_with(scanner, NULL, 1)) return false;
             array_push(&scanner->literal_stack, literal);
-            lexer->result_symbol = literal.type;
-            return true;
+            return accept_token(lexer, literal.type);
         }
         return false;
     }
