@@ -49,6 +49,8 @@ typedef enum {
     UNARY_PLUS,
     BINARY_PLUS,
     JUMP_ARGUMENT,
+    HEREDOC_END_CONTINUED,
+    HEREDOC_LINE_END,
 
     NONE
 } TokenType;
@@ -72,6 +74,8 @@ typedef struct {
     bool end_line_pending;
     // 外側の heredoc 本文の行で開いた段の先頭かどうかを保持する。
     bool nested;
+    // この段を開いた行が行継続 (`\` + 改行) で終わったかどうかを、段の先頭に保持する。
+    bool continued;
 } Heredoc;
 
 typedef struct {
@@ -205,7 +209,8 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
         buffer[size++] = (char)heredoc->end_word_indentation_allowed;
         buffer[size++] = (char)heredoc->allows_interpolation;
         // フラグを同じバイトに詰め、終端語を保存できる容量を維持する。
-        buffer[size++] = (char)(heredoc->started | (heredoc->end_line_pending << 1) | (heredoc->nested << 2));
+        buffer[size++] = (char)(heredoc->started | (heredoc->end_line_pending << 1) | (heredoc->nested << 2) |
+                                (heredoc->continued << 3));
         memcpy(&buffer[size], &heredoc->word.size, sizeof(uint32_t));
         size += sizeof(uint32_t);
         if (heredoc->word.size > 0) {
@@ -218,8 +223,8 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
 }
 
 // 復元した heredoc の段の並びが、走査で作りうる形かを確かめる。
-// index 0 は印を持たず、入れ子の段は開始済みの段の先頭の本文の中で開く。
-// 開始済みになれるのは段の先頭だけで、終端行の保留は開始済みの本文にだけ付く。
+// index 0 に入れ子の印 (nested) は付かず、入れ子の段は開始済みの段の先頭の本文の中で開く。
+// 開始済みと行継続の印は段の先頭にだけ付き、終端行の保留は開始済みの本文にだけ付く。
 static inline bool heredoc_frames_are_valid(const Scanner *scanner) {
     bool head_started = false;
     for (uint32_t i = 0; i < scanner->open_heredocs.size; i++) {
@@ -228,7 +233,8 @@ static inline bool heredoc_frames_are_valid(const Scanner *scanner) {
         if ((i == 0 && heredoc->nested) || (i > 0 && heredoc->nested && !head_started)) {
             return false;
         }
-        if ((heredoc->started && !is_head) || (heredoc->end_line_pending && !heredoc->started)) {
+        if (((heredoc->started || heredoc->continued) && !is_head) ||
+            (heredoc->end_line_pending && !heredoc->started)) {
             return false;
         }
         if (is_head) {
@@ -272,10 +278,11 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         heredoc.end_word_indentation_allowed = buffer[size++];
         heredoc.allows_interpolation = buffer[size++];
         uint8_t flags = (uint8_t)buffer[size++];
-        if (flags & ~7) goto invalid;
+        if (flags & ~15) goto invalid;
         heredoc.started = flags & 1;
         heredoc.end_line_pending = flags & 2;
         heredoc.nested = flags & 4;
+        heredoc.continued = flags & 8;
 
         heredoc.word = (String)array_new();
         uint32_t word_length;
@@ -357,24 +364,28 @@ static inline void open_heredoc(Scanner *scanner, Heredoc heredoc) {
 }
 
 // 本文を読み終えた heredoc を外し、同じ段の次の heredoc を段の先頭にする。
-// 引き継ぐのは段の先頭の印だけで、started と end_line_pending は引き継がない。
-static inline void close_heredoc(Scanner *scanner, uint32_t index) {
+// 引き継ぐのは段の先頭の印 (nested と continued) だけで、started と end_line_pending は引き継がない。
+// 行継続で終わる行で開いた段を読み終えたら true を返す。
+static inline bool close_heredoc(Scanner *scanner, uint32_t index) {
     // この本文の行で開いたまま始まらなかった段は、同じ段の後ろへ回して後で読む。
     uint32_t head = last_frame_head(scanner);
     if (head > index && !array_get(&scanner->open_heredocs, head)->started) {
         array_get(&scanner->open_heredocs, head)->nested = false;
+        array_get(&scanner->open_heredocs, head)->continued = false;
     }
 
     Heredoc *heredoc = array_get(&scanner->open_heredocs, index);
     bool nested = heredoc->nested;
+    bool continued = heredoc->continued;
     array_delete(&heredoc->word);
     array_erase(&scanner->open_heredocs, index);
-    if (index < scanner->open_heredocs.size) {
-        Heredoc *next = array_get(&scanner->open_heredocs, index);
-        if (!next->nested) {
-            next->nested = index > 0 && nested;
-        }
+    Heredoc *next = index < scanner->open_heredocs.size ? array_get(&scanner->open_heredocs, index) : NULL;
+    if (next != NULL && !next->nested) {
+        next->nested = index > 0 && nested;
+        next->continued = continued;
+        return false;
     }
+    return continued;
 }
 
 static inline bool is_iden_char(int32_t c) {
@@ -422,15 +433,24 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                 break;
             case '\r':
                 if (pending != NULL) {
-                    lexer->result_symbol = HEREDOC_BODY_START;
-                    pending->started = true;
-                    return true;
+                    // CRLF の '\r' から本文を始める。終端の '\r' が先頭より前になるので、
+                    // トークンは '\r' の位置の幅 0 になる。単独 CR は Ruby と同じく空白として
+                    // 読み飛ばし、次の改行から本文を始める。このとき '\r' の手前の終端が残るが、
+                    // この後に返すトークンはどれも終端を明示する (accept_token)。
+                    lexer->mark_end(lexer);
+                    skip(scanner, lexer);
+                    if (lexer->lookahead == '\n') {
+                        lexer->result_symbol = HEREDOC_BODY_START;
+                        pending->started = true;
+                        return true;
+                    }
                 } else {
                     skip(scanner, lexer);
-                    break;
                 }
+                break;
             case '\n':
                 if (pending != NULL) {
+                    lexer->mark_end(lexer);
                     lexer->result_symbol = HEREDOC_BODY_START;
                     pending->started = true;
                     return true;
@@ -443,6 +463,29 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                 }
                 break;
             case '\\':
+                if (pending != NULL) {
+                    // 行継続 (`\` + 改行) の行で開いた heredoc も、次の行から本文を読む。
+                    // この段の最後の終端は終端行の改行まで含める (scan_heredoc_content)。
+                    skip(scanner, lexer);
+                    if (lexer->lookahead == '\r') {
+                        lexer->mark_end(lexer);
+                        skip(scanner, lexer);
+                        if (lexer->lookahead != '\n') {
+                            return false;
+                        }
+                    } else if (lexer->lookahead == '\n') {
+                        lexer->mark_end(lexer);
+                    } else if (iswspace(lexer->lookahead)) {
+                        skip(scanner, lexer);
+                        break;
+                    } else {
+                        return false;
+                    }
+                    lexer->result_symbol = HEREDOC_BODY_START;
+                    pending->started = true;
+                    pending->continued = true;
+                    return true;
+                }
                 advance(lexer);
                 if (lexer->lookahead == '\r') {
                     skip(scanner, lexer);
@@ -1146,8 +1189,14 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer, const 
                     heredoc->end_line_pending = true;
                     lexer->result_symbol = HEREDOC_CONTENT;
                 } else {
-                    close_heredoc(scanner, index);
-                    lexer->result_symbol = HEREDOC_BODY_END;
+                    // 行継続で終わる行で開いた段では、開いた行の改行が行継続で消えている。
+                    // 段の最後の終端では、Ruby と同じく終端行の改行も heredoc 側に含め、
+                    // コードの改行に戻さない (戻すと、行継続でつながる次の行との間に文の区切り
+                    // ができる)。終端語の後に HEREDOC_LINE_END で終端行の改行を返す。
+                    bool continued = close_heredoc(scanner, index);
+                    lexer->result_symbol = continued && lexer->lookahead == '\n' && valid_symbols[HEREDOC_END_CONTINUED]
+                                               ? HEREDOC_END_CONTINUED
+                                               : HEREDOC_BODY_END;
                 }
                 return true;
             }
@@ -1259,12 +1308,76 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer, const 
     }
 }
 
-static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer) {
+static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
     Literal *literal = array_back(&scanner->literal_stack);
     bool has_content = false;
     bool stop_on_space = literal->type == SYMBOL_ARRAY_START || literal->type == STRING_ARRAY_START;
+    // リテラルより前に同じ行で開いた heredoc は、リテラルの中の改行から本文を読む (Ruby と同じ順)。
+    Heredoc *pending = valid_symbols[HEREDOC_BODY_START] ? pending_heredoc(scanner) : NULL;
+    // 補間しない配列で、直前の `\` が改行をエスケープした。
+    bool escaped_line_end = false;
 
     for (;;) {
+        if (pending != NULL && stop_on_space && !has_content && iswspace(lexer->lookahead) &&
+            lexer->lookahead != literal->close_delimiter) {
+            // 配列の語の間の空白は、内部の字句解析が区切りとして読む。その中に本文を始める改行
+            // (LF か CRLF) があるときだけ、手前の空白 (単独 CR を含む) を読み飛ばして改行から
+            // 本文を始める。閉じ区切りや語に着いたら、区切りとして内部の字句解析に任せる。
+            for (;;) {
+                if (lexer->lookahead == literal->close_delimiter || !iswspace(lexer->lookahead)) {
+                    return false;
+                }
+                if (lexer->lookahead == '\n') {
+                    lexer->mark_end(lexer);
+                    break;
+                }
+                if (lexer->lookahead == '\r') {
+                    // CRLF なら '\r' の位置で幅 0 の開始になる (終端が先頭より前)。
+                    lexer->mark_end(lexer);
+                    skip(scanner, lexer);
+                    if (lexer->lookahead == '\n') {
+                        break;
+                    }
+                    continue;
+                }
+                skip(scanner, lexer);
+            }
+            pending->started = true;
+            lexer->result_symbol = HEREDOC_BODY_START;
+            return true;
+        }
+        if (pending != NULL && lexer->lookahead != literal->close_delimiter &&
+            (lexer->lookahead == '\n' || lexer->lookahead == '\r')) {
+            // 本文は LF なら '\n'、CRLF なら '\r' から始め、リテラルの内容はその手前で区切る。
+            lexer->mark_end(lexer);
+            if (lexer->lookahead == '\r') {
+                advance(lexer);
+            }
+            if (lexer->lookahead == '\n') {
+                if (has_content) {
+                    if (escaped_line_end) {
+                        pending->continued = true;
+                    }
+                    lexer->result_symbol = STRING_CONTENT;
+                } else {
+                    pending->started = true;
+                    lexer->result_symbol = HEREDOC_BODY_START;
+                }
+                return true;
+            }
+            // 単独 CR は、文字列では内容、配列では語の区切りの空白になる。ただし直前の `\` で
+            // エスケープした CR は、配列でも語の一部になる。
+            if (stop_on_space && !escaped_line_end) {
+                if (has_content) {
+                    lexer->result_symbol = STRING_CONTENT;
+                    return true;
+                }
+                return false;
+            }
+            escaped_line_end = false;
+            has_content = true;
+            continue;
+        }
         if (stop_on_space && iswspace(lexer->lookahead)) {
             if (has_content) {
                 lexer->mark_end(lexer);
@@ -1321,10 +1434,32 @@ static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer) {
                     lexer->result_symbol = STRING_CONTENT;
                     return true;
                 }
+                // 行末の `\` は改行ごと escape_sequence になり、heredoc の本文を始める改行を
+                // 飲み込む。`\` だけを内容として返し、次の走査でその改行から本文を始める。
+                // 改行はエスケープされている (文字列では行継続、配列では語の一部) ので、
+                // 段の最後の終端行の改行も heredoc 側に含め、リテラルに戻さない。
+                if (pending != NULL) {
+                    advance(lexer);
+                    lexer->mark_end(lexer);
+                    if (lexer->lookahead == '\r') {
+                        advance(lexer);
+                    }
+                    if (lexer->lookahead == '\n') {
+                        pending->continued = true;
+                        lexer->result_symbol = STRING_CONTENT;
+                        return true;
+                    }
+                }
                 return false;
             }
             advance(lexer);
-            advance(lexer);
+            // 補間しないリテラルの `\` の後の改行は読み進めず、上の分岐で本文を始める。
+            // 文字列では `\` と改行がそのまま残るが、配列では改行が語の一部になる。
+            if (pending != NULL && (lexer->lookahead == '\n' || lexer->lookahead == '\r')) {
+                escaped_line_end = stop_on_space;
+            } else {
+                advance(lexer);
+            }
 
         } else if (lexer->eof(lexer)) {
             advance(lexer);
@@ -1339,8 +1474,8 @@ static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer) {
 }
 
 // トークンを現在位置で終える。scan() が返すトークンは、既定の終端 (返したときの位置) に
-// 頼らず終端を明示する。先読みのために手前で呼んだ mark_end が残っていても、
-// トークンがその位置で終わらないようにするため。
+// 頼らず終端を明示する。scan_whitespace() が単独 CR を確かめるために '\r' の手前で呼んだ
+// mark_end が残っていると、既定の終端はその位置になり、トークンが幅 0 になるため。
 static inline bool accept_token(TSLexer *lexer, TokenType symbol) {
     lexer->mark_end(lexer);
     lexer->result_symbol = symbol;
@@ -1352,8 +1487,19 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
 
     // 一部の閉じ区切り文字を除く任意文字に一致するリテラル内容を処理する。
     if (!valid_symbols[STRING_START]) {
+        // 行継続の段の最後の終端語の後は、終端行の改行 (LF か CRLF) だけが続く。
+        if (valid_symbols[HEREDOC_LINE_END]) {
+            if (lexer->lookahead == '\r') {
+                advance(lexer);
+            }
+            if (lexer->lookahead != '\n') {
+                return false;
+            }
+            advance(lexer);
+            return accept_token(lexer, HEREDOC_LINE_END);
+        }
         if ((valid_symbols[STRING_CONTENT] || valid_symbols[STRING_END]) && scanner->literal_stack.size > 0) {
-            return scan_literal_content(scanner, lexer);
+            return scan_literal_content(scanner, lexer, valid_symbols);
         }
         if ((valid_symbols[HEREDOC_CONTENT] || valid_symbols[HEREDOC_BODY_END]) && scanner->open_heredocs.size > 0) {
             return scan_heredoc_content(scanner, lexer, valid_symbols);

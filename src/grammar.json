@@ -8906,8 +8906,31 @@
 					}
 				},
 				{
-					"type": "SYMBOL",
-					"name": "heredoc_end"
+					"type": "CHOICE",
+					"members": [
+						{
+							"type": "SYMBOL",
+							"name": "heredoc_end"
+						},
+						{
+							"type": "SEQ",
+							"members": [
+								{
+									"type": "ALIAS",
+									"content": {
+										"type": "SYMBOL",
+										"name": "_heredoc_end_continued"
+									},
+									"named": true,
+									"value": "heredoc_end"
+								},
+								{
+									"type": "SYMBOL",
+									"name": "_heredoc_line_end"
+								}
+							]
+						}
+					]
 				}
 			]
 		},
@@ -9658,6 +9681,14 @@
 		{
 			"type": "SYMBOL",
 			"name": "_jump_argument"
+		},
+		{
+			"type": "SYMBOL",
+			"name": "_heredoc_end_continued"
+		},
+		{
+			"type": "SYMBOL",
+			"name": "_heredoc_line_end"
 		}
 	],
 	"inline": ["_arg_rhs", "_call_operator"],

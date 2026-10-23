@@ -227,6 +227,139 @@ fn line_continuation_does_not_delay_nested_heredoc_body() {
 }
 
 #[test]
+fn line_continuation_after_heredoc_start_reads_the_body_first() {
+    // 行継続の行で開いた heredoc も次の行から本文を読み、行継続は本文の終端の次の行へつながる。
+    // 段の最後の終端行の改行は heredoc_body に含まれ、heredoc_end は終端語だけになる。
+    for (source, statement) in [
+        ("x = <<~A \\\n  a\nA\n+ \"b\"\n", "assignment"),
+        ("y = <<~A \\\n  a\nA\nif c\n", "if_modifier"),
+    ] {
+        for source in [source.to_string(), source.replace('\n', "\r\n")] {
+            let tree = parse(&source);
+            let root = tree.root_node();
+            assert!(!root.has_error(), "{source:?}: {}", root.to_sexp());
+            assert_eq!(
+                root.named_child_count(),
+                1,
+                "{source:?}: {}",
+                root.to_sexp()
+            );
+            assert_eq!(root.named_child(0).unwrap().kind(), statement);
+            assert_eq!(
+                heredoc_bodies(&tree, &source),
+                [("A".to_string(), 2, tree_sitter::Point::new(0, 10), false)],
+                "{source:?}"
+            );
+            let mut stack = vec![root];
+            while let Some(node) = stack.pop() {
+                if node.kind() == "heredoc_body" {
+                    assert_eq!(node.end_position(), tree_sitter::Point::new(3, 0));
+                }
+                let mut cursor = node.walk();
+                stack.extend(node.named_children(&mut cursor));
+            }
+        }
+    }
+
+    // 同じ行で開いた複数の heredoc では、最後の本文の後だけを行継続につなぐ。
+    let source = "foo(<<~A, <<~B, \\\n  a\nA\n  b\nB\n\n1)\n";
+    let tree = parse(source);
+    let root = tree.root_node();
+    assert!(!root.has_error(), "{}", root.to_sexp());
+    assert_eq!(
+        heredoc_bodies(&tree, source),
+        [
+            ("A".to_string(), 2, tree_sitter::Point::new(0, 17), false),
+            ("B".to_string(), 4, tree_sitter::Point::new(2, 1), false),
+        ]
+    );
+}
+
+#[test]
+fn lone_cr_in_code_is_whitespace_before_heredoc_body() {
+    // コード中の単独 CR は Ruby と同じく空白で、heredoc の本文は次の改行から始まる。
+    // 単独 CR の後に外部スキャナーのトークンが続いても、範囲は CR の後から始まる。
+    for argument in ["1", "\"x\"", ":s", "-1", "*a"] {
+        for line_end in ["\n", "\r\n"] {
+            let source = format!("p foo(<<~C,\r{argument}){line_end}  c{line_end}C{line_end}");
+            let tree = parse(&source);
+            let root = tree.root_node();
+            assert!(!root.has_error(), "{source:?}: {}", root.to_sexp());
+            let line = format!("p foo(<<~C,\r{argument})");
+            let bodies = heredoc_bodies(&tree, &source);
+            assert_eq!(
+                bodies,
+                [(
+                    "C".to_string(),
+                    2,
+                    tree_sitter::Point::new(0, line.len()),
+                    false
+                )],
+                "{source:?}: {}",
+                root.to_sexp()
+            );
+            let node = root
+                .descendant_for_byte_range(12, 12 + argument.len())
+                .unwrap();
+            assert_eq!(node.start_byte(), 12, "{source:?}: {}", root.to_sexp());
+        }
+    }
+}
+
+#[test]
+fn literal_line_breaks_start_pending_heredoc_bodies() {
+    // heredoc の開始の後で改行をまたぐリテラルでも、本文はその改行から始まる。
+    for (source, literal) in [
+        ("x = [<<~A, \"x\n  a\nA\ny\"]\n", "string"),
+        ("x = [<<~A, 'x\n  a\nA\ny']\n", "string"),
+        ("x = [<<~A, /x\n  a\nA\ny/]\n", "regex"),
+        ("x = [<<~A, :\"x\n  a\nA\ny\"]\n", "delimited_symbol"),
+        ("x = [<<~A, `x\n  a\nA\n`]\n", "subshell"),
+        ("x = [<<~A, %w[a  \n  a\nA\nb]]\n", "string_array"),
+        ("x = [<<~A, %i[a\r \x0c\n  a\nA\nb]]\n", "symbol_array"),
+        // `\` でエスケープした改行は語の一部なので、本文の後も同じ語が続く。
+        ("x = [<<~A, %w[x\\\n  a\nA\ny]]\n", "bare_string"),
+        ("x = [<<~A, %W[x\\\n  a\nA\ny]]\n", "bare_string"),
+        ("x = [<<~A, \"x\\\n  a\nA\ny\"]\n", "string"),
+    ] {
+        for source in [source.to_string(), source.replace('\n', "\r\n")] {
+            let tree = parse(&source);
+            let root = tree.root_node();
+            assert!(!root.has_error(), "{source:?}: {}", root.to_sexp());
+            let mut bodies = Vec::new();
+            let mut stack = vec![root];
+            while let Some(node) = stack.pop() {
+                if node.kind() == "heredoc_body" {
+                    bodies.push(node);
+                }
+                let mut cursor = node.walk();
+                stack.extend(node.named_children(&mut cursor));
+            }
+            assert_eq!(bodies.len(), 1, "{source:?}: {}", root.to_sexp());
+            let parent = bodies[0].parent().unwrap();
+            assert_eq!(parent.kind(), literal, "{source:?}: {}", root.to_sexp());
+            if literal == "bare_string" {
+                assert_eq!(parent.parent().unwrap().named_child_count(), 1);
+            }
+        }
+    }
+
+    // `\` でエスケープした単独 CR は、heredoc が開始待ちでも配列の語を分けない。
+    let source = "p foo(<<A, %w[x\\\ry])\nbody\nA\n";
+    let tree = parse(source);
+    let root = tree.root_node();
+    assert!(!root.has_error(), "{}", root.to_sexp());
+    let start = source.find("%w").unwrap();
+    let array = root
+        .descendant_for_byte_range(start, start + 2)
+        .unwrap()
+        .parent()
+        .unwrap();
+    assert_eq!(array.kind(), "string_array", "{}", root.to_sexp());
+    assert_eq!(array.named_child_count(), 1, "{}", root.to_sexp());
+}
+
+#[test]
 fn incremental_parsing_matches_fresh_trees() {
     for (source, old_text, new_text) in [
         ("x = <<EOS\n#{1}EOS\nEOS\n", "#{1}", "#{2 + 3}"),
@@ -248,6 +381,11 @@ fn incremental_parsing_matches_fresh_trees() {
             "#{<<-C}\n",
             "#{<<-C}\\\n",
         ),
+        // コードの行継続の追加と、行継続の行で開いた本文・改行をまたぐリテラル・単独 CR の後の編集。
+        ("x = <<~A\n  a\nA\n+ \"b\"\n", "x = <<~A\n", "x = <<~A \\\n"),
+        ("foo(<<~A, \\\n  a\nA\n1)\n", "  a\n", "  #{2}\n"),
+        ("x = [<<~A, \"x\n  a\nA\ny\"]\n", "  a\n", "  b\n  c\n"),
+        ("p foo(<<~C,\r\"x\")\n  c\nC\n", "\"x\"", "1"),
     ] {
         let mut parser = Parser::new();
         parser

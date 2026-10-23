@@ -78,6 +78,10 @@ fn round_trip_preserves_empty_unicode_and_pending_terminators() {
         heredoc_state(&vec![b'A'; 1015], 3),
         // 開始済みの本文の行で開いた段 (bit 2) と、その中の開始済みの段を保つ。
         heredocs_state(&[(b"A", 1), (b"B", 0), (b"C", 5), (b"D", 0), (b"E", 4)]),
+        // 行継続で終わる行で開いた段の先頭の印 (bit 3) は、開始前の段の先頭にも付く。
+        heredocs_state(&[(b"A", 9), (b"B", 0)]),
+        heredocs_state(&[(b"B", 8)]),
+        heredocs_state(&[(b"A", 1), (b"C", 13)]),
     ] {
         scanner.restore(&state);
         assert_eq!(scanner.save(), state);
@@ -112,11 +116,13 @@ fn invalid_heredoc_frames_discard_state() {
     let mut scanner = Scanner::new();
     for state in [
         // 未使用のフラグ、index 0 の段の印、未開始の本文の終端行の保留
-        heredoc_state(b"A", 8),
+        heredoc_state(b"A", 16),
+        heredoc_state(b"A", 128),
         heredoc_state(b"A", 4),
         heredoc_state(b"A", 2),
-        // 段の先頭でない開始済みの heredoc
+        // 段の先頭でない開始済みの heredoc と、段の先頭でない行継続の印
         heredocs_state(&[(b"A", 1), (b"B", 1)]),
+        heredocs_state(&[(b"A", 9), (b"B", 8)]),
         // 未開始の本文の中で開いた段
         heredocs_state(&[(b"A", 0), (b"C", 4)]),
         heredocs_state(&[(b"A", 1), (b"C", 4), (b"E", 4)]),
