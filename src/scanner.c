@@ -821,6 +821,7 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
             }
             advance(lexer);
 
+            bool has_percent_type = true;
             switch (lexer->lookahead) {
                 case 's':
                     if (!valid_symbols[SIMPLE_SYMBOL]) {
@@ -907,6 +908,7 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
                     if (!valid_symbols[STRING_START]) {
                         return false;
                     }
+                    has_percent_type = false;
                     literal->type = STRING_START;
                     literal->allows_interpolation = true;
                     break;
@@ -931,6 +933,21 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
                 case '<':
                     literal->open_delimiter = '<';
                     literal->close_delimiter = '>';
+                    break;
+
+                case '\v':
+                case '\f':
+                    // VT/FF は scalar literal の区切りにもなる。配列では語の区切りとして
+                    // 消費されて閉じられないため、開始として受理しない。
+                    if (literal->type == STRING_ARRAY_START || literal->type == SYMBOL_ARRAY_START) {
+                        return false;
+                    }
+                    // 型のない `%` と空白の組は式の開始位置だけでリテラルになる。
+                    // `%Q` など型が明示されていればコマンド引数でもよい。
+                    if (!has_percent_type && (valid_symbols[FORWARD_SLASH] || !valid_symbols[STRING_ARRAY_START])) {
+                        return false;
+                    }
+                    literal->open_delimiter = literal->close_delimiter = lexer->lookahead;
                     break;
 
                 case '\r':
