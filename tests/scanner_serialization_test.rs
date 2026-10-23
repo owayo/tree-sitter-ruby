@@ -51,9 +51,16 @@ impl Drop for Scanner {
 }
 
 fn heredoc_state(word: &[u8], flags: u8) -> Vec<u8> {
-    let mut bytes = vec![0, 1, 1, 1, flags];
-    bytes.extend_from_slice(&(word.len() as u32).to_ne_bytes());
-    bytes.extend_from_slice(word);
+    heredocs_state(&[(word, flags)])
+}
+
+fn heredocs_state(heredocs: &[(&[u8], u8)]) -> Vec<u8> {
+    let mut bytes = vec![0, heredocs.len() as u8];
+    for (word, flags) in heredocs {
+        bytes.extend_from_slice(&[1, 1, *flags]);
+        bytes.extend_from_slice(&(word.len() as u32).to_ne_bytes());
+        bytes.extend_from_slice(word);
+    }
     bytes
 }
 
@@ -69,6 +76,8 @@ fn round_trip_preserves_empty_unicode_and_pending_terminators() {
         heredoc_state(b"", 1),
         heredoc_state("終端".as_bytes(), 3),
         heredoc_state(&vec![b'A'; 1015], 3),
+        // 開始済みの本文の行で開いた段 (bit 2) と、その中の開始済みの段を保つ。
+        heredocs_state(&[(b"A", 1), (b"B", 0), (b"C", 5), (b"D", 0), (b"E", 4)]),
     ] {
         scanner.restore(&state);
         assert_eq!(scanner.save(), state);
@@ -96,6 +105,26 @@ fn truncated_and_trailing_buffers_discard_partial_state() {
     partial_second[1] = 2;
     scanner.restore(&partial_second);
     assert_eq!(scanner.save(), [0, 0]);
+}
+
+#[test]
+fn invalid_heredoc_frames_discard_state() {
+    let mut scanner = Scanner::new();
+    for state in [
+        // 未使用のフラグ、index 0 の段の印、未開始の本文の終端行の保留
+        heredoc_state(b"A", 8),
+        heredoc_state(b"A", 4),
+        heredoc_state(b"A", 2),
+        // 段の先頭でない開始済みの heredoc
+        heredocs_state(&[(b"A", 1), (b"B", 1)]),
+        // 未開始の本文の中で開いた段
+        heredocs_state(&[(b"A", 0), (b"C", 4)]),
+        heredocs_state(&[(b"A", 1), (b"C", 4), (b"E", 4)]),
+    ] {
+        scanner.restore(&heredoc_state(b"EOS", 3));
+        scanner.restore(&state);
+        assert_eq!(scanner.save(), [0, 0], "{state:?}");
+    }
 }
 
 #[test]

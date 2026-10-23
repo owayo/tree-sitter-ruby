@@ -105,3 +105,400 @@ x = <<漢字
     (escape_sequence)
     (heredoc_content)
     (heredoc_end)))
+
+==================
+同じ行の複数 heredoc の先頭本文で開いた heredoc を本文の中で読む
+==================
+
+def example
+  foo(<<~A, <<~B, value)
+    #{<<~C}
+      #{value = fetch}
+    C
+  A
+    #{value}
+  B
+end
+
+---
+
+(program
+  (method
+    name: (identifier)
+    body: (body_statement
+      (call
+        method: (identifier)
+        arguments: (argument_list
+          (heredoc_beginning)
+          (heredoc_beginning)
+          (identifier)))
+      (heredoc_body
+        (heredoc_content)
+        (interpolation
+          (heredoc_beginning))
+        (heredoc_body
+          (heredoc_content)
+          (interpolation
+            (assignment
+              left: (identifier)
+              right: (identifier)))
+          (heredoc_content)
+          (heredoc_end))
+        (heredoc_content)
+        (heredoc_end))
+      (heredoc_body
+        (heredoc_content)
+        (interpolation
+          (identifier))
+        (heredoc_content)
+        (heredoc_end)))))
+
+==================
+本文の補間で開いた heredoc の後に外側の本文を続ける
+==================
+
+x = <<~A
+  #{<<~C} tail
+    c
+  C
+  after
+A
+y
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (heredoc_beginning))
+    (heredoc_content)
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))
+
+==================
+本文の同じ行で開いた複数の heredoc を順に読む
+==================
+
+x = <<~A
+  #{<<~C} #{<<~D}
+    c
+  C
+    d
+  D
+A
+y
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (heredoc_beginning))
+    (heredoc_content)
+    (interpolation
+      (heredoc_beginning))
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))
+
+==================
+入れ子の heredoc 本文でさらに heredoc を開く
+==================
+
+x = <<~A
+  #{<<~C}
+    #{<<~E}
+      e
+    E
+  C
+A
+y
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (heredoc_beginning))
+    (heredoc_body
+      (heredoc_content)
+      (interpolation
+        (heredoc_beginning))
+      (heredoc_body
+        (heredoc_content)
+        (heredoc_end))
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))
+
+==================
+複数行にまたがる補間の改行から heredoc 本文を始める
+==================
+
+x = <<~A
+  #{foo(<<~C,
+  c
+  C
+  1)}
+A
+y
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (call
+        method: (identifier)
+        arguments: (argument_list
+          (heredoc_beginning)
+          (heredoc_body
+            (heredoc_content)
+            (heredoc_end))
+          (integer))))
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))
+
+==================
+入れ子の heredoc を開いた行の末尾の # を外側の本文に残す
+==================
+
+x = <<~A
+  #{<<~C}#
+    c
+  C
+A
+y
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (heredoc_beginning))
+    (heredoc_content)
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))
+
+==================
+補間の直後の補間にならない # を本文に含める
+==================
+
+x = <<A
+#{1}##{2}
+#{3}#\t
+A
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (integer))
+    (heredoc_content)
+    (interpolation
+      (integer))
+    (heredoc_content)
+    (interpolation
+      (integer))
+    (heredoc_content)
+    (escape_sequence)
+    (heredoc_content)
+    (heredoc_end)))
+
+==================
+後続の heredoc を待たせたまま本文の同じ行で開いた heredoc を順に読む
+==================
+
+foo(<<~A, <<~B)
+  #{<<~C} #{<<~D}
+    c
+  C
+    d
+  D
+  a
+A
+  b
+B
+y
+
+---
+
+(program
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (heredoc_beginning)
+      (heredoc_beginning)))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (heredoc_beginning))
+    (heredoc_content)
+    (interpolation
+      (heredoc_beginning))
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_content)
+    (heredoc_end))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))
+
+==================
+入れ子の heredoc が外側と同じ終端語を使う
+==================
+
+x = <<~A
+  #{<<~A}
+    inner
+  A
+  outer
+A
+y
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (heredoc_beginning))
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))
+
+==================
+補間しない heredoc の本文では heredoc を開かない
+==================
+
+x = <<~'A'
+  #{<<~C}
+  C
+A
+y
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))
+
+==================
+本文の補間で修飾子 if 付きの heredoc を開く
+==================
+
+cmd = <<~RUBY
+  a
+  #{<<~ADAPTIVE if adaptive}
+    b
+  ADAPTIVE
+  c
+RUBY
+y
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (if_modifier
+        body: (heredoc_beginning)
+        condition: (identifier)))
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))
+
+==================
+行継続で終わる本文の行で開いた heredoc を次の行から読む
+==================
+
+x = <<-A
+#{<<-C}\
+cc
+C
+zz
+A
+y
+
+---
+
+(program
+  (assignment
+    left: (identifier)
+    right: (heredoc_beginning))
+  (heredoc_body
+    (heredoc_content)
+    (interpolation
+      (heredoc_beginning))
+    (heredoc_content)
+    (heredoc_body
+      (heredoc_content)
+      (heredoc_end))
+    (heredoc_content)
+    (heredoc_end))
+  (identifier))

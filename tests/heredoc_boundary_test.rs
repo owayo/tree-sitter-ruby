@@ -101,6 +101,131 @@ fn literal_capacity_overflow_preserves_pending_heredoc() {
     assert_eq!(end.utf8_text(source.as_bytes()).unwrap(), delimiter);
 }
 
+// 木のすべてのノードの種類・範囲・extra かどうかを先行順で並べる。
+fn node_ranges(tree: &tree_sitter::Tree) -> Vec<(String, std::ops::Range<usize>, bool)> {
+    let mut nodes = Vec::new();
+    let mut cursor = tree.walk();
+    loop {
+        let node = cursor.node();
+        nodes.push((node.kind().to_string(), node.byte_range(), node.is_extra()));
+        if cursor.goto_first_child() {
+            continue;
+        }
+        while !cursor.goto_next_sibling() {
+            if !cursor.goto_parent() {
+                return nodes;
+            }
+        }
+    }
+}
+
+// heredoc 本文ごとに、終端語・終端行・本文の開始位置・外側の本文の中にあるかを集める。
+fn heredoc_bodies(
+    tree: &tree_sitter::Tree,
+    source: &str,
+) -> Vec<(String, usize, tree_sitter::Point, bool)> {
+    let mut bodies = Vec::new();
+    let mut stack = vec![tree.root_node()];
+    while let Some(node) = stack.pop() {
+        if node.kind() == "heredoc_body" {
+            let mut cursor = node.walk();
+            let end = node.named_children(&mut cursor).last().unwrap();
+            assert_eq!(end.kind(), "heredoc_end");
+            bodies.push((
+                end.utf8_text(source.as_bytes()).unwrap().to_string(),
+                end.start_position().row,
+                node.start_position(),
+                node.parent().unwrap().kind() == "heredoc_body",
+            ));
+        }
+        let mut cursor = node.walk();
+        stack.extend(node.named_children(&mut cursor));
+    }
+    bodies.sort_by_key(|body| body.1);
+    bodies
+}
+
+#[test]
+fn nested_heredoc_bodies_follow_their_opening_line() {
+    // 本文の補間で開いた heredoc は、その行の次から外側の本文や後続の heredoc より先に読む。
+    // CRLF でも LF と同じく、入れ子の本文は開いた行の行末 ('\r') から始まる。
+    let source = "def example\n  foo(<<~A, <<~B, value)\n    #{<<~C}\n      #{value = fetch}\n    C\n  A\n    #{value}\n  B\nend\n";
+    for source in [source.to_string(), source.replace('\n', "\r\n")] {
+        let tree = parse(&source);
+        let root = tree.root_node();
+        assert!(!root.has_error(), "{source:?}: {}", root.to_sexp());
+        let method = root.named_child(0).unwrap();
+        assert_eq!(method.kind(), "method");
+        assert_eq!(
+            method.end_position(),
+            tree_sitter::Point::new(8, 3),
+            "{source:?}"
+        );
+        assert_eq!(
+            heredoc_bodies(&tree, &source),
+            [
+                ("C".to_string(), 4, tree_sitter::Point::new(2, 11), true),
+                ("A".to_string(), 5, tree_sitter::Point::new(1, 24), false),
+                ("B".to_string(), 7, tree_sitter::Point::new(5, 3), false),
+            ],
+            "{source:?}: {}",
+            root.to_sexp()
+        );
+    }
+}
+
+#[test]
+fn lone_cr_after_nested_heredoc_start_stays_in_outer_content() {
+    // 単独 CR は行末ではないので、入れ子の本文は次の LF から始まる。
+    let source = "x = <<~A\n  #{<<~C}\rX\n    c\n  C\nA\n";
+    let tree = parse(source);
+    let root = tree.root_node();
+    assert!(!root.has_error(), "{}", root.to_sexp());
+    let bodies = heredoc_bodies(&tree, source);
+    assert_eq!(
+        bodies[0],
+        ("C".to_string(), 3, tree_sitter::Point::new(1, 11), true)
+    );
+    let outer = root.named_child(1).unwrap();
+    let content = outer.named_child(2).unwrap();
+    assert_eq!(content.kind(), "heredoc_content");
+    assert_eq!(content.utf8_text(source.as_bytes()).unwrap(), "\rX");
+}
+
+#[test]
+fn line_continuation_does_not_delay_nested_heredoc_body() {
+    // 行継続 (`\` + 行末) の行で開いた heredoc も、次の行から本文を読む。
+    // `\` は外側の本文に残り、行末は escape_sequence に飲まれない。
+    let source = "x = <<-A\n#{<<-C}\\\n\ncc\nC\nzz\nA\n";
+    for source in [source.to_string(), source.replace('\n', "\r\n")] {
+        let tree = parse(&source);
+        let root = tree.root_node();
+        assert!(!root.has_error(), "{source:?}: {}", root.to_sexp());
+        let bodies = heredoc_bodies(&tree, &source);
+        assert_eq!(
+            bodies,
+            [
+                ("C".to_string(), 4, tree_sitter::Point::new(1, 8), true),
+                ("A".to_string(), 6, tree_sitter::Point::new(0, 8), false),
+            ],
+            "{source:?}: {}",
+            root.to_sexp()
+        );
+        let outer = root.named_child(1).unwrap();
+        let backslash = outer.named_child(2).unwrap();
+        assert_eq!(backslash.kind(), "heredoc_content");
+        assert_eq!(backslash.utf8_text(source.as_bytes()).unwrap(), "\\");
+        let nested = outer.named_child(3).unwrap();
+        assert!(nested.utf8_text(source.as_bytes()).unwrap().starts_with(
+            if source.contains('\r') {
+                "\r\n\r\ncc"
+            } else {
+                "\n\ncc"
+            }
+        ));
+    }
+}
+
 #[test]
 fn incremental_parsing_matches_fresh_trees() {
     for (source, old_text, new_text) in [
@@ -108,6 +233,21 @@ fn incremental_parsing_matches_fresh_trees() {
         ("x = <<EOS\nE\\t\nEOS\n", "E\\t", "EOS\\n"),
         ("x = <<~EOS\n  #{1}EOS\n  EOS\n", "  EOS\n", "    EOS\n"),
         ("x = <<\"\"\nbody\n\n", "body", "#{1}\nmore"),
+        // 入れ子の本文の編集、入れ子の heredoc の追加と削除で、保存した段の状態を再利用する。
+        (
+            "x = <<~A\n  #{<<~C} tail\n    c\n  C\nA\n",
+            "    c\n",
+            "    #{<<~D}\n      d\n    D\n",
+        ),
+        ("x = <<~A\n  #{1}\n    c\n  C\nA\n", "#{1}", "#{<<~C}"),
+        ("x = <<~A\n  #{<<~C}\n    c\n  C\nA\n", "<<~C", "1"),
+        // 行継続で終わる行の入れ子の本文の編集と、行継続の追加。
+        ("x = <<-A\n#{<<-C}\\\ncc\nC\nzz\nA\n", "cc", "#{1}"),
+        (
+            "x = <<-A\n#{<<-C}\ncc\nC\nzz\nA\n",
+            "#{<<-C}\n",
+            "#{<<-C}\\\n",
+        ),
     ] {
         let mut parser = Parser::new();
         parser
@@ -137,10 +277,11 @@ fn incremental_parsing_matches_fresh_trees() {
         let root = incremental.root_node();
         assert!(!root.has_error(), "{changed:?}: {}", root.to_sexp());
         assert_eq!(root.to_sexp(), fresh.root_node().to_sexp(), "{changed:?}");
-        let body = root.named_child(1).unwrap();
+        // 本文の所属先も比べるため、extra を含む全ノードの範囲を突き合わせる。
         assert_eq!(
-            body.byte_range(),
-            fresh.root_node().named_child(1).unwrap().byte_range()
+            node_ranges(&incremental),
+            node_ranges(&fresh),
+            "{changed:?}"
         );
     }
 }
