@@ -80,6 +80,10 @@ typedef struct {
 
 typedef struct {
     bool has_leading_whitespace;
+    // 演算子の直前の空白の最後の 1 文字が改ページ (U+000C) だったか。利用側が
+    // 「直前の識別子はローカル変数」と判定した位置に置く手がかりで、Ruby の
+    // EXPR_END と同じく、その演算子を引数の始まりではなく二項演算として読む。
+    bool binary_operator_hint;
     Array(Literal) literal_stack;
     // 同じ行で開いた heredoc の列 (段) を、外側の段から順に連結して持つ。
     // index 0 以外の段の先頭には nested が立つ。その段は 1 つ前の段の先頭の
@@ -99,6 +103,7 @@ const char NON_IDENTIFIER_CHARS[] = {
 
 static inline void skip(Scanner *scanner, TSLexer *lexer) {
     scanner->has_leading_whitespace = true;
+    scanner->binary_operator_hint = false;
     lexer->advance(lexer, true);
 }
 
@@ -247,6 +252,7 @@ static inline bool heredoc_frames_are_valid(const Scanner *scanner) {
 static inline void deserialize(Scanner *scanner, const char *buffer, unsigned length) {
     unsigned size = 0;
     scanner->has_leading_whitespace = false;
+    scanner->binary_operator_hint = false;
     reset(scanner);
 
     if (length == 0) {
@@ -431,6 +437,12 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
             case '\t':
                 skip(scanner, lexer);
                 break;
+            case '\f':
+                // Ruby は改ページを空白として読む。利用側は演算子の直前の空白 1 文字を
+                // 改ページに置き換え、バイト位置を変えずに二項演算の手がかりを渡す。
+                skip(scanner, lexer);
+                scanner->binary_operator_hint = true;
+                break;
             case '\r':
                 if (pending != NULL) {
                     // CRLF の '\r' から本文を始める。終端の '\r' が先頭より前になるので、
@@ -458,6 +470,7 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                     lexer->mark_end(lexer);
                     advance(lexer);
                     crossed_newline = true;
+                    scanner->binary_operator_hint = false;
                 } else {
                     skip(scanner, lexer);
                 }
@@ -486,14 +499,22 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                     pending->continued = true;
                     return true;
                 }
-                advance(lexer);
-                if (lexer->lookahead == '\r') {
+                {
+                    // 行継続 (`\` + 改行) は改行を消すだけなので、その前の改ページの手がかりを保つ
+                    // (`count\f\` + 改行 + `+1` は `count + 1`)。
+                    bool hint = scanner->binary_operator_hint;
+                    advance(lexer);
+                    if (lexer->lookahead == '\r') {
+                        skip(scanner, lexer);
+                    }
+                    if (!iswspace(lexer->lookahead)) {
+                        return false;
+                    }
+                    bool line_continuation = lexer->lookahead == '\n';
                     skip(scanner, lexer);
-                }
-                if (iswspace(lexer->lookahead)) {
-                    skip(scanner, lexer);
-                } else {
-                    return false;
+                    if (line_continuation) {
+                        scanner->binary_operator_hint = hint;
+                    }
                 }
                 break;
             default:
@@ -768,6 +789,10 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
             // `_range_operand` / `_jump_argument` はマッチしないトークンで、その位置を
             // スキャナーに伝えるためだけに文法へ置いてある (`/a/../b/` が `(/a/../b/)`)。
             if (valid_symbols[FORWARD_SLASH] && !is_expression_start(valid_symbols)) {
+                // ローカル変数の後の `/` は、空白の付き方によらず除算演算子。
+                if (scanner->binary_operator_hint) {
+                    return false;
+                }
                 // `//` と連続する場合は空の正規表現リテラル。
                 // 除算演算子として読むと右辺が正規表現の開始になり、
                 // 閉じない (`a // b` は Ruby でも構文エラー) ので、
@@ -789,6 +814,11 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
             return true;
 
         case '%':
+            // ローカル変数の後の `%` は percent literal の開始ではなく剰余演算子。
+            // `/` 演算子が有効な位置では `%` 演算子も有効になる。
+            if (scanner->binary_operator_hint && valid_symbols[FORWARD_SLASH] && !is_expression_start(valid_symbols)) {
+                return false;
+            }
             advance(lexer);
 
             switch (lexer->lookahead) {
@@ -1484,6 +1514,7 @@ static inline bool accept_token(TSLexer *lexer, TokenType symbol) {
 
 static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
     scanner->has_leading_whitespace = false;
+    scanner->binary_operator_hint = false;
 
     // 一部の閉じ区切り文字を除く任意文字に一致するリテラル内容を処理する。
     if (!valid_symbols[STRING_START]) {
@@ -1540,6 +1571,10 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                     // `&&` / `&.` / `&=` は内部レキサに任せる。
                     return false;
                 }
+                // ローカル変数の後の `&` は、Ruby ではブロック引数にならない。
+                if (scanner->binary_operator_hint && valid_symbols[BINARY_AMPERSAND]) {
+                    return accept_token(lexer, BINARY_AMPERSAND);
+                }
                 // `&` の直後に空白があっても、二項 `&` が使えない位置
                 // (`f(& blk)` のように直前に完結した式が無い位置) なら
                 // Ruby はブロック引数の `&` として扱う。
@@ -1579,7 +1614,8 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 }
                 lexer->mark_end(lexer);
 
-                if (valid_symbols[STRING_START] && scanner->has_leading_whitespace) {
+                // ローカル変数の後の `<<` は heredoc を開かない。
+                if (valid_symbols[STRING_START] && scanner->has_leading_whitespace && !scanner->binary_operator_hint) {
                     Heredoc heredoc = {0};
                     if (lexer->lookahead == '-' || lexer->lookahead == '~') {
                         advance(lexer);
@@ -1614,7 +1650,8 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                         if (lexer->lookahead == '=') {
                             return false;
                         }
-                        if (valid_symbols[BINARY_STAR_STAR] && !scanner->has_leading_whitespace) {
+                        if (valid_symbols[BINARY_STAR_STAR] &&
+                            (!scanner->has_leading_whitespace || scanner->binary_operator_hint)) {
                             return accept_token(lexer, BINARY_STAR_STAR);
                         }
                         if (valid_symbols[HASH_SPLAT_STAR_STAR] && !iswspace(lexer->lookahead)) {
@@ -1630,7 +1667,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                     }
                     return false;
                 }
-                if (valid_symbols[BINARY_STAR] && !scanner->has_leading_whitespace) {
+                if (valid_symbols[BINARY_STAR] && (!scanner->has_leading_whitespace || scanner->binary_operator_hint)) {
                     return accept_token(lexer, BINARY_STAR);
                 }
                 if (valid_symbols[SPLAT_STAR] && !iswspace(lexer->lookahead)) {
@@ -1652,6 +1689,10 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 if (lexer->lookahead == '=') {
                     return false;
                 }
+                // ローカル変数の後の `+` は、空白の付き方によらず二項演算。
+                if (scanner->binary_operator_hint && valid_symbols[BINARY_PLUS] && !is_expression_start(valid_symbols)) {
+                    return accept_token(lexer, BINARY_PLUS);
+                }
                 // 数値に隣接する符号だけをリテラルに結び付ける。式の開始位置では二項演算にしない。
                 if (valid_symbols[UNARY_PLUS_NUM] &&
                     (is_expression_start(valid_symbols) || !valid_symbols[BINARY_STAR] || scanner->has_leading_whitespace) &&
@@ -1671,6 +1712,11 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             if (valid_symbols[UNARY_MINUS] || valid_symbols[UNARY_MINUS_NUM] || valid_symbols[BINARY_MINUS]) {
                 advance(lexer);
                 if (lexer->lookahead != '=' && lexer->lookahead != '>') {
+                    // ローカル変数の後の `-` は、空白の付き方によらず二項演算。
+                    if (scanner->binary_operator_hint && valid_symbols[BINARY_MINUS] &&
+                        !is_expression_start(valid_symbols)) {
+                        return accept_token(lexer, BINARY_MINUS);
+                    }
                     if (valid_symbols[UNARY_MINUS_NUM] &&
                         (is_expression_start(valid_symbols) || !valid_symbols[BINARY_STAR] || scanner->has_leading_whitespace) &&
                         iswdigit(lexer->lookahead)) {
@@ -1728,11 +1774,12 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             // 次のいずれかを満たす `[` は要素参照として扱う。
             // * 直前に空白がない
             // * 現在位置で任意式が妥当ではない
+            // * 直前の識別子がローカル変数だという手がかりがある
             // * 対応する `]` の直後に代入の `=` が続く (`h [k] = v`)
             if (valid_symbols[ELEMENT_REFERENCE_BRACKET]) {
                 advance(lexer);
                 lexer->mark_end(lexer);
-                if (!scanner->has_leading_whitespace || !valid_symbols[STRING_START]) {
+                if (!scanner->has_leading_whitespace || !valid_symbols[STRING_START] || scanner->binary_operator_hint) {
                     lexer->result_symbol = ELEMENT_REFERENCE_BRACKET;
                     return true;
                 }
