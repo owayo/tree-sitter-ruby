@@ -93,6 +93,36 @@ which Ruby rejects. An AST without `ERROR` nodes is not a guarantee of Ruby
 syntax validity. These limitations should be revisited if binding-aware parsing
 is introduced.
 
+### Operators after local variables and the host hint
+
+When an identifier is followed by a space and an operator with no space after it
+(`foo +value`, `foo -1`, `foo *args`, `foo **opts`, `foo &blk`, `foo [0]`,
+`foo <<X`, `foo /re/`, `foo %w[a]`), this grammar reads the operator as the start
+of an argument to `foo`. That is how Ruby reads an unknown identifier, but when
+`foo` is a local variable at that point, Ruby reads these as binary operators or
+as an element reference (`count = 1; count +1` is `count + 1`).
+
+A consumer that resolves bindings can replace the last whitespace character
+before the operator with a form feed (U+000C) and parse again. The scanner then
+reads the operator as a binary operator (`+`, `-`, `*`, `**`, `&`, `<<`, `/`,
+`%`) and the `[` as an element reference. When a line continuation (`\` and a
+newline) comes right before the operator, replace the whitespace before it: a
+line continuation only removes the newline, so the hint carries across it. Ruby
+treats a form feed as whitespace, so the meaning and the byte positions of the
+source stay the same. The hint is not used when whitespace or a line break
+(other than a line continuation) follows the form feed, or where a binary
+operator cannot appear, such as at the start of an expression; a form feed
+anywhere else reads as whitespace.
+
+If the source already contains form feeds, replace the ones between tokens (in
+whitespace) with spaces before adding hints; otherwise they act as hints too. A
+form feed inside a string, a comment or a heredoc delimiter is part of the text
+and must be kept. A hint can change how `<<` or `%` reads and with it where a
+following heredoc or percent literal ends, so check the hints and the replaced
+form feeds again against the tree parsed with them. The ternary `?` versus a
+character literal, and `::`, are decided by the internal lexer and are not
+covered by this hint.
+
 ## Prerequisites
 
 ```bash
