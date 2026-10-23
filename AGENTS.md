@@ -71,6 +71,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
 # - heredoc の行途中・末尾空白・単独 CR・部分一致直後のエスケープを確認する
+# - heredoc 本文の補間で開いた heredoc（同じ行の複数 heredoc、同じ本文行の複数 heredoc、
+#   多段、複数行の補間、同じ終端語、補間しない heredoc、修飾子 if、行継続で終わる行、
+#   補間直後の `#`）を Ruby と同じ順に読むことを確認する
 python3 scripts/corpus_test.py
 
 # corpus_test.py のユニットテスト
@@ -170,6 +173,9 @@ pnpm run test:unit
 #   従来どおり扱われることの検証
 # - heredoc の増分パースと、リテラル追加時の合計保存容量超過を検証する
 # - scanner 保存状態の空終端語・Unicode・容量上限の往復、切り詰め・末尾ゴミを検証する
+# - 入れ子の heredoc 本文の位置（LF・CRLF・単独 CR・行継続）と、入れ子の追加・削除・編集後の
+#   増分パースが新規パースの全ノード範囲と一致することを検証する
+# - 段の印（nested）を含む保存状態の往復と、走査で作られない段の並びの破棄を検証する
 cargo test
 
 # C バインディング: ビルド済みライブラリを使う低メモリのコーパステスト
@@ -232,6 +238,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 - scanner serialization buffer の上限ぴったりに収まる状態は有効として扱い、超過した場合だけ ERROR として扱う
 - リテラル追加時も開いている heredoc と合計した保存容量を確認する。終端行の再開フラグは既存の started バイトに詰め、7 バイトのヘッダーサイズを維持する
 - heredoc 終端語は物理行の先頭でだけ認識し、直後は LF・CRLF・EOF に限る。末尾空白や単独 CR は本文とし、空終端語の EOF を架空の空行として受理しない
+- heredoc 本文の補間で開いた heredoc は、開いた行の次の行から、外側の本文の続きや外側の行で開いた後続の heredoc より先に読む（Ruby と同じ順）。`open_heredocs` は同じ行で開いた heredoc の列（段）を外側から順に連結し、index 0 以外の段の先頭にフラグバイトの bit 2（`nested`）を立てる。開始済みになれるのは段の先頭だけで、最後の段以外の先頭は開始済みである。追加と終了は `open_heredoc()` / `close_heredoc()` を通し、本文を読む heredoc は `find_current_heredoc()`、次の改行で本文を始める heredoc は `pending_heredoc()` で求める。外側の本文は入れ子の本文が始まる行末（CRLF は `\r`、単独 CR は本文）の手前で区切る。その行が行継続の `\` で終わるときは、`\` を本文として返して行末を escape_sequence に飲ませない。`deserialize()` は走査で作られない段の並びと未使用のフラグを破棄する
+- heredoc の開始の後に改行をまたぐ文字列リテラル（`[<<~A, "x` の直後の改行）は、トップレベルでも heredoc 本文の中でも未対応。`scan_literal_content()` は改行で heredoc 本文を始めない。コード中の行継続（`foo(<<~A, \` の直後の改行）と単独 CR も、`scan_whitespace()` が従来どおり扱うため、トップレベルと補間の中の両方で本文の開始位置が Ruby と食い違う
 - `src/scanner.c` の `deserialize()` はバッファ境界チェックを行うため、新しいフィールドを追加する際は対応する境界チェックも追加すること
 - 破損した保存状態は途中まで復元したリテラル・heredoc もすべて破棄する。余分な末尾データを assert で処理してはならない
 - `deserialize()` のバッファ境界チェックで `size + word_length > length` のような符号なし整数の和を使うと、`word_length` が極端に大きい場合に整数オーバーフローしてチェックを潜り抜けるため、`word_length > length - size` の引き算で比較すること（`size <= length` は手前のヘッダーサイズチェックで保証されている前提）

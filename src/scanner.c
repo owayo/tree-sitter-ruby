@@ -70,11 +70,16 @@ typedef struct {
     bool started;
     // 本文トークンを返した位置が終端行の先頭かどうかを保持する。
     bool end_line_pending;
+    // 外側の heredoc 本文の行で開いた段の先頭かどうかを保持する。
+    bool nested;
 } Heredoc;
 
 typedef struct {
     bool has_leading_whitespace;
     Array(Literal) literal_stack;
+    // 同じ行で開いた heredoc の列 (段) を、外側の段から順に連結して持つ。
+    // index 0 以外の段の先頭には nested が立つ。その段は 1 つ前の段の先頭の
+    // 本文の行で開いたもので、外側の本文の続きより先に、その行の次から読む。
     Array(Heredoc) open_heredocs;
 } Scanner;
 
@@ -200,7 +205,7 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
         buffer[size++] = (char)heredoc->end_word_indentation_allowed;
         buffer[size++] = (char)heredoc->allows_interpolation;
         // フラグを同じバイトに詰め、終端語を保存できる容量を維持する。
-        buffer[size++] = (char)(heredoc->started | (heredoc->end_line_pending << 1));
+        buffer[size++] = (char)(heredoc->started | (heredoc->end_line_pending << 1) | (heredoc->nested << 2));
         memcpy(&buffer[size], &heredoc->word.size, sizeof(uint32_t));
         size += sizeof(uint32_t);
         if (heredoc->word.size > 0) {
@@ -210,6 +215,27 @@ static inline unsigned serialize(Scanner *scanner, char *buffer) {
     }
 
     return size;
+}
+
+// 復元した heredoc の段の並びが、走査で作りうる形かを確かめる。
+// index 0 は印を持たず、入れ子の段は開始済みの段の先頭の本文の中で開く。
+// 開始済みになれるのは段の先頭だけで、終端行の保留は開始済みの本文にだけ付く。
+static inline bool heredoc_frames_are_valid(const Scanner *scanner) {
+    bool head_started = false;
+    for (uint32_t i = 0; i < scanner->open_heredocs.size; i++) {
+        const Heredoc *heredoc = array_get(&scanner->open_heredocs, i);
+        bool is_head = i == 0 || heredoc->nested;
+        if ((i == 0 && heredoc->nested) || (i > 0 && heredoc->nested && !head_started)) {
+            return false;
+        }
+        if ((heredoc->started && !is_head) || (heredoc->end_line_pending && !heredoc->started)) {
+            return false;
+        }
+        if (is_head) {
+            head_started = heredoc->started;
+        }
+    }
+    return true;
 }
 
 static inline void deserialize(Scanner *scanner, const char *buffer, unsigned length) {
@@ -246,8 +272,10 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         heredoc.end_word_indentation_allowed = buffer[size++];
         heredoc.allows_interpolation = buffer[size++];
         uint8_t flags = (uint8_t)buffer[size++];
+        if (flags & ~7) goto invalid;
         heredoc.started = flags & 1;
         heredoc.end_line_pending = flags & 2;
+        heredoc.nested = flags & 4;
 
         heredoc.word = (String)array_new();
         uint32_t word_length;
@@ -272,12 +300,81 @@ static inline void deserialize(Scanner *scanner, const char *buffer, unsigned le
         array_push(&scanner->open_heredocs, heredoc);
     }
 
-    if (size != length) goto invalid;
+    if (size != length || !heredoc_frames_are_valid(scanner)) goto invalid;
     return;
 
 invalid:
     // 破損した入力では、途中まで復元した状態と確保した終端語をすべて破棄する。
     reset(scanner);
+}
+
+// end より手前で最後に始まる段の先頭の位置を返す。index 0 は常に段 0 の先頭。
+static inline uint32_t frame_head_before(const Scanner *scanner, uint32_t end) {
+    while (end > 1) {
+        end--;
+        if (array_get(&scanner->open_heredocs, end)->nested) {
+            return end;
+        }
+    }
+    return 0;
+}
+
+static inline uint32_t last_frame_head(const Scanner *scanner) {
+    return frame_head_before(scanner, scanner->open_heredocs.size);
+}
+
+// 次の改行から本文を読む heredoc を返す。最後の段の先頭が未開始のときだけある。
+static inline Heredoc *pending_heredoc(Scanner *scanner) {
+    if (scanner->open_heredocs.size == 0) {
+        return NULL;
+    }
+    Heredoc *head = array_get(&scanner->open_heredocs, last_frame_head(scanner));
+    return head->started ? NULL : head;
+}
+
+// 本文を読んでいる heredoc (最も内側の開始済みの段の先頭) を探す。
+// 最後の段が未開始なら、その段を開いた 1 つ前の段の先頭の本文を読んでいる。
+static inline bool find_current_heredoc(const Scanner *scanner, uint32_t *index) {
+    if (scanner->open_heredocs.size == 0) {
+        return false;
+    }
+    uint32_t head = last_frame_head(scanner);
+    if (!array_get(&scanner->open_heredocs, head)->started) {
+        if (head == 0) {
+            return false;
+        }
+        head = frame_head_before(scanner, head);
+    }
+    *index = head;
+    return true;
+}
+
+// heredoc を開く。開始済みの本文の行で開いたものは、その本文の中で読む新しい段にする。
+static inline void open_heredoc(Scanner *scanner, Heredoc heredoc) {
+    heredoc.nested = scanner->open_heredocs.size > 0 &&
+                     array_get(&scanner->open_heredocs, last_frame_head(scanner))->started;
+    array_push(&scanner->open_heredocs, heredoc);
+}
+
+// 本文を読み終えた heredoc を外し、同じ段の次の heredoc を段の先頭にする。
+// 引き継ぐのは段の先頭の印だけで、started と end_line_pending は引き継がない。
+static inline void close_heredoc(Scanner *scanner, uint32_t index) {
+    // この本文の行で開いたまま始まらなかった段は、同じ段の後ろへ回して後で読む。
+    uint32_t head = last_frame_head(scanner);
+    if (head > index && !array_get(&scanner->open_heredocs, head)->started) {
+        array_get(&scanner->open_heredocs, head)->nested = false;
+    }
+
+    Heredoc *heredoc = array_get(&scanner->open_heredocs, index);
+    bool nested = heredoc->nested;
+    array_delete(&heredoc->word);
+    array_erase(&scanner->open_heredocs, index);
+    if (index < scanner->open_heredocs.size) {
+        Heredoc *next = array_get(&scanner->open_heredocs, index);
+        if (!next->nested) {
+            next->nested = index > 0 && nested;
+        }
+    }
 }
 
 static inline bool is_iden_char(int32_t c) {
@@ -307,8 +404,8 @@ static inline bool is_special_global_variable_char(int32_t c) {
 }
 
 static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
-    bool heredoc_body_start_is_valid = scanner->open_heredocs.size > 0 && !scanner->open_heredocs.contents[0].started &&
-                                       valid_symbols[HEREDOC_BODY_START];
+    // heredoc 本文の補間の中でも、その行で開いた heredoc は次の改行から読む。
+    Heredoc *pending = valid_symbols[HEREDOC_BODY_START] ? pending_heredoc(scanner) : NULL;
     bool crossed_newline = false;
 
     for (;;) {
@@ -324,18 +421,18 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                 skip(scanner, lexer);
                 break;
             case '\r':
-                if (heredoc_body_start_is_valid) {
+                if (pending != NULL) {
                     lexer->result_symbol = HEREDOC_BODY_START;
-                    scanner->open_heredocs.contents[0].started = true;
+                    pending->started = true;
                     return true;
                 } else {
                     skip(scanner, lexer);
                     break;
                 }
             case '\n':
-                if (heredoc_body_start_is_valid) {
+                if (pending != NULL) {
                     lexer->result_symbol = HEREDOC_BODY_START;
-                    scanner->open_heredocs.contents[0].started = true;
+                    pending->started = true;
                     return true;
                 } else if (!valid_symbols[NO_LINE_BREAK] && valid_symbols[LINE_BREAK] && !crossed_newline) {
                     lexer->mark_end(lexer);
@@ -1006,8 +1103,17 @@ static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_conte
     return false;
 }
 
-static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
-    Heredoc *heredoc = array_get(&scanner->open_heredocs, 0);
+static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
+    uint32_t index;
+    if (!find_current_heredoc(scanner, &index)) {
+        return false;
+    }
+    Heredoc *heredoc = array_get(&scanner->open_heredocs, index);
+    // この本文の行の補間で開いた heredoc は、行末の改行から外側の本文より先に読む。
+    Heredoc *nested = NULL;
+    if (valid_symbols[HEREDOC_BODY_START] && last_frame_head(scanner) > index) {
+        nested = pending_heredoc(scanner);
+    }
     size_t position_in_word = 0;
     bool look_for_heredoc_end = true;
     bool has_content = false;
@@ -1035,8 +1141,7 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
                     heredoc->end_line_pending = true;
                     lexer->result_symbol = HEREDOC_CONTENT;
                 } else {
-                    array_delete(&heredoc->word);
-                    array_erase(&scanner->open_heredocs, 0);
+                    close_heredoc(scanner, index);
                     lexer->result_symbol = HEREDOC_BODY_END;
                 }
                 return true;
@@ -1076,6 +1181,20 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
                     lexer->result_symbol = HEREDOC_CONTENT;
                     return true;
                 }
+                // 行末の '\' (行継続) は改行ごと escape_sequence になり、入れ子の本文を始める
+                // 行末を飲み込む。Ruby は行継続の行でも次の行から入れ子の本文を読むので、
+                // '\' だけを本文として返し、次の走査でその行末から入れ子の本文を始める。
+                if (nested != NULL) {
+                    advance(lexer);
+                    lexer->mark_end(lexer);
+                    if (lexer->lookahead == '\r') {
+                        advance(lexer);
+                    }
+                    if (lexer->lookahead == '\n') {
+                        lexer->result_symbol = HEREDOC_CONTENT;
+                        return true;
+                    }
+                }
                 return false;
             }
 
@@ -1092,6 +1211,28 @@ static inline bool scan_heredoc_content(Scanner *scanner, TSLexer *lexer) {
                 if (scan_short_interpolation(lexer, has_content, HEREDOC_CONTENT)) {
                     return true;
                 }
+                // 補間にならなかった '#' (と短縮補間に続かない '@' / '$') も本文に含める。
+                has_content = true;
+                lexer->mark_end(lexer);
+            } else if (nested != NULL && (lexer->lookahead == '\n' || lexer->lookahead == '\r')) {
+                // 入れ子の本文は、空白の経路と同じく行末 (CRLF は '\r') から始める。
+                // 外側の本文はその手前で区切り、単独 CR は本文に残す。
+                lexer->mark_end(lexer);
+                if (lexer->lookahead == '\r') {
+                    advance(lexer);
+                    if (lexer->lookahead != '\n') {
+                        has_content = true;
+                        lexer->mark_end(lexer);
+                        continue;
+                    }
+                }
+                if (has_content) {
+                    lexer->result_symbol = HEREDOC_CONTENT;
+                } else {
+                    nested->started = true;
+                    lexer->result_symbol = HEREDOC_BODY_START;
+                }
+                return true;
             } else if (lexer->lookahead == '\n') {
                 advance(lexer);
                 has_content = true;
@@ -1201,7 +1342,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
             return scan_literal_content(scanner, lexer);
         }
         if ((valid_symbols[HEREDOC_CONTENT] || valid_symbols[HEREDOC_BODY_END]) && scanner->open_heredocs.size > 0) {
-            return scan_heredoc_content(scanner, lexer);
+            return scan_heredoc_content(scanner, lexer, valid_symbols);
         }
     }
 
@@ -1292,7 +1433,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                     if (scan_heredoc_word(lexer, &heredoc)) {
                         if (can_serialize_with(scanner, &heredoc, 0)) {
                             lexer->mark_end(lexer);
-                            array_push(&scanner->open_heredocs, heredoc);
+                            open_heredoc(scanner, heredoc);
                             lexer->result_symbol = HEREDOC_START;
                             return true;
                         }
@@ -1526,7 +1667,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 array_delete(&heredoc.word);
                 return false;
             }
-            array_push(&scanner->open_heredocs, heredoc);
+            open_heredoc(scanner, heredoc);
             lexer->result_symbol = HEREDOC_START;
             return true;
         }
