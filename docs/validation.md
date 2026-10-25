@@ -1,4 +1,53 @@
-# 構文検証と保守記録（2026-10-08）
+# 構文検証と保守記録
+
+## 2026-10-25
+
+取得済みの5リポジトリにある全18,487件の `.rb` を、依存更新前・更新後・
+scanner の配列再利用の試作で比較した。匿名ノードも含む種別・フィールド・
+バイト範囲・行列範囲・named/extra 属性の全木ハッシュと、ERROR/MISSING の件数、
+Prism の診断はすべて一致した。入力の SHA256 と各リポジトリの SHA は
+[測定記録](benchmarks/2026-10-25/README.md)に保存している。
+配列再利用は割り当て回数を減らしたが、2回の測定で速度差を確定できず採用しなかった。
+最終的な文法・scannerは変更前と同じで、依存更新とテスト・検証基盤を残した。
+生成lexerのpragmaがRelease最適化を無効にしていた問題は、Rustビルド時のコピーで
+既知の無効化指定だけを外す修正を行った。生成物の原本は手編集していない
+（[Issue #20](https://github.com/owayo/tree-sitter-ruby/issues/20)）。
+
+| リポジトリ | `.rb` 数 | tree-sitter の失敗 | 新しい失敗 |
+|---|---:|---:|---:|
+| ruby/ruby | 7,462 | 5 | 0 |
+| rubocop/rubocop | 1,791 | 0 | 0 |
+| Homebrew/brew | 2,403 | 0 | 0 |
+| rails/rails | 3,481 | 0 | 0 |
+| mastodon/mastodon | 3,350 | 0 | 0 |
+| 合計 | 18,487 | 5 | 0 |
+
+Ruby の5件は下の2026-10-08の記録と同じ、意図的な負例2件・UTF-16入力2件・
+ローカル変数の束縛に依存する三項演算子1件である。全件を同じバイト列で検証し、
+性能比較の共通集合から外した理由も記録した。最新版 Prism 2.0.0 の既定APIでは、
+`-n` を含む shebang で使う `tool/fetch-bundled_gems.rb` のトップレベル `next` も
+診断されるため、主比較は両者が受理する18,481件に固定した。
+
+[Ruby 4.0 の公式 NEWS](https://docs.ruby-lang.org/en/4.0/NEWS_md.html)を再確認した。
+`*nil` と行頭の論理演算子、Ruby 3.4 の `it` と index assignment の制限は
+既存のコーパス・Rustテストで確認した。Ruby実行系は4.0.9。
+文法・クエリ・保存形式を変える必要は認めなかった。
+
+コーパス427件、Rustテスト98件（doc testを含む、Debug/Release）、Pythonテスト143件
+（Windowsで1件skip）を確認した。Windowsでは pnpm のコマンドにある単一引用符が
+`unittest` のパターンに残り0件になる問題を修正した
+（[Issue #19](https://github.com/owayo/tree-sitter-ruby/issues/19)）。
+Biome、Ruff lint/format、Rust fmt/Clippyも確認した。Cバインディングは変更していないため、
+CMakeの再検証は行っていない。Sonicopに関係する構文変更はなく、全木の一致を確認したため、
+Sonicop側の比較は追加していない。
+
+`depup --install --include-pinned` で Node 26.12.0、pnpm 12.14.0、Ruff 0.17.1、
+Rust 1.99.1、Biome 2.5.15、tree-sitter CLI/runtime 0.27.1、
+tree-sitter-language 0.1.9、cc 1.8.0へ更新した。Pythonは3.14.7を維持した。
+メジャー更新はない。CLI 0.27.1で再生成し、GCCの最適化無効化指定でもjump tableを維持する
+1行の変更を確認した。文法・AST・状態数9,135は不変。
+
+## 2026-10-08
 
 tree-sitter-cli 0.27.0 と Rust バインディングで実際の Ruby ソースを検証した。
 構文の受理・拒否とブロックの束縛は Ruby 4.0.6 の `ruby -c` と Prism AST を

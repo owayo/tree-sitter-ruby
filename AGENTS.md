@@ -14,9 +14,12 @@ Ruby の tree-sitter 文法パーサー。
 | `queries/tags.scm` | コードナビゲーション用タグクエリ（定義・参照） |
 | `queries/locals.scm` | ローカル変数スコープクエリ |
 | `bindings/` | Rust バインディングと C/C++ ヘッダー・pkg-config テンプレート |
+| `bindings/rust/build_support.rs` | 最適化するCargoプロファイル向けに、生成Cのビルド用コピーを準備する |
 | `test/corpus/` | パーサーのコーパステスト |
 | `test/highlight/` | ハイライトクエリのテスト |
 | `test/tags/` | タグクエリのテスト |
+| `tools/parse-benchmark/` | Prism と比較する独立した開発用ハーネス（通常の利用依存には含めない） |
+| `docs/benchmarks/` | 入力のハッシュ・受理差・新規フルパースの測定記録 |
 
 ## 開発コマンド
 
@@ -244,6 +247,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `python3 scripts/corpus_test.py` で確認する
+- scanner の保存状態は、長い終端語・Unicode・複数リテラル・復元途中の破損を交互に復元しても、以前の要素を残さないことを繰り返し復元の Rust テストで確認する
+- Rustの最適化プロファイルでは、生成器が入れた最適化無効化pragmaをOUT_DIRのコピーだけで外す。src/parser.cを手編集せず、最適化フラグと実際のコピーの両方を確認し、cargo test --releaseも実行する。opt-level=0では生成物の原本を使う
 - Unicode heredoc 終端語は UTF-8 バイト列として保存・照合し、ASCII 終端語の 1 文字 1 バイト表現と serialization buffer 容量を維持すること
 - `global_variable` の名前部分は共通の Unicode 識別子文字ルールと同期し、`scan_short_interpolation()` の `$name` / `$-x` 判定でも ASCII 外文字を locale 非依存で許可すること
 - tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う

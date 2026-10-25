@@ -1,0 +1,53 @@
+{
+  "condition": "cold validation only; tree destruction excluded; not the full-parse benchmark",
+  "bands": {
+    "0-1KiB": {
+      "files": 7846,
+      "bytes": 3472225,
+      "ts": {
+        "median_ms": 0.0657,
+        "p95_ms": 0.1726
+      },
+      "prism": {
+        "median_ms": 0.007,
+        "p95_ms": 0.0177
+      }
+    },
+    "1-10KiB": {
+      "files": 8906,
+      "bytes": 30297149,
+      "ts": {
+        "median_ms": 0.3804,
+        "p95_ms": 1.227
+      },
+      "prism": {
+        "median_ms": 0.0349,
+        "p95_ms": 0.1007
+      }
+    },
+    "10-100KiB": {
+      "files": 1695,
+      "bytes": 40887690,
+      "ts": {
+        "median_ms": 2.3456,
+        "p95_ms": 9.0872
+      },
+      "prism": {
+        "median_ms": 0.1844,
+        "p95_ms": 0.6645
+      }
+    },
+    "100KiB+": {
+      "files": 34,
+      "bytes": 12464596,
+      "ts": {
+        "median_ms": 25.1616,
+        "p95_ms": 268.7924
+      },
+      "prism": {
+        "median_ms": 2.0139,
+        "p95_ms": 8.143
+      }
+    }
+  }
+}

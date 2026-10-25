@@ -141,3 +141,34 @@ fn oversized_word_length_does_not_overflow_bounds_check() {
     scanner.restore(&bytes);
     assert_eq!(scanner.save(), [0, 0]);
 }
+
+#[test]
+fn repeated_restore_discards_old_words_and_partial_literals() {
+    let mut scanner = Scanner::new();
+    let mut literals = vec![2];
+    for _ in 0..2 {
+        literals.extend_from_slice(&[3, b'"', b'"']);
+        literals.extend_from_slice(&1u32.to_ne_bytes());
+        literals.push(1);
+    }
+    literals.push(0);
+    let long_word = vec![b'A'; 1015];
+    let states = [
+        literals.clone(),
+        heredoc_state(&long_word, 1),
+        heredocs_state(&[("終端".as_bytes(), 1), (b"B", 0), (b"C", 5)]),
+        heredoc_state(b"", 1),
+        vec![0, 0],
+    ];
+    // 以前の長い終端語や復元途中のリテラルを、次の状態に残さない。
+    for _ in 0..100 {
+        for state in &states {
+            scanner.restore(state);
+            assert_eq!(scanner.save(), *state);
+            scanner.restore(&literals[..literals.len() - 2]);
+            assert_eq!(scanner.save(), [0, 0]);
+            scanner.restore(state);
+            assert_eq!(scanner.save(), *state);
+        }
+    }
+}
