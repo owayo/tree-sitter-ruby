@@ -1,0 +1,14 @@
+reuse-trial-1 rails_rails improvement% 6.883 ratio 0.064
+reuse-trial-1 ruby_ruby improvement% 1.488 ratio 0.0557
+reuse-trial-1 rubocop_rubocop improvement% 1.365 ratio 0.077
+reuse-trial-1 Homebrew_brew improvement% 1.964 ratio 0.066
+reuse-trial-1 mastodon_mastodon improvement% 2.471 ratio 0.0675
+reuse-trial-1 total improvement% 2.791 ratio 0.0615
+reuse-trial-2 rails_rails improvement% 2.135 ratio 0.0646
+reuse-trial-2 ruby_ruby improvement% 0.541 ratio 0.0558
+reuse-trial-2 rubocop_rubocop improvement% 1.991 ratio 0.0763
+reuse-trial-2 Homebrew_brew improvement% 0.41 ratio 0.0657
+reuse-trial-2 mastodon_mastodon improvement% 0.511 ratio 0.068
+reuse-trial-2 total improvement% 0.275 ratio 0.0608
+rails_rails paired improvements [5.021, 0.195, -0.707, 2.323, 7.227, 9.256, 6.254, -22.434, 1.805, -16.737, -1.859, -1.139, 5.56, 2.512] wins 9 median 2.064014377285278 bootstrap95 -1.1386380142372587 5.560159425572619 CPU median% 1.6576609579631862
+total paired improvements [5.376, 1.222, -1.261, 1.003, 3.961, 1.018, 3.683, -4.952, -5.394, -13.269, 2.538, -3.044, 1.97, 4.683] wins 9 median 1.119996231202508 bootstrap95 -3.0437581297668714 3.249310428381519 CPU median% 1.4953414261630604

@@ -1,0 +1,92 @@
+{
+  "rails_rails": {
+    "ts": {
+      "median_ms": 2800.4888,
+      "min_ms": 2711.4375,
+      "max_ms": 2979.3858,
+      "cpu_median_ms": 2796.875
+    },
+    "prism": {
+      "median_ms": 177.364,
+      "min_ms": 172.1473,
+      "max_ms": 182.623,
+      "cpu_median_ms": 171.875
+    },
+    "prism_over_ts": 0.06333322954192853
+  },
+  "ruby_ruby": {
+    "ts": {
+      "median_ms": 6788.2117,
+      "min_ms": 6537.5431,
+      "max_ms": 7526.8234,
+      "cpu_median_ms": 6750.0
+    },
+    "prism": {
+      "median_ms": 363.9742,
+      "min_ms": 355.7586,
+      "max_ms": 394.9856,
+      "cpu_median_ms": 359.375
+    },
+    "prism_over_ts": 0.053618569379620264
+  },
+  "rubocop_rubocop": {
+    "ts": {
+      "median_ms": 1096.8048,
+      "min_ms": 1092.859,
+      "max_ms": 1146.6795,
+      "cpu_median_ms": 1093.75
+    },
+    "prism": {
+      "median_ms": 81.2531,
+      "min_ms": 80.4672,
+      "max_ms": 85.5781,
+      "cpu_median_ms": 93.75
+    },
+    "prism_over_ts": 0.07408164150995693
+  },
+  "Homebrew_brew": {
+    "ts": {
+      "median_ms": 2075.9842,
+      "min_ms": 2035.0201,
+      "max_ms": 2265.7147,
+      "cpu_median_ms": 2062.5
+    },
+    "prism": {
+      "median_ms": 133.9391,
+      "min_ms": 132.3163,
+      "max_ms": 138.6355,
+      "cpu_median_ms": 125.0
+    },
+    "prism_over_ts": 0.0645183619412903
+  },
+  "mastodon_mastodon": {
+    "ts": {
+      "median_ms": 945.1375,
+      "min_ms": 923.817,
+      "max_ms": 991.1175,
+      "cpu_median_ms": 937.5
+    },
+    "prism": {
+      "median_ms": 62.925,
+      "min_ms": 61.1172,
+      "max_ms": 64.217,
+      "cpu_median_ms": 62.5
+    },
+    "prism_over_ts": 0.06657761436827975
+  },
+  "total": {
+    "ts": {
+      "median_ms": 13973.2847,
+      "min_ms": 13373.9648,
+      "max_ms": 14709.0321,
+      "cpu_median_ms": 13921.875
+    },
+    "prism": {
+      "median_ms": 824.7415,
+      "min_ms": 808.13,
+      "max_ms": 849.1922,
+      "cpu_median_ms": 812.5
+    },
+    "prism_over_ts": 0.0590227364364801
+  }
+}

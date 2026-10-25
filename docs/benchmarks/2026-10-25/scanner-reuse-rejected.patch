@@ -1,0 +1,20 @@
+diff --git a/src/scanner.c b/src/scanner.c
+index 5616520..6dffcec 100644
+--- a/src/scanner.c
++++ b/src/scanner.c
+@@ -158,11 +158,13 @@ static inline uint32_t match_utf8_codepoint(const String *string, size_t positio
+ }
+ 
+ static inline void reset(Scanner *scanner) {
+-    array_delete(&scanner->literal_stack);
++    // 状態復元のたびの再確保を避け、配列の領域は scanner の破棄時に解放する。
++    // heredoc の終端語は所有する領域を残さず解放し、論理的な状態は空に戻す。
++    array_clear(&scanner->literal_stack);
+     for (uint32_t i = 0; i < scanner->open_heredocs.size; i++) {
+         array_delete(&array_get(&scanner->open_heredocs, i)->word);
+     }
+-    array_delete(&scanner->open_heredocs);
++    array_clear(&scanner->open_heredocs);
+ }
+ 
+ static inline bool can_serialize_with(Scanner *scanner, const Heredoc *new_heredoc, unsigned extra_literals) {

@@ -1,0 +1,1 @@
+{"events":{"Lex:consume":497858,"Lex:skip":54410,"Parse:accept":1,"Parse:condense":679,"Parse:detect_error":447,"Parse:done":1,"Parse:lex_external":47660,"Parse:lex_internal":26542,"Parse:lexed_lookahead":47475,"Parse:new_parse":1,"Parse:process":47697,"Parse:reduce":107371,"Parse:shift":47213,"Parse:shift_extra":36},"path":"actionview/test/template/date_helper_test.rb"}

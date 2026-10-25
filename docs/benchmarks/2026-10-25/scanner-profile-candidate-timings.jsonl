@@ -1,0 +1,5 @@
+{"bytes":19969246,"corpus":"rails_rails","cpu_ns":3671875000,"engine":"ts","files":3481,"memory":{"peak_commit_bytes":108597248,"peak_rss_bytes":114765824},"round":0,"wall_ns":3692626100}
+{"bytes":35991793,"corpus":"ruby_ruby","cpu_ns":8625000000,"engine":"ts","files":7456,"memory":{"peak_commit_bytes":261394432,"peak_rss_bytes":261521408},"round":0,"wall_ns":8669220300}
+{"bytes":11567191,"corpus":"rubocop_rubocop","cpu_ns":1281250000,"engine":"ts","files":1791,"memory":{"peak_commit_bytes":261394432,"peak_rss_bytes":261521408},"round":0,"wall_ns":1287141600}
+{"bytes":13531218,"corpus":"Homebrew_brew","cpu_ns":2531250000,"engine":"ts","files":2403,"memory":{"peak_commit_bytes":261394432,"peak_rss_bytes":261521408},"round":0,"wall_ns":2532551900}
+{"bytes":6062212,"corpus":"mastodon_mastodon","cpu_ns":1203125000,"engine":"ts","files":3350,"memory":{"peak_commit_bytes":261394432,"peak_rss_bytes":261521408},"round":0,"wall_ns":1195046300}

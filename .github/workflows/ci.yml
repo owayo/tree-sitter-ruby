@@ -117,10 +117,12 @@ jobs:
           PYTHONUTF8: "1"
           PYTHONIOENCODING: utf-8
         run: python3 -m unittest discover -s scripts -p 'test_*.py'
-      - name: Run Rust tests
+      - name: Run Rust tests in debug and release
         if: runner.os != 'Windows'
         shell: bash
-        run: cargo test
+        run: |
+          cargo test
+          cargo test --release
       - name: Build and test C binding
         if: runner.os != 'Windows'
         shell: bash
