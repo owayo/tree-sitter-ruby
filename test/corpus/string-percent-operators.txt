@@ -1,0 +1,83 @@
+========================================
+string formatting preserves array expressions
+========================================
+
+puts "%3d %s"%[l+1, line]
+
+---
+
+(program
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (binary
+        left: (string (string_content))
+        right: (array
+          (binary left: (identifier) right: (integer))
+          (identifier))))))
+
+========================================
+typed percent after a string is an operator
+========================================
+
+"a"%q[x]
+'a' %Q[x]
+%q[a]%[x]
+?a%q[x]
+
+---
+
+(program
+  (binary
+    left: (string (string_content))
+    right: (element_reference object: (identifier) (identifier)))
+  (binary
+    left: (string (string_content))
+    right: (element_reference object: (constant) (identifier)))
+  (binary
+    left: (string (string_content))
+    right: (array (identifier)))
+  (binary
+    left: (character)
+    right: (element_reference object: (identifier) (identifier))))
+
+========================================
+quoted strings concatenate after percent strings
+========================================
+
+%q[a] "b"
+%Q[a] 'b'
+?a "b"
+puts %q[a] "b"
+
+---
+
+(program
+  (chained_string
+    (string (string_content))
+    (string (string_content)))
+  (chained_string
+    (string (string_content))
+    (string (string_content)))
+  (chained_string
+    (character)
+    (string (string_content)))
+  (call
+    method: (identifier)
+    arguments: (argument_list
+      (chained_string
+        (string (string_content))
+        (string (string_content))))))
+
+========================================
+percent literal remains valid after a binary percent
+========================================
+
+"a"%%q[x]
+
+---
+
+(program
+  (binary
+    left: (string (string_content))
+    right: (string (string_content))))

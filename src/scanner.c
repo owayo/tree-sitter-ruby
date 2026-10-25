@@ -814,6 +814,12 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
             return true;
 
         case '%':
+            // 引用文字列の連結だけを待つ位置では `%w[]` などの配列は有効でない。
+            // この位置の `%` は、空白や型指定の有無によらず二項演算子になる。
+            // `"%s"%[value]` や `"a"%q[x]` を後続の文字列として読まない。
+            if (!valid_symbols[STRING_ARRAY_START]) {
+                return false;
+            }
             // ローカル変数の後の `%` は percent literal の開始ではなく剰余演算子。
             // `/` 演算子が有効な位置では `%` 演算子も有効になる。
             if (scanner->binary_operator_hint && valid_symbols[FORWARD_SLASH] && !is_expression_start(valid_symbols)) {
