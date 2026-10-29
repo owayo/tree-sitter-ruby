@@ -1,37 +1,37 @@
 {
-  "ruby_ruby": {
-    "head": "349d9d65bc6e8967cb9c6e8f985474c7e2d50c43",
-    "source_sha": "349d9d65bc6e8967cb9c6e8f985474c7e2d50c43",
-    "status": "",
-    "files": 7462,
-    "url": "https://github.com/ruby/ruby.git"
-  },
-  "rubocop_rubocop": {
-    "head": "c8e7fcc72106d6dcf4464c57cf885f9dcdaa2677",
-    "source_sha": "c8e7fcc72106d6dcf4464c57cf885f9dcdaa2677",
-    "status": "",
-    "files": 1791,
-    "url": "https://github.com/rubocop/rubocop.git"
-  },
-  "Homebrew_brew": {
-    "head": "c5b9f65d0b679d719545df334e8d433a5b6ded3f",
-    "source_sha": "c5b9f65d0b679d719545df334e8d433a5b6ded3f",
-    "status": "",
-    "files": 2403,
-    "url": "https://github.com/Homebrew/brew.git"
-  },
-  "rails_rails": {
-    "head": "c4f04bd5715c64f58655c22c2db6d505858afdeb",
-    "source_sha": "c4f04bd5715c64f58655c22c2db6d505858afdeb",
-    "status": "",
-    "files": 3481,
-    "url": "https://github.com/rails/rails.git"
-  },
-  "mastodon_mastodon": {
-    "head": "f045f6b43fa813564ddeaeffd8d7736e0ef19835",
-    "source_sha": "f045f6b43fa813564ddeaeffd8d7736e0ef19835",
-    "status": "",
-    "files": 3350,
-    "url": "https://github.com/mastodon/mastodon.git"
-  }
+	"ruby_ruby": {
+		"head": "349d9d65bc6e8967cb9c6e8f985474c7e2d50c43",
+		"source_sha": "349d9d65bc6e8967cb9c6e8f985474c7e2d50c43",
+		"status": "",
+		"files": 7462,
+		"url": "https://github.com/ruby/ruby.git"
+	},
+	"rubocop_rubocop": {
+		"head": "c8e7fcc72106d6dcf4464c57cf885f9dcdaa2677",
+		"source_sha": "c8e7fcc72106d6dcf4464c57cf885f9dcdaa2677",
+		"status": "",
+		"files": 1791,
+		"url": "https://github.com/rubocop/rubocop.git"
+	},
+	"Homebrew_brew": {
+		"head": "c5b9f65d0b679d719545df334e8d433a5b6ded3f",
+		"source_sha": "c5b9f65d0b679d719545df334e8d433a5b6ded3f",
+		"status": "",
+		"files": 2403,
+		"url": "https://github.com/Homebrew/brew.git"
+	},
+	"rails_rails": {
+		"head": "c4f04bd5715c64f58655c22c2db6d505858afdeb",
+		"source_sha": "c4f04bd5715c64f58655c22c2db6d505858afdeb",
+		"status": "",
+		"files": 3481,
+		"url": "https://github.com/rails/rails.git"
+	},
+	"mastodon_mastodon": {
+		"head": "f045f6b43fa813564ddeaeffd8d7736e0ef19835",
+		"source_sha": "f045f6b43fa813564ddeaeffd8d7736e0ef19835",
+		"status": "",
+		"files": 3350,
+		"url": "https://github.com/mastodon/mastodon.git"
+	}
 }

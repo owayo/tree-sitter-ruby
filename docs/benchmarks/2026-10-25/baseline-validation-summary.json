@@ -1,37 +1,37 @@
 {
-  "ruby_ruby": {
-    "files": 7462,
-    "bytes": 35993996,
-    "ts_failures": 5,
-    "prism_failures": 3,
-    "common": 7456
-  },
-  "rubocop_rubocop": {
-    "files": 1791,
-    "bytes": 11567191,
-    "ts_failures": 0,
-    "prism_failures": 0,
-    "common": 1791
-  },
-  "Homebrew_brew": {
-    "files": 2403,
-    "bytes": 13531218,
-    "ts_failures": 0,
-    "prism_failures": 0,
-    "common": 2403
-  },
-  "rails_rails": {
-    "files": 3481,
-    "bytes": 19969246,
-    "ts_failures": 0,
-    "prism_failures": 0,
-    "common": 3481
-  },
-  "mastodon_mastodon": {
-    "files": 3350,
-    "bytes": 6062212,
-    "ts_failures": 0,
-    "prism_failures": 0,
-    "common": 3350
-  }
+	"ruby_ruby": {
+		"files": 7462,
+		"bytes": 35993996,
+		"ts_failures": 5,
+		"prism_failures": 3,
+		"common": 7456
+	},
+	"rubocop_rubocop": {
+		"files": 1791,
+		"bytes": 11567191,
+		"ts_failures": 0,
+		"prism_failures": 0,
+		"common": 1791
+	},
+	"Homebrew_brew": {
+		"files": 2403,
+		"bytes": 13531218,
+		"ts_failures": 0,
+		"prism_failures": 0,
+		"common": 2403
+	},
+	"rails_rails": {
+		"files": 3481,
+		"bytes": 19969246,
+		"ts_failures": 0,
+		"prism_failures": 0,
+		"common": 3481
+	},
+	"mastodon_mastodon": {
+		"files": 3350,
+		"bytes": 6062212,
+		"ts_failures": 0,
+		"prism_failures": 0,
+		"common": 3350
+	}
 }

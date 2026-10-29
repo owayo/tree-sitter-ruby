@@ -1,128 +1,128 @@
 {
-  "rails_rails": {
-    "ts": {
-      "median_ms": 2826.6481,
-      "min_ms": 2765.6665,
-      "max_ms": 3191.8335,
-      "cpu_median_ms": 2796.875
-    },
-    "prism": {
-      "median_ms": 180.795,
-      "min_ms": 175.7992,
-      "max_ms": 186.7242,
-      "cpu_median_ms": 187.5
-    },
-    "control": {
-      "median_ms": 3035.6025,
-      "min_ms": 2812.8622,
-      "max_ms": 3169.4167,
-      "cpu_median_ms": 2984.375
-    },
-    "prism_over_ts": 0.06396091540365424
-  },
-  "ruby_ruby": {
-    "ts": {
-      "median_ms": 6722.1281,
-      "min_ms": 6505.4536,
-      "max_ms": 7257.9674,
-      "cpu_median_ms": 6656.25
-    },
-    "prism": {
-      "median_ms": 374.5641,
-      "min_ms": 367.1302,
-      "max_ms": 380.3074,
-      "cpu_median_ms": 375.0
-    },
-    "control": {
-      "median_ms": 6823.6974,
-      "min_ms": 6702.7262,
-      "max_ms": 7367.4432,
-      "cpu_median_ms": 6734.375
-    },
-    "prism_over_ts": 0.05572105952577726
-  },
-  "rubocop_rubocop": {
-    "ts": {
-      "median_ms": 1105.0375,
-      "min_ms": 1091.6238,
-      "max_ms": 1520.3601,
-      "cpu_median_ms": 1093.75
-    },
-    "prism": {
-      "median_ms": 85.072,
-      "min_ms": 81.2871,
-      "max_ms": 92.1807,
-      "cpu_median_ms": 93.75
-    },
-    "control": {
-      "median_ms": 1120.3313,
-      "min_ms": 1104.4777,
-      "max_ms": 1165.1835,
-      "cpu_median_ms": 1125.0
-    },
-    "prism_over_ts": 0.0769856226598645
-  },
-  "Homebrew_brew": {
-    "ts": {
-      "median_ms": 2097.8862,
-      "min_ms": 2081.7899,
-      "max_ms": 2158.1658,
-      "cpu_median_ms": 2078.125
-    },
-    "prism": {
-      "median_ms": 138.4638,
-      "min_ms": 135.5881,
-      "max_ms": 147.5923,
-      "cpu_median_ms": 140.625
-    },
-    "control": {
-      "median_ms": 2139.9149,
-      "min_ms": 2090.6459,
-      "max_ms": 2245.28,
-      "cpu_median_ms": 2125.0
-    },
-    "prism_over_ts": 0.0660015781599593
-  },
-  "mastodon_mastodon": {
-    "ts": {
-      "median_ms": 963.4792,
-      "min_ms": 937.6461,
-      "max_ms": 1090.0309,
-      "cpu_median_ms": 953.125
-    },
-    "prism": {
-      "median_ms": 65.0596,
-      "min_ms": 63.062,
-      "max_ms": 70.1681,
-      "cpu_median_ms": 62.5
-    },
-    "control": {
-      "median_ms": 987.895,
-      "min_ms": 960.1882,
-      "max_ms": 1028.2014,
-      "cpu_median_ms": 984.375
-    },
-    "prism_over_ts": 0.06752569230347683
-  },
-  "total": {
-    "ts": {
-      "median_ms": 13718.5375,
-      "min_ms": 13517.4054,
-      "max_ms": 14604.2244,
-      "cpu_median_ms": 13578.125
-    },
-    "prism": {
-      "median_ms": 843.8974,
-      "min_ms": 827.9353,
-      "max_ms": 871.0448,
-      "cpu_median_ms": 843.75
-    },
-    "control": {
-      "median_ms": 14112.3511,
-      "min_ms": 13781.7482,
-      "max_ms": 14835.0759,
-      "cpu_median_ms": 13968.75
-    },
-    "prism_over_ts": 0.06151511412933047
-  }
+	"rails_rails": {
+		"ts": {
+			"median_ms": 2826.6481,
+			"min_ms": 2765.6665,
+			"max_ms": 3191.8335,
+			"cpu_median_ms": 2796.875
+		},
+		"prism": {
+			"median_ms": 180.795,
+			"min_ms": 175.7992,
+			"max_ms": 186.7242,
+			"cpu_median_ms": 187.5
+		},
+		"control": {
+			"median_ms": 3035.6025,
+			"min_ms": 2812.8622,
+			"max_ms": 3169.4167,
+			"cpu_median_ms": 2984.375
+		},
+		"prism_over_ts": 0.06396091540365424
+	},
+	"ruby_ruby": {
+		"ts": {
+			"median_ms": 6722.1281,
+			"min_ms": 6505.4536,
+			"max_ms": 7257.9674,
+			"cpu_median_ms": 6656.25
+		},
+		"prism": {
+			"median_ms": 374.5641,
+			"min_ms": 367.1302,
+			"max_ms": 380.3074,
+			"cpu_median_ms": 375.0
+		},
+		"control": {
+			"median_ms": 6823.6974,
+			"min_ms": 6702.7262,
+			"max_ms": 7367.4432,
+			"cpu_median_ms": 6734.375
+		},
+		"prism_over_ts": 0.05572105952577726
+	},
+	"rubocop_rubocop": {
+		"ts": {
+			"median_ms": 1105.0375,
+			"min_ms": 1091.6238,
+			"max_ms": 1520.3601,
+			"cpu_median_ms": 1093.75
+		},
+		"prism": {
+			"median_ms": 85.072,
+			"min_ms": 81.2871,
+			"max_ms": 92.1807,
+			"cpu_median_ms": 93.75
+		},
+		"control": {
+			"median_ms": 1120.3313,
+			"min_ms": 1104.4777,
+			"max_ms": 1165.1835,
+			"cpu_median_ms": 1125.0
+		},
+		"prism_over_ts": 0.0769856226598645
+	},
+	"Homebrew_brew": {
+		"ts": {
+			"median_ms": 2097.8862,
+			"min_ms": 2081.7899,
+			"max_ms": 2158.1658,
+			"cpu_median_ms": 2078.125
+		},
+		"prism": {
+			"median_ms": 138.4638,
+			"min_ms": 135.5881,
+			"max_ms": 147.5923,
+			"cpu_median_ms": 140.625
+		},
+		"control": {
+			"median_ms": 2139.9149,
+			"min_ms": 2090.6459,
+			"max_ms": 2245.28,
+			"cpu_median_ms": 2125.0
+		},
+		"prism_over_ts": 0.0660015781599593
+	},
+	"mastodon_mastodon": {
+		"ts": {
+			"median_ms": 963.4792,
+			"min_ms": 937.6461,
+			"max_ms": 1090.0309,
+			"cpu_median_ms": 953.125
+		},
+		"prism": {
+			"median_ms": 65.0596,
+			"min_ms": 63.062,
+			"max_ms": 70.1681,
+			"cpu_median_ms": 62.5
+		},
+		"control": {
+			"median_ms": 987.895,
+			"min_ms": 960.1882,
+			"max_ms": 1028.2014,
+			"cpu_median_ms": 984.375
+		},
+		"prism_over_ts": 0.06752569230347683
+	},
+	"total": {
+		"ts": {
+			"median_ms": 13718.5375,
+			"min_ms": 13517.4054,
+			"max_ms": 14604.2244,
+			"cpu_median_ms": 13578.125
+		},
+		"prism": {
+			"median_ms": 843.8974,
+			"min_ms": 827.9353,
+			"max_ms": 871.0448,
+			"cpu_median_ms": 843.75
+		},
+		"control": {
+			"median_ms": 14112.3511,
+			"min_ms": 13781.7482,
+			"max_ms": 14835.0759,
+			"cpu_median_ms": 13968.75
+		},
+		"prism_over_ts": 0.06151511412933047
+	}
 }

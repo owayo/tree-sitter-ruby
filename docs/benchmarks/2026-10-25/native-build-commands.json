@@ -1,1138 +1,1138 @@
 [
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-arena.o",
-      "-c",
-      "<prism-2.0.0>/src/arena.c"
-    ]
-  },
-  {
-    "package": "[tree-sitter-ruby 26.10.104]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-std:c11",
-      "-I",
-      "src",
-      "-W4",
-      "-utf-8",
-      "-Fo<OUT>/ea708c7824d36062-parser.o",
-      "-c",
-      "src/parser.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-buffer.o",
-      "-c",
-      "<prism-2.0.0>/src/buffer.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-char.o",
-      "-c",
-      "<prism-2.0.0>/src/char.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-comments.o",
-      "-c",
-      "<prism-2.0.0>/src/comments.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-constant_pool.o",
-      "-c",
-      "<prism-2.0.0>/src/constant_pool.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-diagnostic.o",
-      "-c",
-      "<prism-2.0.0>/src/diagnostic.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-encoding.o",
-      "-c",
-      "<prism-2.0.0>/src/encoding.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-errors_format.o",
-      "-c",
-      "<prism-2.0.0>/src/errors_format.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-integer.o",
-      "-c",
-      "<prism-2.0.0>/src/integer.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-json.o",
-      "-c",
-      "<prism-2.0.0>/src/json.c"
-    ]
-  },
-  {
-    "package": "[tree-sitter-ruby 26.10.104]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-std:c11",
-      "-I",
-      "src",
-      "-W4",
-      "-utf-8",
-      "-Fo<OUT>/ea708c7824d36062-scanner.o",
-      "-c",
-      "src/scanner.c"
-    ]
-  },
-  {
-    "package": "[tree-sitter 0.27.1]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-std:c11",
-      "-I",
-      "<tree-sitter-0.27.1>/src",
-      "-I",
-      "<tree-sitter-0.27.1>/src/wasm",
-      "-I",
-      "<tree-sitter-0.27.1>/include",
-      "-W0",
-      "-D_POSIX_C_SOURCE=200112L",
-      "-D_DEFAULT_SOURCE",
-      "-D_BSD_SOURCE",
-      "-D_DARWIN_C_SOURCE",
-      "-Fo<OUT>/9d101ca0d5afdee2-lib.o",
-      "-c",
-      "<tree-sitter-0.27.1>/src/lib.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-line_offset_list.o",
-      "-c",
-      "<prism-2.0.0>/src/line_offset_list.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-list.o",
-      "-c",
-      "<prism-2.0.0>/src/list.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-memchr.o",
-      "-c",
-      "<prism-2.0.0>/src/memchr.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-node.o",
-      "-c",
-      "<prism-2.0.0>/src/node.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-options.o",
-      "-c",
-      "<prism-2.0.0>/src/options.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-parser.o",
-      "-c",
-      "<prism-2.0.0>/src/parser.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-prettyprint.o",
-      "-c",
-      "<prism-2.0.0>/src/prettyprint.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-prism.o",
-      "-c",
-      "<prism-2.0.0>/src/prism.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-regexp.o",
-      "-c",
-      "<prism-2.0.0>/src/regexp.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-serialize.o",
-      "-c",
-      "<prism-2.0.0>/src/serialize.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-source.o",
-      "-c",
-      "<prism-2.0.0>/src/source.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-static_literals.o",
-      "-c",
-      "<prism-2.0.0>/src/static_literals.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-stringy.o",
-      "-c",
-      "<prism-2.0.0>/src/stringy.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-string_query.o",
-      "-c",
-      "<prism-2.0.0>/src/string_query.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-strncasecmp.o",
-      "-c",
-      "<prism-2.0.0>/src/strncasecmp.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-strpbrk.o",
-      "-c",
-      "<prism-2.0.0>/src/strpbrk.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-tokens.o",
-      "-c",
-      "<prism-2.0.0>/src/tokens.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-xxh3.o",
-      "-c",
-      "<prism-2.0.0>/src/xxh3.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-arena.o",
-      "-c",
-      "<prism-2.0.0>/src/arena.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-buffer.o",
-      "-c",
-      "<prism-2.0.0>/src/buffer.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-char.o",
-      "-c",
-      "<prism-2.0.0>/src/char.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-comments.o",
-      "-c",
-      "<prism-2.0.0>/src/comments.c"
-    ]
-  },
-  {
-    "package": "[tree-sitter 0.27.1]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-std:c11",
-      "-I",
-      "<tree-sitter-0.27.1>/src",
-      "-I",
-      "<tree-sitter-0.27.1>/src/wasm",
-      "-I",
-      "<tree-sitter-0.27.1>/include",
-      "-W0",
-      "-D_POSIX_C_SOURCE=200112L",
-      "-D_DEFAULT_SOURCE",
-      "-D_BSD_SOURCE",
-      "-D_DARWIN_C_SOURCE",
-      "-Fo<OUT>/9d101ca0d5afdee2-lib.o",
-      "-c",
-      "<tree-sitter-0.27.1>/src/lib.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-constant_pool.o",
-      "-c",
-      "<prism-2.0.0>/src/constant_pool.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-diagnostic.o",
-      "-c",
-      "<prism-2.0.0>/src/diagnostic.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-encoding.o",
-      "-c",
-      "<prism-2.0.0>/src/encoding.c"
-    ]
-  },
-  {
-    "package": "[tree-sitter-ruby 26.10.104]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-std:c11",
-      "-I",
-      "src",
-      "-W4",
-      "-utf-8",
-      "-Fo<OUT>/db3b6bfb95261072-parser-optimized.o",
-      "-c",
-      "<OUT>/parser-optimized.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-errors_format.o",
-      "-c",
-      "<prism-2.0.0>/src/errors_format.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-integer.o",
-      "-c",
-      "<prism-2.0.0>/src/integer.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-json.o",
-      "-c",
-      "<prism-2.0.0>/src/json.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-line_offset_list.o",
-      "-c",
-      "<prism-2.0.0>/src/line_offset_list.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-list.o",
-      "-c",
-      "<prism-2.0.0>/src/list.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-memchr.o",
-      "-c",
-      "<prism-2.0.0>/src/memchr.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-node.o",
-      "-c",
-      "<prism-2.0.0>/src/node.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-options.o",
-      "-c",
-      "<prism-2.0.0>/src/options.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-parser.o",
-      "-c",
-      "<prism-2.0.0>/src/parser.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-prettyprint.o",
-      "-c",
-      "<prism-2.0.0>/src/prettyprint.c"
-    ]
-  },
-  {
-    "package": "[tree-sitter-ruby 26.10.104]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-std:c11",
-      "-I",
-      "src",
-      "-W4",
-      "-utf-8",
-      "-Fo<OUT>/ea708c7824d36062-scanner.o",
-      "-c",
-      "src/scanner.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-prism.o",
-      "-c",
-      "<prism-2.0.0>/src/prism.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-regexp.o",
-      "-c",
-      "<prism-2.0.0>/src/regexp.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-serialize.o",
-      "-c",
-      "<prism-2.0.0>/src/serialize.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-source.o",
-      "-c",
-      "<prism-2.0.0>/src/source.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-static_literals.o",
-      "-c",
-      "<prism-2.0.0>/src/static_literals.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-stringy.o",
-      "-c",
-      "<prism-2.0.0>/src/stringy.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-string_query.o",
-      "-c",
-      "<prism-2.0.0>/src/string_query.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-strncasecmp.o",
-      "-c",
-      "<prism-2.0.0>/src/strncasecmp.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-strpbrk.o",
-      "-c",
-      "<prism-2.0.0>/src/strpbrk.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-tokens.o",
-      "-c",
-      "<prism-2.0.0>/src/tokens.c"
-    ]
-  },
-  {
-    "package": "[ruby-prism-sys 2.0.0]",
-    "args": [
-      "cl.exe",
-      "-nologo",
-      "-MD",
-      "-O2",
-      "-Z7",
-      "-Brepro",
-      "-I",
-      "<prism-2.0.0>/include",
-      "-W4",
-      "-DPRISM_EXPORT_SYMBOLS=1",
-      "-Fo<OUT>/bc9d1b48c8e3c824-xxh3.o",
-      "-c",
-      "<prism-2.0.0>/src/xxh3.c"
-    ]
-  }
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-arena.o",
+			"-c",
+			"<prism-2.0.0>/src/arena.c"
+		]
+	},
+	{
+		"package": "[tree-sitter-ruby 26.10.104]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-std:c11",
+			"-I",
+			"src",
+			"-W4",
+			"-utf-8",
+			"-Fo<OUT>/ea708c7824d36062-parser.o",
+			"-c",
+			"src/parser.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-buffer.o",
+			"-c",
+			"<prism-2.0.0>/src/buffer.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-char.o",
+			"-c",
+			"<prism-2.0.0>/src/char.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-comments.o",
+			"-c",
+			"<prism-2.0.0>/src/comments.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-constant_pool.o",
+			"-c",
+			"<prism-2.0.0>/src/constant_pool.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-diagnostic.o",
+			"-c",
+			"<prism-2.0.0>/src/diagnostic.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-encoding.o",
+			"-c",
+			"<prism-2.0.0>/src/encoding.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-errors_format.o",
+			"-c",
+			"<prism-2.0.0>/src/errors_format.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-integer.o",
+			"-c",
+			"<prism-2.0.0>/src/integer.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-json.o",
+			"-c",
+			"<prism-2.0.0>/src/json.c"
+		]
+	},
+	{
+		"package": "[tree-sitter-ruby 26.10.104]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-std:c11",
+			"-I",
+			"src",
+			"-W4",
+			"-utf-8",
+			"-Fo<OUT>/ea708c7824d36062-scanner.o",
+			"-c",
+			"src/scanner.c"
+		]
+	},
+	{
+		"package": "[tree-sitter 0.27.1]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-std:c11",
+			"-I",
+			"<tree-sitter-0.27.1>/src",
+			"-I",
+			"<tree-sitter-0.27.1>/src/wasm",
+			"-I",
+			"<tree-sitter-0.27.1>/include",
+			"-W0",
+			"-D_POSIX_C_SOURCE=200112L",
+			"-D_DEFAULT_SOURCE",
+			"-D_BSD_SOURCE",
+			"-D_DARWIN_C_SOURCE",
+			"-Fo<OUT>/9d101ca0d5afdee2-lib.o",
+			"-c",
+			"<tree-sitter-0.27.1>/src/lib.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-line_offset_list.o",
+			"-c",
+			"<prism-2.0.0>/src/line_offset_list.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-list.o",
+			"-c",
+			"<prism-2.0.0>/src/list.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-memchr.o",
+			"-c",
+			"<prism-2.0.0>/src/memchr.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-node.o",
+			"-c",
+			"<prism-2.0.0>/src/node.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-options.o",
+			"-c",
+			"<prism-2.0.0>/src/options.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-parser.o",
+			"-c",
+			"<prism-2.0.0>/src/parser.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-prettyprint.o",
+			"-c",
+			"<prism-2.0.0>/src/prettyprint.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-prism.o",
+			"-c",
+			"<prism-2.0.0>/src/prism.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-regexp.o",
+			"-c",
+			"<prism-2.0.0>/src/regexp.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-serialize.o",
+			"-c",
+			"<prism-2.0.0>/src/serialize.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-source.o",
+			"-c",
+			"<prism-2.0.0>/src/source.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-static_literals.o",
+			"-c",
+			"<prism-2.0.0>/src/static_literals.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-stringy.o",
+			"-c",
+			"<prism-2.0.0>/src/stringy.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-string_query.o",
+			"-c",
+			"<prism-2.0.0>/src/string_query.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-strncasecmp.o",
+			"-c",
+			"<prism-2.0.0>/src/strncasecmp.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-strpbrk.o",
+			"-c",
+			"<prism-2.0.0>/src/strpbrk.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-tokens.o",
+			"-c",
+			"<prism-2.0.0>/src/tokens.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-xxh3.o",
+			"-c",
+			"<prism-2.0.0>/src/xxh3.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-arena.o",
+			"-c",
+			"<prism-2.0.0>/src/arena.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-buffer.o",
+			"-c",
+			"<prism-2.0.0>/src/buffer.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-char.o",
+			"-c",
+			"<prism-2.0.0>/src/char.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-comments.o",
+			"-c",
+			"<prism-2.0.0>/src/comments.c"
+		]
+	},
+	{
+		"package": "[tree-sitter 0.27.1]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-std:c11",
+			"-I",
+			"<tree-sitter-0.27.1>/src",
+			"-I",
+			"<tree-sitter-0.27.1>/src/wasm",
+			"-I",
+			"<tree-sitter-0.27.1>/include",
+			"-W0",
+			"-D_POSIX_C_SOURCE=200112L",
+			"-D_DEFAULT_SOURCE",
+			"-D_BSD_SOURCE",
+			"-D_DARWIN_C_SOURCE",
+			"-Fo<OUT>/9d101ca0d5afdee2-lib.o",
+			"-c",
+			"<tree-sitter-0.27.1>/src/lib.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-constant_pool.o",
+			"-c",
+			"<prism-2.0.0>/src/constant_pool.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-diagnostic.o",
+			"-c",
+			"<prism-2.0.0>/src/diagnostic.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-encoding.o",
+			"-c",
+			"<prism-2.0.0>/src/encoding.c"
+		]
+	},
+	{
+		"package": "[tree-sitter-ruby 26.10.104]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-std:c11",
+			"-I",
+			"src",
+			"-W4",
+			"-utf-8",
+			"-Fo<OUT>/db3b6bfb95261072-parser-optimized.o",
+			"-c",
+			"<OUT>/parser-optimized.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-errors_format.o",
+			"-c",
+			"<prism-2.0.0>/src/errors_format.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-integer.o",
+			"-c",
+			"<prism-2.0.0>/src/integer.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-json.o",
+			"-c",
+			"<prism-2.0.0>/src/json.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-line_offset_list.o",
+			"-c",
+			"<prism-2.0.0>/src/line_offset_list.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-list.o",
+			"-c",
+			"<prism-2.0.0>/src/list.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-memchr.o",
+			"-c",
+			"<prism-2.0.0>/src/memchr.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-node.o",
+			"-c",
+			"<prism-2.0.0>/src/node.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-options.o",
+			"-c",
+			"<prism-2.0.0>/src/options.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-parser.o",
+			"-c",
+			"<prism-2.0.0>/src/parser.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-prettyprint.o",
+			"-c",
+			"<prism-2.0.0>/src/prettyprint.c"
+		]
+	},
+	{
+		"package": "[tree-sitter-ruby 26.10.104]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-std:c11",
+			"-I",
+			"src",
+			"-W4",
+			"-utf-8",
+			"-Fo<OUT>/ea708c7824d36062-scanner.o",
+			"-c",
+			"src/scanner.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-prism.o",
+			"-c",
+			"<prism-2.0.0>/src/prism.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-regexp.o",
+			"-c",
+			"<prism-2.0.0>/src/regexp.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-serialize.o",
+			"-c",
+			"<prism-2.0.0>/src/serialize.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-source.o",
+			"-c",
+			"<prism-2.0.0>/src/source.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-static_literals.o",
+			"-c",
+			"<prism-2.0.0>/src/static_literals.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-stringy.o",
+			"-c",
+			"<prism-2.0.0>/src/stringy.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-string_query.o",
+			"-c",
+			"<prism-2.0.0>/src/string_query.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-strncasecmp.o",
+			"-c",
+			"<prism-2.0.0>/src/strncasecmp.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-strpbrk.o",
+			"-c",
+			"<prism-2.0.0>/src/strpbrk.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-tokens.o",
+			"-c",
+			"<prism-2.0.0>/src/tokens.c"
+		]
+	},
+	{
+		"package": "[ruby-prism-sys 2.0.0]",
+		"args": [
+			"cl.exe",
+			"-nologo",
+			"-MD",
+			"-O2",
+			"-Z7",
+			"-Brepro",
+			"-I",
+			"<prism-2.0.0>/include",
+			"-W4",
+			"-DPRISM_EXPORT_SYMBOLS=1",
+			"-Fo<OUT>/bc9d1b48c8e3c824-xxh3.o",
+			"-c",
+			"<prism-2.0.0>/src/xxh3.c"
+		]
+	}
 ]

@@ -1,1 +1,27 @@
-{"qpc_hz":10000000,"phases":[{"phase":0,"calls":15103934,"ticks":12026981,"allocations":61191,"frees":40926},{"phase":1,"calls":4852392,"ticks":1007194,"allocations":0,"frees":0},{"phase":2,"calls":15103934,"ticks":3589919,"allocations":257562,"frees":258268},{"phase":3,"calls":0,"ticks":0,"allocations":18481,"frees":37788}]}
+{
+	"qpc_hz": 10000000,
+	"phases": [
+		{
+			"phase": 0,
+			"calls": 15103934,
+			"ticks": 12026981,
+			"allocations": 61191,
+			"frees": 40926
+		},
+		{
+			"phase": 1,
+			"calls": 4852392,
+			"ticks": 1007194,
+			"allocations": 0,
+			"frees": 0
+		},
+		{
+			"phase": 2,
+			"calls": 15103934,
+			"ticks": 3589919,
+			"allocations": 257562,
+			"frees": 258268
+		},
+		{ "phase": 3, "calls": 0, "ticks": 0, "allocations": 18481, "frees": 37788 }
+	]
+}
