@@ -55,3 +55,18 @@ Windows/MSVC用。新しいディレクトリへ必要なソースをコピー�
 tree-sitter loggerのイベント数も計測区間と別に保存できる。
 
 測定結果の例は [2026-10-25の記録](../../docs/benchmarks/2026-10-25/README.md)。
+
+## Windows の RSS 監視の比較
+
+変更前の `scripts/corpus_test.py` を別ファイルに保存し、同じ Python・同じ子プロセスで
+監視処理だけを交互に11回測る。子プロセスは64 MiBのバッファを保持して待機する。
+
+```powershell
+git show 2b400b5:scripts/corpus_test.py | Set-Content -Encoding utf8 $env:TEMP/corpus_baseline.py
+mise exec -- python tools/parse-benchmark/rss_benchmark.py --baseline $env:TEMP/corpus_baseline.py --output $env:TEMP/rss-monitor.json
+```
+
+1回ずつウォームアップし、wall/CPU時間とRSSの生値、中央値と範囲、取得成功件数を保存する。
+旧実装が2秒のコマンド期限で取得不可になった試行も時間の標本に残し、RSSをnullとする。
+候補の取得不可は測定失敗にする。さらに候補を200回呼び、測定側のハンドル数を前後で記録する。
+これは監視の負荷の比較であり、Rubyのパース速度の測定には含めない。

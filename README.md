@@ -7,6 +7,13 @@ Ruby grammar for [tree-sitter](https://github.com/tree-sitter/tree-sitter) with 
 See the [syntax validation report](docs/validation.md) for tested repository
 snapshots, regression checks and remaining parsing limitations.
 
+The [2026-10-29 maintenance report](docs/benchmarks/2026-10-29/README.md)
+records dependency updates, Windows memory-monitor measurements and validation.
+The corpus runner reads Windows RSS directly through the OS API and releases
+its process handles after every observation. Interruptions and monitoring errors
+terminate and collect the parser process before propagating the original error.
+POSIX monitors the whole process group; Windows monitors the target PID.
+
 ## Usage (Rust)
 
 Add to your `Cargo.toml`:

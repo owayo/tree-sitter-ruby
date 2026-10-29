@@ -2437,17 +2437,64 @@ class ResolveMemoryLimitTests(unittest.TestCase):
 class GetRssMbTests(unittest.TestCase):
     """OS ごとの RSS 取得と単位変換を検証する。"""
 
-    def test_windows_tasklist_csv_preserves_thousands_separator(self):
-        """引用符内の桁区切りカンマを列区切りとして扱わない。"""
-        result = subprocess.CompletedProcess(
-            args=[],
-            returncode=0,
-            stdout='"tree-sitter.exe","4242","Console","1","12,344 K"\n',
-            stderr="",
-        )
-        with patch.object(corpus_test.sys, "platform", "win32"):
-            with patch("corpus_test.subprocess.run", return_value=result):
-                self.assertAlmostEqual(corpus_test._get_rss_mb(4242), 12344 / 1024)
+    def test_windows_rss_uses_current_working_set_and_closes_handle(self):
+        """ピーク値や commit ではなく現在の working set を MiB に変換する。"""
+        api = Mock()
+        api.OpenProcess.return_value = 0x123456789
+
+        def query(_handle, pointer, _size):
+            pointer._obj.working_set_size = 12344 * 1024
+            pointer._obj.peak_working_set_size = 50000 * 1024
+            return 1
+
+        api.K32GetProcessMemoryInfo.side_effect = query
+        with patch.object(corpus_test.ctypes, "WinDLL", return_value=api, create=True):
+            with patch.object(corpus_test.sys, "platform", "win32"):
+                with patch("corpus_test.subprocess.run") as command:
+                    self.assertAlmostEqual(corpus_test._get_rss_mb(4242), 12344 / 1024)
+        command.assert_not_called()
+        api.CloseHandle.assert_called_once_with(0x123456789)
+
+    def test_windows_open_failure_returns_none_without_closing_null(self):
+        """終了済み・アクセス不可の PID では有効なハンドルがない。"""
+        api = Mock()
+        api.OpenProcess.return_value = None
+        with patch.object(corpus_test.ctypes, "WinDLL", return_value=api, create=True):
+            self.assertIsNone(corpus_test._get_windows_rss_mb(4242))
+        api.K32GetProcessMemoryInfo.assert_not_called()
+        api.CloseHandle.assert_not_called()
+
+    def test_windows_query_failure_still_closes_handle(self):
+        """取得中にプロセスが終了してもハンドルを解放する。"""
+        for failure in (0, OSError("process exited")):
+            with self.subTest(failure=failure):
+                api = Mock()
+                api.OpenProcess.return_value = 0x123456789
+                if isinstance(failure, OSError):
+                    api.K32GetProcessMemoryInfo.side_effect = failure
+                else:
+                    api.K32GetProcessMemoryInfo.return_value = failure
+                with patch.object(
+                    corpus_test.ctypes, "WinDLL", return_value=api, create=True
+                ):
+                    self.assertIsNone(corpus_test._get_windows_rss_mb(4242))
+                api.CloseHandle.assert_called_once_with(0x123456789)
+
+    def test_windows_library_failure_returns_none(self):
+        """OS API を読み込めない場合は取得不可として返す。"""
+        with patch.object(
+            corpus_test.ctypes,
+            "WinDLL",
+            side_effect=OSError("unavailable"),
+            create=True,
+        ):
+            self.assertIsNone(corpus_test._get_windows_rss_mb(4242))
+
+    @unittest.skipUnless(sys.platform == "win32", "Windows の実 API を検証する")
+    def test_windows_native_rss_for_current_and_invalid_process(self):
+        """実際のプロセスの RSS と無効な PID の取得不可を確認する。"""
+        self.assertIsNone(corpus_test._get_windows_rss_mb(0))
+        self.assertGreater(corpus_test._get_rss_mb(os.getpid()), 0)
 
     def test_posix_ps_converts_kilobytes_to_megabytes(self):
         """ps の KiB 出力を MiB に変換する。"""
@@ -2533,6 +2580,58 @@ class RunWithMemoryGuardTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout.strip(), "ok")
         self.assertIsNone(result.kill_reason)
+
+    def test_interrupt_kills_and_reaps_process_before_propagating(self):
+        """監視中の中断で子プロセスを残さず、元の中断を伝播する。"""
+        process = Mock()
+        process.communicate.side_effect = [KeyboardInterrupt(), ("", "")]
+        with patch("corpus_test.subprocess.Popen", return_value=process):
+            with patch("corpus_test._kill_process_tree") as kill:
+                with self.assertRaises(KeyboardInterrupt):
+                    corpus_test.run_with_memory_guard(
+                        ["parser"], timeout=5, memory_limit_mb=1024, env={}
+                    )
+        kill.assert_called_once_with(process)
+        self.assertEqual(process.communicate.call_count, 2)
+
+    def test_monitor_failure_kills_process_and_preserves_original_error(self):
+        """監視の失敗時は終了処理が失敗しても元の例外を伝播する。"""
+        process = Mock()
+        process.communicate.side_effect = [
+            subprocess.TimeoutExpired("parser", 0.01),
+            OSError("cleanup failed"),
+        ]
+        with patch("corpus_test.subprocess.Popen", return_value=process):
+            with patch(
+                "corpus_test._get_process_group_rss_mb",
+                side_effect=ValueError("monitor failed"),
+            ):
+                with patch("corpus_test._kill_process_tree") as kill:
+                    with self.assertRaisesRegex(ValueError, "monitor failed"):
+                        corpus_test.run_with_memory_guard(
+                            ["parser"], timeout=5, memory_limit_mb=1024, env={}
+                        )
+        kill.assert_called_once_with(process)
+
+    def test_termination_retries_a_stalled_pipe_with_a_second_deadline(self):
+        """終了後のパイプが閉じなくても再試行の回数と期限を制限する。"""
+        for final in (("out", "err"), subprocess.TimeoutExpired("parser", 5)):
+            with self.subTest(final=final):
+                process = Mock()
+                process.communicate.side_effect = [
+                    subprocess.TimeoutExpired("parser", 10),
+                    final,
+                ]
+                with patch("corpus_test._kill_process_tree") as kill:
+                    output = corpus_test._terminate_and_collect(process)
+                self.assertEqual(
+                    output, final if isinstance(final, tuple) else ("", "")
+                )
+                self.assertEqual(kill.call_count, 2)
+                self.assertEqual(
+                    [c[1]["timeout"] for c in process.communicate.call_args_list],
+                    [10, 5],
+                )
 
     def test_kills_process_after_timeout(self):
         """timeout 秒経過したらプロセスを強制終了し kill_reason を設定する。"""

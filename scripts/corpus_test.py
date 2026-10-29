@@ -5,7 +5,8 @@
 過剰なメモリ（RSS 8GB+, VSIZE 400GB+）を消費するため、
 本スクリプトは各コーパステストを `tree-sitter parse` で実行する。
 
-子プロセスはプロセスグループ単位で起動し、5 秒ごとに RSS 合計を観測する。
+5 秒ごとに RSS を観測する（POSIX はプロセスグループ合計、Windows は対象 PID）。
+Windows は OS API を直接呼び、観測ごとの外部コマンド起動を避ける。
 閾値 (TS_MEMORY_LIMIT_MB、既定 1024MB) を超過したら即座に SIGKILL して
 PC のハングを防ぐ。tree-sitter 側にも `--timeout` (µs) を渡し、
 内部 wallclock タイマーで暴走パースを未然に止める。
@@ -25,7 +26,7 @@ Windows では POSIX パスをネイティブ CLI にそのまま渡してはい
 `cygpath -am` で変換したパスを環境変数で渡す。
 """
 
-import csv
+import ctypes
 import math
 import os
 import re
@@ -316,31 +317,60 @@ def _resolve_memory_limit_mb(env=None):
     return value
 
 
+class _WindowsMemoryCounters(ctypes.Structure):
+    """PROCESS_MEMORY_COUNTERS の固定幅 DWORD とポインター幅 SIZE_T。"""
+
+    _fields_ = [
+        ("cb", ctypes.c_uint32),
+        ("page_fault_count", ctypes.c_uint32),
+        ("peak_working_set_size", ctypes.c_size_t),
+        ("working_set_size", ctypes.c_size_t),
+        ("quota_peak_paged_pool_usage", ctypes.c_size_t),
+        ("quota_paged_pool_usage", ctypes.c_size_t),
+        ("quota_peak_non_paged_pool_usage", ctypes.c_size_t),
+        ("quota_non_paged_pool_usage", ctypes.c_size_t),
+        ("pagefile_usage", ctypes.c_size_t),
+        ("peak_pagefile_usage", ctypes.c_size_t),
+    ]
+
+
+def _get_windows_rss_mb(pid):
+    """外部コマンドを起動せず Windows の現在の working set を取得する。"""
+    try:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        open_process = kernel32.OpenProcess
+        open_process.argtypes = [ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32]
+        open_process.restype = ctypes.c_void_p
+        close_handle = kernel32.CloseHandle
+        close_handle.argtypes = [ctypes.c_void_p]
+        close_handle.restype = ctypes.c_int
+        query = kernel32.K32GetProcessMemoryInfo
+        query.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(_WindowsMemoryCounters),
+            ctypes.c_uint32,
+        ]
+        query.restype = ctypes.c_int
+        # Windows 7 以降では PROCESS_QUERY_LIMITED_INFORMATION だけで取得できる。
+        handle = open_process(0x1000, False, pid)
+        if not handle:
+            return None
+        try:
+            counters = _WindowsMemoryCounters()
+            counters.cb = ctypes.sizeof(counters)
+            if not query(handle, ctypes.byref(counters), counters.cb):
+                return None
+            return counters.working_set_size / (1024.0 * 1024.0)
+        finally:
+            close_handle(handle)
+    except OSError:
+        return None
+
+
 def _get_rss_mb(pid):
     """指定 PID の RSS を MB 単位で返す。取得不可なら None。"""
     if sys.platform == "win32":
-        try:
-            result = subprocess.run(
-                ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
-                capture_output=True,
-                check=False,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=2,
-            )
-        except (OSError, subprocess.SubprocessError):
-            return None
-        if result.returncode != 0:
-            return None
-        for parts in csv.reader(result.stdout.splitlines()):
-            if len(parts) >= 5 and parts[1] == str(pid):
-                mem = parts[4].replace(",", "").replace(" K", "").strip()
-                try:
-                    return int(mem) / 1024.0
-                except ValueError:
-                    return None
-        return None
+        return _get_windows_rss_mb(pid)
 
     try:
         result = subprocess.run(
@@ -438,6 +468,19 @@ def _kill_process_tree(proc):
             pass
 
 
+def _terminate_and_collect(proc):
+    """プロセスツリーを終了し、期限を設けてパイプと終了状態を回収する。"""
+    _kill_process_tree(proc)
+    try:
+        return proc.communicate(timeout=10)
+    except subprocess.TimeoutExpired:
+        _kill_process_tree(proc)
+        try:
+            return proc.communicate(timeout=5)
+        except subprocess.TimeoutExpired:
+            return "", ""
+
+
 def run_with_memory_guard(
     cmd,
     *,
@@ -468,35 +511,35 @@ def run_with_memory_guard(
     stdout = ""
     stderr = ""
 
-    while True:
-        elapsed = time.monotonic() - start
-        remaining = timeout - elapsed
-        if remaining <= 0:
-            kill_reason = f"TIMEOUT ({timeout:.0f}s)"
-            break
+    try:
+        while True:
+            elapsed = time.monotonic() - start
+            remaining = timeout - elapsed
+            if remaining <= 0:
+                kill_reason = f"TIMEOUT ({timeout:.0f}s)"
+                break
 
-        wait = min(poll_interval, remaining)
+            wait = min(poll_interval, remaining)
+            try:
+                stdout, stderr = proc.communicate(timeout=wait)
+                break
+            except subprocess.TimeoutExpired:
+                pass
+
+            rss_mb = _get_process_group_rss_mb(proc.pid)
+            if rss_mb is not None and rss_mb > memory_limit_mb:
+                kill_reason = f"MEMORY_KILL: {rss_mb:.0f}MB > {memory_limit_mb:.0f}MB"
+                break
+    except BaseException:
+        # 中断・監視処理の例外でも子を残さず、元の例外を呼出元へ返す。
         try:
-            stdout, stderr = proc.communicate(timeout=wait)
-            break
-        except subprocess.TimeoutExpired:
+            _terminate_and_collect(proc)
+        except (OSError, subprocess.SubprocessError):
             pass
-
-        rss_mb = _get_process_group_rss_mb(proc.pid)
-        if rss_mb is not None and rss_mb > memory_limit_mb:
-            kill_reason = f"MEMORY_KILL: {rss_mb:.0f}MB > {memory_limit_mb:.0f}MB"
-            break
+        raise
 
     if kill_reason is not None:
-        _kill_process_tree(proc)
-        try:
-            stdout, stderr = proc.communicate(timeout=10)
-        except subprocess.TimeoutExpired:
-            _kill_process_tree(proc)
-            try:
-                stdout, stderr = proc.communicate(timeout=5)
-            except subprocess.TimeoutExpired:
-                stdout, stderr = "", ""
+        stdout, stderr = _terminate_and_collect(proc)
 
     return _GuardedResult(proc.returncode, stdout or "", stderr or "", kill_reason)
 

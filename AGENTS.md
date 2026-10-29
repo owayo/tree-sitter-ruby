@@ -114,12 +114,14 @@ python3 scripts/corpus_test.py
 # - summarize_command_failure の空 output / 全フィルター対象行のみケースが exit code だけを返すこと
 # - _resolve_memory_limit_mb の TS_MEMORY_LIMIT_MB 解析（未設定 / 空文字 / 数値以外 /
 #   非有限値 / 0 以下 / 有効値 / os.environ フォールバック）の境界ケース検証
-# - Windows tasklist CSV の引用符付き桁区切りと POSIX プロセスグループ合算を含む
-#   OS ごとの RSS 解析検証
+# - Windows API の現在の working set 取得、失敗時も含むハンドル解放、無効な PID、
+#   外部コマンドを使わないことと POSIX プロセスグループ合算を含む RSS 取得検証
 # - run_with_memory_guard の正常終了、大きな pipe 出力での非デッドロック、
 #   子プロセス RSS 超過 kill、タイムアウト強制終了（kill_reason 設定）の検証
 # - Windows の taskkill / POSIX のプロセスグループ kill が失敗した場合に、
 #   対象プロセスの直接 kill へフォールバックすることの検証
+# - 中断・監視処理の例外時の子プロセス回収と元の例外の伝播、
+#   終了後もパイプが閉じない場合の期限付き再試行の検証
 # - resolve_lib_dir の解決順（env 上書き / 空白のみ / POSIX 既定 / Windows は
 #   POSIX パスではなくネイティブ TEMP 配下 / os.environ フォールバック）
 # - resolve_library_path と library_suffix のプラットフォーム別解決、
