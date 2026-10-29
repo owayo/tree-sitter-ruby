@@ -17,7 +17,7 @@
 		"src/**"
 	],
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.15",
+		"@biomejs/biome": "^2.6.2",
 		"tree-sitter-cli": "^0.27.1"
 	},
 	"scripts": {
