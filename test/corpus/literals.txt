@@ -2639,6 +2639,17 @@ FF invalid word array delimiter
 (ERROR)
 
 ====================
+non-ASCII space inside word arrays
+====================
+
+%w[a　b]
+%i[a　b]
+
+---
+
+(program (string_array (bare_string (string_content))) (symbol_array (bare_symbol (string_content))))
+
+====================
 nested control and meta character escapes
 ====================
 
