@@ -60,14 +60,18 @@ jobs:
           # package.json
           sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"${NEW_VERSION}\"/" package.json
 
+          # 依存版を変えず、通常ビルドと計測ハーネスの自パッケージ版を同期する。
+          python3 scripts/sync_lock_versions.py
+
           echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
           echo "tag=v${NEW_VERSION}" >> $GITHUB_OUTPUT
 
       - name: Commit and tag
         if: ${{ !inputs.dry_run }}
         run: |
-          git add Cargo.toml package.json
-          git commit -m "Release ${{ steps.bump.outputs.tag }}"
+          git add Cargo.toml package.json Cargo.lock tools/parse-benchmark/Cargo.lock
+          git commit -m "chore(release): ${{ steps.bump.outputs.tag }}へ更新する" \
+            -m "Cargo.tomlとpackage.jsonの公開版を更新し、ルートと計測ハーネスのCargo.lockに含まれる自パッケージ版を同期する。依存パッケージの解決済みバージョンは維持する。"
           git tag -a "${{ steps.bump.outputs.tag }}" -m "Release ${{ steps.bump.outputs.tag }}"
           git push origin HEAD "${{ steps.bump.outputs.tag }}"
 
