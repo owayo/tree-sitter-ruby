@@ -1,0 +1,50 @@
+====================
+Ruby 4.1 method parameter trailing commas
+====================
+
+def foo(a,)
+  a
+end
+
+def self.foo(*,)
+end
+
+def value(key:,) = key
+
+---
+
+(program
+  (method
+    (identifier)
+    (method_parameters (identifier))
+    (body_statement (identifier)))
+  (singleton_method
+    (self)
+    (identifier)
+    (method_parameters (splat_parameter)))
+  (method
+    (identifier)
+    (method_parameters (keyword_parameter (identifier)))
+    (identifier)))
+
+====================
+Empty method parameter trailing comma
+:error
+====================
+
+def foo(,); end
+
+---
+
+(program (ERROR))
+
+====================
+Destructured parameter trailing comma remains invalid
+:error
+====================
+
+def foo((a,)); end
+
+---
+
+(program (ERROR))

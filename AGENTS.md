@@ -242,6 +242,7 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
 - `src/` 配下は自動生成ファイルのため直接編集しない（ただし `src/scanner.c` は手動管理の外部スキャナー）
 - `grammar.js` を変更した場合は必ず `tree-sitter generate` を実行する
+- Ruby 4.1 の仮引数の末尾カンマは `_method_parameters_with_trailing_comma` でメソッドの括弧付きリストに限定する。既存のリストは `parameters` を使い、分割代入用の仮引数や lambda には広げず、block/forward 仮引数の後も拒否する。`tests/method_parameter_trailing_comma_test.rs` でノードのフィールド・範囲と CRLF の増分パースを確認する
 - tree-sitter-cli 0.26.11 は `ſ`（U+017F）と `K`（U+212A）を汎用 lexer 文字集合から除外していたが、Ruby では有効な識別子文字である。0.27.0 ではこの除外が無くなり、明示許可の有無で parser.c は 1 バイトも変わらない（no-op）。ただし CLI 側で再発したときに黙って壊れないよう明示許可は残し、`test/corpus/identifiers.txt` の回帰ケースと同期すること
 - endless method definition (`def m = ...`) の本体に括弧なしコマンド呼び出しを許すルールは、既存の `command_call` を流用せず専用の `_endless_command_call` / `_endless_command_argument_list` / `_endless_command_argument` で入口を絞ってある。`command_call` を直接持ち込むと引数リストが `_expression` へ戻る相互再帰でパターン構文まで流れ込み、LR conflict が連鎖するため。引数に `pair`（`def m = foo a: 1`）を足すと parser.c が 21MB から 32MB へ膨らむので意図的に除外している（括弧付き `def m = foo(a: 1)` は従来どおり解析できる）
 - `call` / `command_call_with_block` のレシーバに `_chained_command_call` を足してはならない。`1.upto 0 do end.foo(1)` の AST は改善するが、Rails / Homebrew / ruby 本体で広範なパース失敗（ファイル全体が ERROR）を引き起こし、parser.c も 37MB へ倍増する
