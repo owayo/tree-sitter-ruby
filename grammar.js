@@ -124,6 +124,7 @@ module.exports = grammar({
 	},
 
 	conflicts: ($) => [
+		[$.parameters, $._method_parameters_with_trailing_comma],
 		[$._bare_call_method, $._variable],
 		[$._pattern_constant, $._bare_call_method, $._variable],
 		[$._pattern_expr_basic, $._bare_call_method, $._variable],
@@ -211,7 +212,10 @@ module.exports = grammar({
 				choice(
 					$._body_expr,
 					seq(
-						field("parameters", alias($.parameters, $.method_parameters)),
+						field("parameters", choice(
+							alias($.parameters, $.method_parameters),
+							alias($._method_parameters_with_trailing_comma, $.method_parameters),
+						)),
 						choice(
 							seq(
 								optional($._terminator),
@@ -310,7 +314,21 @@ module.exports = grammar({
 				),
 			),
 
-		parameters: ($) => seq("(", commaSep($._formal_parameter), ")"),
+		// カンマの後を default 値の多重代入へ吸い込まず、仮引数の区切りを優先する。
+		parameters: ($) => seq("(", commaSep(prec.dynamic(1, $._formal_parameter)), ")"),
+
+		// Ruby 4.1 の末尾カンマはメソッドの括弧付きリストだけに許可する。
+		// block/forward 仮引数の後と、分割代入用仮引数の内側は対象外。
+		_method_parameters_with_trailing_comma: ($) =>
+			seq("(", commaSep1(prec.dynamic(1, choice(
+				$.identifier,
+				$.splat_parameter,
+				$.hash_splat_parameter,
+				$.hash_splat_nil,
+				$.keyword_parameter,
+				$.optional_parameter,
+				alias($.parameters, $.destructured_parameter),
+			))), ",", ")"),
 
 		bare_parameters: ($) =>
 			seq($._simple_formal_parameter, repeat(seq(",", $._formal_parameter))),

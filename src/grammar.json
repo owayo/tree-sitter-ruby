@@ -311,13 +311,27 @@
 									"type": "FIELD",
 									"name": "parameters",
 									"content": {
-										"type": "ALIAS",
-										"content": {
-											"type": "SYMBOL",
-											"name": "parameters"
-										},
-										"named": true,
-										"value": "method_parameters"
+										"type": "CHOICE",
+										"members": [
+											{
+												"type": "ALIAS",
+												"content": {
+													"type": "SYMBOL",
+													"name": "parameters"
+												},
+												"named": true,
+												"value": "method_parameters"
+											},
+											{
+												"type": "ALIAS",
+												"content": {
+													"type": "SYMBOL",
+													"name": "_method_parameters_with_trailing_comma"
+												},
+												"named": true,
+												"value": "method_parameters"
+											}
+										]
 									}
 								},
 								{
@@ -675,8 +689,12 @@
 							"type": "SEQ",
 							"members": [
 								{
-									"type": "SYMBOL",
-									"name": "_formal_parameter"
+									"type": "PREC_DYNAMIC",
+									"value": 1,
+									"content": {
+										"type": "SYMBOL",
+										"name": "_formal_parameter"
+									}
 								},
 								{
 									"type": "REPEAT",
@@ -688,8 +706,12 @@
 												"value": ","
 											},
 											{
-												"type": "SYMBOL",
-												"name": "_formal_parameter"
+												"type": "PREC_DYNAMIC",
+												"value": 1,
+												"content": {
+													"type": "SYMBOL",
+													"name": "_formal_parameter"
+												}
 											}
 										]
 									}
@@ -700,6 +722,124 @@
 							"type": "BLANK"
 						}
 					]
+				},
+				{
+					"type": "STRING",
+					"value": ")"
+				}
+			]
+		},
+		"_method_parameters_with_trailing_comma": {
+			"type": "SEQ",
+			"members": [
+				{
+					"type": "STRING",
+					"value": "("
+				},
+				{
+					"type": "SEQ",
+					"members": [
+						{
+							"type": "PREC_DYNAMIC",
+							"value": 1,
+							"content": {
+								"type": "CHOICE",
+								"members": [
+									{
+										"type": "SYMBOL",
+										"name": "identifier"
+									},
+									{
+										"type": "SYMBOL",
+										"name": "splat_parameter"
+									},
+									{
+										"type": "SYMBOL",
+										"name": "hash_splat_parameter"
+									},
+									{
+										"type": "SYMBOL",
+										"name": "hash_splat_nil"
+									},
+									{
+										"type": "SYMBOL",
+										"name": "keyword_parameter"
+									},
+									{
+										"type": "SYMBOL",
+										"name": "optional_parameter"
+									},
+									{
+										"type": "ALIAS",
+										"content": {
+											"type": "SYMBOL",
+											"name": "parameters"
+										},
+										"named": true,
+										"value": "destructured_parameter"
+									}
+								]
+							}
+						},
+						{
+							"type": "REPEAT",
+							"content": {
+								"type": "SEQ",
+								"members": [
+									{
+										"type": "STRING",
+										"value": ","
+									},
+									{
+										"type": "PREC_DYNAMIC",
+										"value": 1,
+										"content": {
+											"type": "CHOICE",
+											"members": [
+												{
+													"type": "SYMBOL",
+													"name": "identifier"
+												},
+												{
+													"type": "SYMBOL",
+													"name": "splat_parameter"
+												},
+												{
+													"type": "SYMBOL",
+													"name": "hash_splat_parameter"
+												},
+												{
+													"type": "SYMBOL",
+													"name": "hash_splat_nil"
+												},
+												{
+													"type": "SYMBOL",
+													"name": "keyword_parameter"
+												},
+												{
+													"type": "SYMBOL",
+													"name": "optional_parameter"
+												},
+												{
+													"type": "ALIAS",
+													"content": {
+														"type": "SYMBOL",
+														"name": "parameters"
+													},
+													"named": true,
+													"value": "destructured_parameter"
+												}
+											]
+										}
+									}
+								]
+							}
+						}
+					]
+				},
+				{
+					"type": "STRING",
+					"value": ","
 				},
 				{
 					"type": "STRING",
@@ -9712,6 +9852,7 @@
 		}
 	],
 	"conflicts": [
+		["parameters", "_method_parameters_with_trailing_comma"],
 		["_bare_call_method", "_variable"],
 		["_pattern_constant", "_bare_call_method", "_variable"],
 		["_pattern_expr_basic", "_bare_call_method", "_variable"],
