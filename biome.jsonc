@@ -5,6 +5,13 @@
 		"clientKind": "git",
 		"useIgnoreFile": true
 	},
+	"files": {
+		// Biome 2.6 から YAML と Markdown も整形の対象になったため、整形してはならないファイルを外す
+		// - pnpm-lock.yaml: pnpm が自身の書式で書き出す生成物。整形すると次の更新で全体が差分になる
+		// - CLAUDE.md: AGENTS.md へのシンボリックリンク。core.symlinks=false の Windows では
+		//   リンク先を書いた通常のファイルになり、末尾に改行を足すとリンク先が壊れる
+		"includes": ["**", "!pnpm-lock.yaml", "!CLAUDE.md"]
+	},
 	"overrides": [
 		{
 			// tree-sitter の文法定義ファイル (grammar.js) 固有の抑制
