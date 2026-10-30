@@ -23,6 +23,8 @@ Prism の3件は負例2件と shebang の `-n` を前提にした `tool/fetch-bu
 ### 起票した不具合
 
 レビューで再現を確かめた次の2件を起票した。修正は Issue ごとの PR で行う。
+#24 は、終端語を保存できないときに左シフトへ読み替えず、トークンを返さないよう直した
+（式の開始位置と同じく ERROR になる）。修正前の HEAD で回帰テストが失敗し、修正後に成功する。
 
 | Issue | 再現条件と原因 |
 |---|---|
@@ -69,7 +71,7 @@ pnpm の生成物である `pnpm-lock.yaml` と、`AGENTS.md` へのシンボリ
 
 ### テストと未確認の指摘
 
-コーパス427件、Rustテスト99件（doc testを含む、Debug/Release）、Pythonテスト150件
+コーパス427件、Rustテスト100件（doc testと #24 の回帰テストを含む、Debug/Release）、Pythonテスト150件
 （Windowsで1件skip）を確認した。Biome（`grammar.js`）、Ruff lint/format、Rust fmt/Clippy
 （`-D warnings`）も通る。Cバインディングは変更していないため、CMakeの再検証は CI に任せた。
 全木が一致したため、Sonicop側の比較は追加していない。

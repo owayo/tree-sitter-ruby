@@ -184,6 +184,8 @@ pnpm run test:unit
 #   従来どおり扱われることの検証
 # - heredoc の増分パースと、リテラル追加時の合計保存容量超過を検証する
 #   （補間の中で開く区切りシンボル `:"` / `:'` でも、開始待ちの heredoc 本文を保つ）
+# - `puts <<WORD` のように左シフトとも読める位置でも、保存できない heredoc 終端語を
+#   左シフトに読み替えず ERROR にし、`<<` の後に空白があれば左シフトのままにする
 # - scanner 保存状態の空終端語・Unicode・容量上限の往復、切り詰め・末尾ゴミを検証する
 # - 入れ子の heredoc 本文の位置（LF・CRLF・単独 CR・行継続）と、入れ子の追加・削除・編集後の
 #   増分パースが新規パースの全ノード範囲と一致することを検証する
@@ -256,7 +258,7 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 - Rustの最適化プロファイルでは、生成器が入れた最適化無効化pragmaをOUT_DIRのコピーだけで外す。src/parser.cを手編集せず、最適化フラグと実際のコピーの両方を確認し、cargo test --releaseも実行する。opt-level=0では生成物の原本を使う
 - Unicode heredoc 終端語は UTF-8 バイト列として保存・照合し、ASCII 終端語の 1 文字 1 バイト表現と serialization buffer 容量を維持すること
 - `global_variable` の名前部分は共通の Unicode 識別子文字ルールと同期し、`scan_short_interpolation()` の `$name` / `$-x` 判定でも ASCII 外文字を locale 非依存で許可すること
-- tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う。heredoc は `scan_heredoc_start()` で開き、保存容量の確認を迂回しない
+- tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う。heredoc は `scan_heredoc_start()` で開き、保存容量の確認を迂回しない。`<<` を左シフト演算子とも読める位置（`puts <<WORD`）でも左シフトに読み替えず、`HEREDOC_START_OVERFLOW` のときはトークンを返さない（`HEREDOC_START_ABSENT` だけが左シフトになる）
 - scanner serialization buffer の上限ぴったりに収まる状態は有効として扱い、超過した場合だけ ERROR として扱う
 - リテラルは `open_literal()` で開き、開いている heredoc と合計した保存容量の確認を迂回しない。終端行の再開フラグは既存の started バイトに詰め、7 バイトのヘッダーサイズを維持する
 - heredoc 終端語は物理行の先頭でだけ認識し、直後は LF・CRLF・EOF に限る。末尾空白や単独 CR は本文とし、空終端語の EOF を架空の空行として受理しない
