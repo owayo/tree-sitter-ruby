@@ -129,26 +129,37 @@ def _busiest_thread(kernel32, pid):
     Returns:
         スレッド ID。対象のプロセスにスレッドがなければ None。
 
+    Raises:
+        OSError: スレッドのスナップショットが得られない場合。
+
     """
     snapshot = kernel32.CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0)
+    if not snapshot or snapshot == ctypes.c_void_p(-1).value:
+        raise OSError("Cannot enumerate benchmark threads")
     entry = _ThreadEntry()
     entry.size = ctypes.sizeof(entry)
     best_id, best_time = None, -1
-    found = kernel32.Thread32First(snapshot, ctypes.byref(entry))
-    while found:
-        if entry.process_id == pid:
-            handle = kernel32.OpenThread(
-                THREAD_QUERY_INFORMATION, False, entry.thread_id
-            )
-            if handle:
-                times = [ctypes.c_uint64() for _ in range(4)]
-                if kernel32.GetThreadTimes(handle, *(ctypes.byref(t) for t in times)):
-                    used = times[2].value + times[3].value
-                    if used > best_time:
-                        best_id, best_time = entry.thread_id, used
-                kernel32.CloseHandle(handle)
-        found = kernel32.Thread32Next(snapshot, ctypes.byref(entry))
-    kernel32.CloseHandle(snapshot)
+    try:
+        found = kernel32.Thread32First(snapshot, ctypes.byref(entry))
+        while found:
+            if entry.process_id == pid:
+                handle = kernel32.OpenThread(
+                    THREAD_QUERY_INFORMATION, False, entry.thread_id
+                )
+                if handle:
+                    try:
+                        times = [ctypes.c_uint64() for _ in range(4)]
+                        if kernel32.GetThreadTimes(
+                            handle, *(ctypes.byref(t) for t in times)
+                        ):
+                            used = times[2].value + times[3].value
+                            if used > best_time:
+                                best_id, best_time = entry.thread_id, used
+                    finally:
+                        kernel32.CloseHandle(handle)
+            found = kernel32.Thread32Next(snapshot, ctypes.byref(entry))
+    finally:
+        kernel32.CloseHandle(snapshot)
     return best_id
 
 
@@ -176,18 +187,163 @@ def _modules(psapi, process):
     return result
 
 
-def _drive(process, rounds, done):
-    """1 反復ずつ測定を指示し、全反復の終了を通知する。"""
-    for round_number in range(1, rounds + 1):
-        process.stdin.write(f"{round_number}\n")
-        process.stdin.flush()
-        while process.stdout.readline().strip() != "DONE":
-            pass
-    done.set()
+def _wait_done(process):
+    """完了応答を待ち、応答前の EOF を測定失敗として返す。
+
+    Raises:
+        RuntimeError: 完了応答を受け取る前に標準出力が閉じた場合。
+
+    """
+    while True:
+        line = process.stdout.readline()
+        if not line:
+            raise RuntimeError(
+                f"Benchmark closed stdout before DONE (exit code: {process.poll()})"
+            )
+        if line.strip() == "DONE":
+            return
+
+
+def _drive(process, rounds, done, errors):
+    """終了通知を必ず行い、駆動スレッドの失敗を採取側へ渡す。"""
+    try:
+        for round_number in range(1, rounds + 1):
+            process.stdin.write(f"{round_number}\n")
+            process.stdin.flush()
+            _wait_done(process)
+    except BaseException as error:  # noqa: BLE001 - 主スレッドで同じ例外を送出する。
+        errors.append(error)
+    finally:
+        done.set()
+
+
+def _stop_process(process):
+    """失敗・中断時も子プロセスを回収してパイプを閉じる。"""
+    try:
+        if process.poll() is None:
+            process.terminate()
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait(timeout=5)
+    finally:
+        for stream in (process.stdin, process.stdout):
+            if stream is not None:
+                try:
+                    stream.close()
+                except OSError:
+                    pass
+
+
+def _sample(process, thread, rounds, kernel32, winmm):
+    """採取中の例外でも停止したスレッドとタイマーを元に戻す。
+
+    Returns:
+        命令位置ごとの標本数と、採取した秒数。
+
+    """
+    buffer = ctypes.create_string_buffer(CONTEXT_SIZE + 16)
+    context = (ctypes.addressof(buffer) + 15) & ~15
+    counts = collections.Counter()
+    done = threading.Event()
+    errors = []
+    driver = threading.Thread(target=_drive, args=(process, rounds, done, errors))
+    timer_started = winmm.timeBeginPeriod(1) == 0
+    started = time.perf_counter()
+    try:
+        driver.start()
+        while not done.is_set():
+            if kernel32.SuspendThread(thread) != 0xFFFFFFFF:
+                try:
+                    ctypes.c_uint32.from_address(
+                        context + CONTEXT_FLAGS_OFFSET
+                    ).value = CONTEXT_CONTROL
+                    if kernel32.GetThreadContext(thread, ctypes.c_void_p(context)):
+                        counts[
+                            ctypes.c_uint64.from_address(
+                                context + CONTEXT_RIP_OFFSET
+                            ).value
+                        ] += 1
+                finally:
+                    kernel32.ResumeThread(thread)
+            time.sleep(SAMPLE_INTERVAL_SECONDS)
+        driver.join()
+        if errors:
+            raise errors[0]
+        return counts, time.perf_counter() - started
+    except BaseException:
+        _stop_process(process)
+        raise
+    finally:
+        try:
+            if driver.ident is not None:
+                driver.join(timeout=5)
+        finally:
+            if timer_started:
+                winmm.timeEndPeriod(1)
+
+
+def _resolve_counts(counts, process, binary, kernel32, psapi, dbghelp):
+    """関数名の解決に使うプロセスハンドルとシンボル情報を解放する。
+
+    Returns:
+        関数別とモジュール別の標本数。
+
+    Raises:
+        OSError: 対象のプロセスやシンボル情報を開けない場合。
+
+    """
+    target = kernel32.OpenProcess(
+        PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, process.pid
+    )
+    if not target:
+        raise OSError("Cannot open benchmark process for symbol lookup")
+    initialized = False
+    try:
+        modules = _modules(psapi, target)
+        dbghelp.SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS)
+        initialized = bool(
+            dbghelp.SymInitializeW(
+                target, os.path.dirname(os.path.abspath(binary)), True
+            )
+        )
+        if not initialized:
+            raise OSError("Cannot initialize benchmark symbols")
+        by_function = collections.Counter()
+        by_module = collections.Counter()
+        symbol = _SymbolInfo()
+        displacement = ctypes.c_uint64()
+        for address, count in counts.items():
+            module = next(
+                (name for base, size, name in modules if base <= address < base + size),
+                "?",
+            )
+            by_module[module] += count
+            symbol.size = SYMBOL_INFO_SIZE
+            symbol.max_name_length = 511
+            resolved = dbghelp.SymFromAddrW(
+                target, address, ctypes.byref(displacement), ctypes.byref(symbol)
+            )
+            by_function["{}!{}".format(module, symbol.name if resolved else "?")] += (
+                count
+            )
+        return by_function, by_module
+    finally:
+        try:
+            if initialized:
+                dbghelp.SymCleanup(target)
+        finally:
+            kernel32.CloseHandle(target)
 
 
 def main():
-    """ハーネスを起動して採取し、関数別・モジュール別の割合を保存する。"""
+    """ハーネスを起動して採取し、関数別・モジュール別の割合を保存する。
+
+    Raises:
+        OSError: 採取するスレッドや必要なハンドルが得られない場合。
+
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--binary", required=True)
     parser.add_argument("--manifest", required=True)
@@ -203,66 +359,29 @@ def main():
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         text=True,
+        encoding="utf-8",
     )
-    process.stdin.write("0\n")
-    process.stdin.flush()
-    while process.stdout.readline().strip() != "DONE":
-        pass
-
-    thread = kernel32.OpenThread(
-        THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT,
-        False,
-        _busiest_thread(kernel32, process.pid),
-    )
-    buffer = ctypes.create_string_buffer(CONTEXT_SIZE + 16)
-    context = (ctypes.addressof(buffer) + 15) & ~15
-    counts = collections.Counter()
-    done = threading.Event()
-    driver = threading.Thread(target=_drive, args=(process, args.rounds, done))
-    winmm.timeBeginPeriod(1)
-    started = time.perf_counter()
-    driver.start()
-    while not done.is_set():
-        if kernel32.SuspendThread(thread) != 0xFFFFFFFF:
-            ctypes.c_uint32.from_address(
-                context + CONTEXT_FLAGS_OFFSET
-            ).value = CONTEXT_CONTROL
-            if kernel32.GetThreadContext(thread, ctypes.c_void_p(context)):
-                counts[
-                    ctypes.c_uint64.from_address(context + CONTEXT_RIP_OFFSET).value
-                ] += 1
-            kernel32.ResumeThread(thread)
-        time.sleep(SAMPLE_INTERVAL_SECONDS)
-    elapsed = time.perf_counter() - started
-    winmm.timeEndPeriod(1)
-    driver.join()
-    kernel32.CloseHandle(thread)
-
-    target = kernel32.OpenProcess(
-        PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, False, process.pid
-    )
-    modules = _modules(psapi, target)
-    dbghelp.SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS)
-    dbghelp.SymInitializeW(target, os.path.dirname(os.path.abspath(args.binary)), True)
-    by_function = collections.Counter()
-    by_module = collections.Counter()
-    symbol = _SymbolInfo()
-    displacement = ctypes.c_uint64()
-    for address, count in counts.items():
-        module = next(
-            (name for base, size, name in modules if base <= address < base + size), "?"
+    try:
+        process.stdin.write("0\n")
+        process.stdin.flush()
+        _wait_done(process)
+        thread_id = _busiest_thread(kernel32, process.pid)
+        if thread_id is None:
+            raise OSError("Benchmark has no thread to sample")
+        thread = kernel32.OpenThread(
+            THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT, False, thread_id
         )
-        by_module[module] += count
-        symbol.size = SYMBOL_INFO_SIZE
-        symbol.max_name_length = 511
-        resolved = dbghelp.SymFromAddrW(
-            target, address, ctypes.byref(displacement), ctypes.byref(symbol)
+        if not thread:
+            raise OSError("Cannot open benchmark thread for sampling")
+        try:
+            counts, elapsed = _sample(process, thread, args.rounds, kernel32, winmm)
+        finally:
+            kernel32.CloseHandle(thread)
+        by_function, by_module = _resolve_counts(
+            counts, process, args.binary, kernel32, psapi, dbghelp
         )
-        by_function["{}!{}".format(module, symbol.name if resolved else "?")] += count
-    dbghelp.SymCleanup(target)
-    kernel32.CloseHandle(target)
-    process.stdin.close()
-    process.wait(timeout=60)
+    finally:
+        _stop_process(process)
 
     samples = sum(counts.values())
     with open(args.output, "w", encoding="utf-8") as stream:
