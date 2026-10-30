@@ -1,0 +1,32 @@
+{
+  "16384": {
+    "files": 3423,
+    "ts_median_us": 851.9,
+    "ts_p95_us": 2054.0,
+    "before_ts_p95_us": 2116.5
+  },
+  "65536": {
+    "files": 862,
+    "ts_median_us": 3195.4,
+    "ts_p95_us": 7874.5,
+    "before_ts_p95_us": 8229.4
+  },
+  "1024": {
+    "files": 7857,
+    "ts_median_us": 59.5,
+    "ts_p95_us": 155.8,
+    "before_ts_p95_us": 162.1
+  },
+  "4096": {
+    "files": 6282,
+    "ts_median_us": 266.8,
+    "ts_p95_us": 590.0,
+    "before_ts_p95_us": 613.4
+  },
+  "larger": {
+    "files": 102,
+    "ts_median_us": 11805.7,
+    "ts_p95_us": 59865.9,
+    "before_ts_p95_us": 57787.0
+  }
+}

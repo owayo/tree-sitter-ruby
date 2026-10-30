@@ -1,5 +1,27 @@
 # 構文検証と保守記録
 
+## 2026-10-31
+
+Ruby 4.1 のメソッド仮引数末尾カンマと、デフォルト仮引数を多重代入として結合するASTを修正した
+（[PR #32](https://github.com/owayo/tree-sitter-ruby/pull/32)）。通常・特異・endlessメソッドを検証し、
+block/forward引数の後、空リスト、分割代入用の仮引数とlambdaには末尾カンマを広げていない。
+CRLFの編集後の増分パースは、新規パースと全ノードのフィールド・範囲まで一致する。
+
+| Corpus | All .rb | TS failures | Prism diagnostics | Common | New failures |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Rails | 3,481 | 0 | 0 | 3,481 | 0 |
+| Ruby | 7,486 | 5 | 3 | 7,480 | 0 |
+| RuboCop | 1,791 | 0 | 0 | 1,791 | 0 |
+| Homebrew | 2,419 | 0 | 0 | 2,419 | 0 |
+| Mastodon | 3,355 | 0 | 0 | 3,355 | 0 |
+| Total | 18,532 | 5 | 3 | 18,526 | 0 |
+
+全18,532件に新しいERROR/MISSINGはない。AST差110ファイルは全件デフォルト仮引数の分離で、
+`method_parameters` 以外のノード・フィールド・範囲は一致した。入力のSHA・各ファイルのハッシュ、
+既知の除外6件、Prismの診断、最終候補の計測は[保守記録](benchmarks/2026-10-31/README.md)に保存している。
+node-types.jsonは不変。コーパス432件、Rust debug/release、ランナー160件（既定の1件skip）が通った。
+プロファイラーのEOFと例外時の資源回収も修正した（[PR #33](https://github.com/owayo/tree-sitter-ruby/pull/33)）。
+
 ## 2026-10-30
 
 取得済みの5リポジトリ（SHA は 2026-10-29 と同じ）にある全18,520件の `.rb` を、変更前（`c3c70a2`）・
