@@ -3,7 +3,6 @@
 #include "tree_sitter/parser.h"
 
 #include <string.h>
-#include <wctype.h>
 
 typedef enum {
     LINE_BREAK,
@@ -420,6 +419,24 @@ static inline bool is_special_global_variable_char(int32_t c) {
     return c > 0 && c < 0x80 && strchr("!@&`'+~=/\\,;.<>*$?:\"", (char)c) != NULL;
 }
 
+// Ruby の字句規則の文字種は ASCII の範囲で決まり、ASCII 外の文字はすべて識別子の文字になる。
+// C ランタイムの isw* は ASCII 外の文字の判定がロケールと実装で変わる (glibc の C ロケールは
+// 英字や空白と判定せず、MSVC は Unicode の分類を使う) ため使わず、ASCII の範囲を直接比べる。
+static inline bool is_ascii_digit(int32_t c) { return c >= '0' && c <= '9'; }
+
+static inline bool is_ascii_upper(int32_t c) { return c >= 'A' && c <= 'Z'; }
+
+static inline bool is_ascii_alpha(int32_t c) { return (c >= 'a' && c <= 'z') || is_ascii_upper(c); }
+
+// Ruby の空白 (空白・タブ・改行・垂直タブ・改ページ・復帰)。ASCII 外の空白は識別子の文字になる。
+static inline bool is_ruby_space(int32_t c) { return c == ' ' || (c >= '\t' && c <= '\r'); }
+
+// 識別子の先頭になれる文字 (英字・`_`・ASCII 外の文字)。
+static inline bool is_identifier_start(int32_t c) { return is_ascii_alpha(c) || c == '_' || c >= 0x80; }
+
+// 識別子の 2 文字目以降になれる文字。
+static inline bool is_identifier_continue(int32_t c) { return is_identifier_start(c) || is_ascii_digit(c); }
+
 static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
     // heredoc 本文の補間の中でも、その行で開いた heredoc は次の改行から読む。
     Heredoc *pending = valid_symbols[HEREDOC_BODY_START] ? pending_heredoc(scanner) : NULL;
@@ -488,7 +505,7 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                         }
                     } else if (lexer->lookahead == '\n') {
                         lexer->mark_end(lexer);
-                    } else if (iswspace(lexer->lookahead)) {
+                    } else if (is_ruby_space(lexer->lookahead)) {
                         skip(scanner, lexer);
                         break;
                     } else {
@@ -507,7 +524,7 @@ static inline bool scan_whitespace(Scanner *scanner, TSLexer *lexer, const bool 
                     if (lexer->lookahead == '\r') {
                         skip(scanner, lexer);
                     }
-                    if (!iswspace(lexer->lookahead)) {
+                    if (!is_ruby_space(lexer->lookahead)) {
                         return false;
                     }
                     bool line_continuation = lexer->lookahead == '\n';
@@ -1025,7 +1042,7 @@ static inline bool scan_open_delimiter(Scanner *scanner, TSLexer *lexer, Literal
     }
 }
 
-static inline bool is_heredoc_word_char(int32_t c) { return c >= 0x80 || iswalnum(c) || c == '_'; }
+static inline bool is_heredoc_word_char(int32_t c) { return is_identifier_continue(c); }
 
 // `[` の直後から、対応する `]` と、その後に続く代入の `=` を先読みする。
 // `h [k] = v` のように空白を挟んだ添字代入を、コマンド呼び出しの配列引数
@@ -1211,11 +1228,9 @@ static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_conte
             } else {
                 if (lexer->lookahead == '-') {
                     advance(lexer);
-                    is_short_interpolation =
-                        lexer->lookahead >= 0x80 || iswalpha(lexer->lookahead) || lexer->lookahead == '_';
+                    is_short_interpolation = is_identifier_start(lexer->lookahead);
                 } else {
-                    is_short_interpolation =
-                        lexer->lookahead >= 0x80 || iswalnum(lexer->lookahead) || lexer->lookahead == '_';
+                    is_short_interpolation = is_identifier_continue(lexer->lookahead);
                 }
             }
         }
@@ -1223,7 +1238,7 @@ static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_conte
             if (lexer->lookahead == '@') {
                 advance(lexer);
             }
-            is_short_interpolation = is_iden_char(lexer->lookahead) && !iswdigit(lexer->lookahead);
+            is_short_interpolation = is_iden_char(lexer->lookahead) && !is_ascii_digit(lexer->lookahead);
         }
 
         if (is_short_interpolation) {
@@ -1401,13 +1416,13 @@ static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer, const 
     bool escaped_line_end = false;
 
     for (;;) {
-        if (pending != NULL && stop_on_space && !has_content && iswspace(lexer->lookahead) &&
+        if (pending != NULL && stop_on_space && !has_content && is_ruby_space(lexer->lookahead) &&
             lexer->lookahead != literal->close_delimiter) {
             // 配列の語の間の空白は、内部の字句解析が区切りとして読む。その中に本文を始める改行
             // (LF か CRLF) があるときだけ、手前の空白 (単独 CR を含む) を読み飛ばして改行から
             // 本文を始める。閉じ区切りや語に着いたら、区切りとして内部の字句解析に任せる。
             for (;;) {
-                if (lexer->lookahead == literal->close_delimiter || !iswspace(lexer->lookahead)) {
+                if (lexer->lookahead == literal->close_delimiter || !is_ruby_space(lexer->lookahead)) {
                     return false;
                 }
                 if (lexer->lookahead == '\n') {
@@ -1461,7 +1476,7 @@ static inline bool scan_literal_content(Scanner *scanner, TSLexer *lexer, const 
             has_content = true;
             continue;
         }
-        if (stop_on_space && iswspace(lexer->lookahead)) {
+        if (stop_on_space && is_ruby_space(lexer->lookahead)) {
             if (has_content) {
                 lexer->mark_end(lexer);
                 lexer->result_symbol = STRING_CONTENT;
@@ -1642,7 +1657,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 // (`f(& blk)` のように直前に完結した式が無い位置) なら
                 // Ruby はブロック引数の `&` として扱う。
                 if (valid_symbols[BLOCK_AMPERSAND] &&
-                    (!iswspace(lexer->lookahead) || !valid_symbols[BINARY_AMPERSAND])) {
+                    (!is_ruby_space(lexer->lookahead) || !valid_symbols[BINARY_AMPERSAND])) {
                     return accept_token(lexer, BLOCK_AMPERSAND);
                 }
                 if (valid_symbols[BINARY_AMPERSAND]) {
@@ -1713,7 +1728,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                             (!scanner->has_leading_whitespace || scanner->binary_operator_hint)) {
                             return accept_token(lexer, BINARY_STAR_STAR);
                         }
-                        if (valid_symbols[HASH_SPLAT_STAR_STAR] && !iswspace(lexer->lookahead)) {
+                        if (valid_symbols[HASH_SPLAT_STAR_STAR] && !is_ruby_space(lexer->lookahead)) {
                             return accept_token(lexer, HASH_SPLAT_STAR_STAR);
                         }
                         if (valid_symbols[BINARY_STAR_STAR]) {
@@ -1729,7 +1744,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 if (valid_symbols[BINARY_STAR] && (!scanner->has_leading_whitespace || scanner->binary_operator_hint)) {
                     return accept_token(lexer, BINARY_STAR);
                 }
-                if (valid_symbols[SPLAT_STAR] && !iswspace(lexer->lookahead)) {
+                if (valid_symbols[SPLAT_STAR] && !is_ruby_space(lexer->lookahead)) {
                     return accept_token(lexer, SPLAT_STAR);
                 }
                 if (valid_symbols[BINARY_STAR]) {
@@ -1760,7 +1775,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 }
                 if (valid_symbols[UNARY_PLUS] &&
                     (is_expression_start(valid_symbols) ||
-                     (scanner->has_leading_whitespace && !iswspace(lexer->lookahead)))) {
+                     (scanner->has_leading_whitespace && !is_ruby_space(lexer->lookahead)))) {
                     return accept_token(lexer, UNARY_PLUS);
                 }
                 return accept_token(lexer, valid_symbols[BINARY_PLUS] ? BINARY_PLUS : UNARY_PLUS);
@@ -1778,12 +1793,12 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                     }
                     if (valid_symbols[UNARY_MINUS_NUM] &&
                         (is_expression_start(valid_symbols) || !valid_symbols[BINARY_STAR] || scanner->has_leading_whitespace) &&
-                        iswdigit(lexer->lookahead)) {
+                        is_ascii_digit(lexer->lookahead)) {
                         return accept_token(lexer, UNARY_MINUS_NUM);
                     }
                     if (valid_symbols[UNARY_MINUS] &&
                         (is_expression_start(valid_symbols) ||
-                         (scanner->has_leading_whitespace && !iswspace(lexer->lookahead)))) {
+                         (scanner->has_leading_whitespace && !is_ruby_space(lexer->lookahead)))) {
                         return accept_token(lexer, UNARY_MINUS);
                     }
                     return accept_token(lexer, valid_symbols[BINARY_MINUS] ? BINARY_MINUS : UNARY_MINUS);
@@ -1844,11 +1859,11 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
     }
 
     // 識別子接尾辞やハッシュキー記法を処理する。
-    if (((valid_symbols[HASH_KEY_SYMBOL] || valid_symbols[IDENTIFIER_SUFFIX]) &&
-         (iswalpha(lexer->lookahead) || lexer->lookahead == '_')) ||
-        (valid_symbols[CONSTANT_SUFFIX] && iswupper(lexer->lookahead))) {
-        TokenType validIdentifierSymbol = iswupper(lexer->lookahead) ? CONSTANT_SUFFIX : IDENTIFIER_SUFFIX;
-        while (iswalnum(lexer->lookahead) || lexer->lookahead == '_') {
+    // 定数は文法の `constant` と同じく ASCII の大文字で始まるものに限り、ASCII 外の文字で始まる名前は識別子とする。
+    if (((valid_symbols[HASH_KEY_SYMBOL] || valid_symbols[IDENTIFIER_SUFFIX]) && is_identifier_start(lexer->lookahead)) ||
+        (valid_symbols[CONSTANT_SUFFIX] && is_ascii_upper(lexer->lookahead))) {
+        TokenType validIdentifierSymbol = is_ascii_upper(lexer->lookahead) ? CONSTANT_SUFFIX : IDENTIFIER_SUFFIX;
+        while (is_identifier_continue(lexer->lookahead)) {
             advance(lexer);
         }
 

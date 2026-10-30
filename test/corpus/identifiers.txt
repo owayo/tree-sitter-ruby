@@ -22,3 +22,27 @@ breaK = 2
   (assignment
     left: (class_variable)
     right: (identifier)))
+
+========================================
+ASCII 外の文字を含む `!` 付きのメソッド名
+========================================
+
+x.保存!
+x.café!
+def 保存!; end
+x.Ärger!
+
+---
+
+(program
+  (call
+    receiver: (identifier)
+    method: (identifier))
+  (call
+    receiver: (identifier)
+    method: (identifier))
+  (method
+    name: (identifier))
+  (call
+    receiver: (identifier)
+    method: (identifier)))
