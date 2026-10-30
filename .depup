@@ -1,0 +1,2 @@
+# depup をリポジトリ直下で実行したときに、直下に加えて依存を更新するディレクトリ
+tools/parse-benchmark  # Prism と比較する独立した計測ハーネス (独自の Cargo.lock を持つ)
