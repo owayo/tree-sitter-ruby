@@ -1,429 +1,120 @@
 {
- "samples": 19019,
- "elapsed_s": 29.845371600000362,
- "rounds": 2,
- "by_module": [
-  [
-   "ruby-parse-benchmark.exe",
-   16076
-  ],
-  [
-   "ntdll.dll",
-   2388
-  ],
-  [
-   "VCRUNTIME140.dll",
-   313
-  ],
-  [
-   "ucrtbase.dll",
-   241
-  ],
-  [
-   "KERNELBASE.dll",
-   1
-  ]
- ],
- "by_function": [
-  [
-   "ruby-parse-benchmark.exe!stack_node_new",
-   1766
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_new_node",
-   1389
-  ],
-  [
-   "ntdll.dll!RtlSizeHeap",
-   1290
-  ],
-  [
-   "ruby-parse-benchmark.exe!stack__iter",
-   1263
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_language_lookup",
-   1221
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_release",
-   1053
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_summarize_children",
-   982
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__advance",
-   859
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lexer__advance",
-   774
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__lex",
-   696
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__reduce",
-   627
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__balance_subtree",
-   570
-  ],
-  [
-   "ntdll.dll!RtlFreeHeap",
-   526
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_total_size",
-   484
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lex",
-   457
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack__add_version",
-   381
-  ],
-  [
-   "ntdll.dll!RtlUpcaseUnicodeString",
-   333
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_new_leaf",
-   308
-  ],
-  [
-   "VCRUNTIME140.dll!memmove",
-   277
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_array_remove_trailing_extras",
-   237
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lexer__mark_end",
-   234
-  ],
-  [
-   "ruby-parse-benchmark.exe!stack_node_release",
-   213
-  ],
-  [
-   "ruby-parse-benchmark.exe!scan",
-   208
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack_renumber_version",
-   177
-  ],
-  [
-   "ruby-parse-benchmark.exe!scan_whitespace",
-   169
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lexer_goto",
-   133
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__condense_stack",
-   126
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lexer__eof",
-   113
-  ],
-  [
-   "ntdll.dll!RtlAllocateHeap",
-   103
-  ],
-  [
-   "ruby-parse-benchmark.exe!pop_count_callback",
-   101
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_array_reverse",
-   101
-  ],
-  [
-   "ruby-parse-benchmark.exe!scan_literal_content",
-   96
-  ],
-  [
-   "ucrtbase.dll!iswctype",
-   95
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lex_keywords",
-   94
-  ],
-  [
-   "ruby-parse-benchmark.exe!deserialize",
-   89
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__set_cached_token",
-   78
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_compress",
-   75
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_malloc_default",
-   72
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser_parse",
-   65
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lexer__do_advance",
-   54
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__shift",
-   54
-  ],
-  [
-   "ntdll.dll!NtFreeVirtualMemory",
-   53
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__version_status",
-   52
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__reuse_node",
-   52
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_language_next_state",
-   48
-  ],
-  [
-   "ucrtbase.dll!malloc_base",
-   48
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lexer__get_lookahead",
-   44
-  ],
-  [
-   "ruby-parse-benchmark.exe!stack__subtree_node_count",
-   42
-  ],
-  [
-   "ucrtbase.dll!malloc",
-   35
-  ],
-  [
-   "ntdll.dll!NtProtectVirtualMemory",
-   35
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack_push",
-   34
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lexer__is_at_included_range_start",
-   32
-  ],
-  [
-   "ucrtbase.dll!free_base",
-   30
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack_set_last_external_token",
-   30
-  ],
-  [
-   "ruby-parse-benchmark.exe!serialize",
-   29
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_lexer_start",
-   28
-  ],
-  [
-   "ucrtbase.dll!free",
-   27
-  ],
-  [
-   "ruby-parse-benchmark.exe!free",
-   26
-  ],
-  [
-   "ruby-parse-benchmark.exe!reset",
-   26
-  ],
-  [
-   "VCRUNTIME140.dll!memchr",
-   25
-  ],
-  [
-   "ruby-parse-benchmark.exe!pending_heredoc",
-   24
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack_node_count_since_error",
-   24
-  ],
-  [
-   "ruby-parse-benchmark.exe!scan_open_delimiter",
-   21
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_language_table_entry",
-   20
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack_error_cost",
-   20
-  ],
-  [
-   "ruby-parse-benchmark.exe!__security_check_cookie",
-   19
-  ],
-  [
-   "ruby-parse-benchmark.exe!memmove",
-   18
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__can_reuse_first_leaf",
-   17
-  ],
-  [
-   "ntdll.dll!RtlGetSuiteMask",
-   16
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack_can_merge",
-   16
-  ],
-  [
-   "ruby-parse-benchmark.exe!scan_heredoc_content",
-   11
-  ],
-  [
-   "ruby-parse-benchmark.exe!stack_node_add_link",
-   11
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_external_scanner_state_eq",
-   11
-  ],
-  [
-   "ruby-parse-benchmark.exe!scan_symbol_identifier",
-   9
-  ],
-  [
-   "VCRUNTIME140.dll!memset",
-   9
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack_remove_version",
-   8
-  ],
-  [
-   "ruby-parse-benchmark.exe!tree_sitter_ruby_external_scanner_scan",
-   8
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack_merge",
-   8
-  ],
-  [
-   "ntdll.dll!NtAllocateVirtualMemory",
-   7
-  ],
-  [
-   "ntdll.dll!ExpInterlockedPopEntrySListEnd",
-   6
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__do_all_potential_reductions",
-   6
-  ],
-  [
-   "ruby-parse-benchmark.exe!tree_sitter_ruby_external_scanner_deserialize",
-   5
-  ],
-  [
-   "ruby-parse-benchmark.exe!memset",
-   5
-  ],
-  [
-   "ntdll.dll!strncpy",
-   5
-  ],
-  [
-   "ntdll.dll!ExpInterlockedPopEntrySListResume",
-   4
-  ],
-  [
-   "ucrtbase.dll!calloc_base",
-   4
-  ],
-  [
-   "ruby-parse-benchmark.exe!summarize_stack_callback",
-   4
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__handle_error",
-   4
-  ],
-  [
-   "ruby-parse-benchmark.exe!stack_head_delete",
-   4
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_stack_clear",
-   3
-  ],
-  [
-   "ruby-parse-benchmark.exe!memcpy",
-   3
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__process_candidate_recovery_actions",
-   3
-  ],
-  [
-   "ruby-parse-benchmark.exe!stack__subtree_is_equivalent",
-   3
-  ],
-  [
-   "ntdll.dll!RtlQueryWnfStateDataWithExplicitScope",
-   2
-  ],
-  [
-   "ntdll.dll!RtlMoveMemory",
-   2
-  ],
-  [
-   "ruby-parse-benchmark.exe!tree_sitter_ruby_external_scanner_serialize",
-   2
-  ],
-  [
-   "ntdll.dll!RtlSetProcessPreferredUILanguages",
-   2
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_subtree_array_copy",
-   2
-  ],
-  [
-   "ruby-parse-benchmark.exe!scan_heredoc_word",
-   2
-  ],
-  [
-   "ruby-parse-benchmark.exe!ts_parser__breakdown_top_of_stack",
-   2
-  ]
- ]
+	"samples": 19019,
+	"elapsed_s": 29.845371600000362,
+	"rounds": 2,
+	"by_module": [
+		["ruby-parse-benchmark.exe", 16076],
+		["ntdll.dll", 2388],
+		["VCRUNTIME140.dll", 313],
+		["ucrtbase.dll", 241],
+		["KERNELBASE.dll", 1]
+	],
+	"by_function": [
+		["ruby-parse-benchmark.exe!stack_node_new", 1766],
+		["ruby-parse-benchmark.exe!ts_subtree_new_node", 1389],
+		["ntdll.dll!RtlSizeHeap", 1290],
+		["ruby-parse-benchmark.exe!stack__iter", 1263],
+		["ruby-parse-benchmark.exe!ts_language_lookup", 1221],
+		["ruby-parse-benchmark.exe!ts_subtree_release", 1053],
+		["ruby-parse-benchmark.exe!ts_subtree_summarize_children", 982],
+		["ruby-parse-benchmark.exe!ts_parser__advance", 859],
+		["ruby-parse-benchmark.exe!ts_lexer__advance", 774],
+		["ruby-parse-benchmark.exe!ts_parser__lex", 696],
+		["ruby-parse-benchmark.exe!ts_parser__reduce", 627],
+		["ruby-parse-benchmark.exe!ts_parser__balance_subtree", 570],
+		["ntdll.dll!RtlFreeHeap", 526],
+		["ruby-parse-benchmark.exe!ts_subtree_total_size", 484],
+		["ruby-parse-benchmark.exe!ts_lex", 457],
+		["ruby-parse-benchmark.exe!ts_stack__add_version", 381],
+		["ntdll.dll!RtlUpcaseUnicodeString", 333],
+		["ruby-parse-benchmark.exe!ts_subtree_new_leaf", 308],
+		["VCRUNTIME140.dll!memmove", 277],
+		["ruby-parse-benchmark.exe!ts_subtree_array_remove_trailing_extras", 237],
+		["ruby-parse-benchmark.exe!ts_lexer__mark_end", 234],
+		["ruby-parse-benchmark.exe!stack_node_release", 213],
+		["ruby-parse-benchmark.exe!scan", 208],
+		["ruby-parse-benchmark.exe!ts_stack_renumber_version", 177],
+		["ruby-parse-benchmark.exe!scan_whitespace", 169],
+		["ruby-parse-benchmark.exe!ts_lexer_goto", 133],
+		["ruby-parse-benchmark.exe!ts_parser__condense_stack", 126],
+		["ruby-parse-benchmark.exe!ts_lexer__eof", 113],
+		["ntdll.dll!RtlAllocateHeap", 103],
+		["ruby-parse-benchmark.exe!pop_count_callback", 101],
+		["ruby-parse-benchmark.exe!ts_subtree_array_reverse", 101],
+		["ruby-parse-benchmark.exe!scan_literal_content", 96],
+		["ucrtbase.dll!iswctype", 95],
+		["ruby-parse-benchmark.exe!ts_lex_keywords", 94],
+		["ruby-parse-benchmark.exe!deserialize", 89],
+		["ruby-parse-benchmark.exe!ts_parser__set_cached_token", 78],
+		["ruby-parse-benchmark.exe!ts_subtree_compress", 75],
+		["ruby-parse-benchmark.exe!ts_malloc_default", 72],
+		["ruby-parse-benchmark.exe!ts_parser_parse", 65],
+		["ruby-parse-benchmark.exe!ts_lexer__do_advance", 54],
+		["ruby-parse-benchmark.exe!ts_parser__shift", 54],
+		["ntdll.dll!NtFreeVirtualMemory", 53],
+		["ruby-parse-benchmark.exe!ts_parser__version_status", 52],
+		["ruby-parse-benchmark.exe!ts_parser__reuse_node", 52],
+		["ruby-parse-benchmark.exe!ts_language_next_state", 48],
+		["ucrtbase.dll!malloc_base", 48],
+		["ruby-parse-benchmark.exe!ts_lexer__get_lookahead", 44],
+		["ruby-parse-benchmark.exe!stack__subtree_node_count", 42],
+		["ucrtbase.dll!malloc", 35],
+		["ntdll.dll!NtProtectVirtualMemory", 35],
+		["ruby-parse-benchmark.exe!ts_stack_push", 34],
+		["ruby-parse-benchmark.exe!ts_lexer__is_at_included_range_start", 32],
+		["ucrtbase.dll!free_base", 30],
+		["ruby-parse-benchmark.exe!ts_stack_set_last_external_token", 30],
+		["ruby-parse-benchmark.exe!serialize", 29],
+		["ruby-parse-benchmark.exe!ts_lexer_start", 28],
+		["ucrtbase.dll!free", 27],
+		["ruby-parse-benchmark.exe!free", 26],
+		["ruby-parse-benchmark.exe!reset", 26],
+		["VCRUNTIME140.dll!memchr", 25],
+		["ruby-parse-benchmark.exe!pending_heredoc", 24],
+		["ruby-parse-benchmark.exe!ts_stack_node_count_since_error", 24],
+		["ruby-parse-benchmark.exe!scan_open_delimiter", 21],
+		["ruby-parse-benchmark.exe!ts_language_table_entry", 20],
+		["ruby-parse-benchmark.exe!ts_stack_error_cost", 20],
+		["ruby-parse-benchmark.exe!__security_check_cookie", 19],
+		["ruby-parse-benchmark.exe!memmove", 18],
+		["ruby-parse-benchmark.exe!ts_parser__can_reuse_first_leaf", 17],
+		["ntdll.dll!RtlGetSuiteMask", 16],
+		["ruby-parse-benchmark.exe!ts_stack_can_merge", 16],
+		["ruby-parse-benchmark.exe!scan_heredoc_content", 11],
+		["ruby-parse-benchmark.exe!stack_node_add_link", 11],
+		["ruby-parse-benchmark.exe!ts_subtree_external_scanner_state_eq", 11],
+		["ruby-parse-benchmark.exe!scan_symbol_identifier", 9],
+		["VCRUNTIME140.dll!memset", 9],
+		["ruby-parse-benchmark.exe!ts_stack_remove_version", 8],
+		["ruby-parse-benchmark.exe!tree_sitter_ruby_external_scanner_scan", 8],
+		["ruby-parse-benchmark.exe!ts_stack_merge", 8],
+		["ntdll.dll!NtAllocateVirtualMemory", 7],
+		["ntdll.dll!ExpInterlockedPopEntrySListEnd", 6],
+		["ruby-parse-benchmark.exe!ts_parser__do_all_potential_reductions", 6],
+		[
+			"ruby-parse-benchmark.exe!tree_sitter_ruby_external_scanner_deserialize",
+			5
+		],
+		["ruby-parse-benchmark.exe!memset", 5],
+		["ntdll.dll!strncpy", 5],
+		["ntdll.dll!ExpInterlockedPopEntrySListResume", 4],
+		["ucrtbase.dll!calloc_base", 4],
+		["ruby-parse-benchmark.exe!summarize_stack_callback", 4],
+		["ruby-parse-benchmark.exe!ts_parser__handle_error", 4],
+		["ruby-parse-benchmark.exe!stack_head_delete", 4],
+		["ruby-parse-benchmark.exe!ts_stack_clear", 3],
+		["ruby-parse-benchmark.exe!memcpy", 3],
+		[
+			"ruby-parse-benchmark.exe!ts_parser__process_candidate_recovery_actions",
+			3
+		],
+		["ruby-parse-benchmark.exe!stack__subtree_is_equivalent", 3],
+		["ntdll.dll!RtlQueryWnfStateDataWithExplicitScope", 2],
+		["ntdll.dll!RtlMoveMemory", 2],
+		["ruby-parse-benchmark.exe!tree_sitter_ruby_external_scanner_serialize", 2],
+		["ntdll.dll!RtlSetProcessPreferredUILanguages", 2],
+		["ruby-parse-benchmark.exe!ts_subtree_array_copy", 2],
+		["ruby-parse-benchmark.exe!scan_heredoc_word", 2],
+		["ruby-parse-benchmark.exe!ts_parser__breakdown_top_of_stack", 2]
+	]
 }

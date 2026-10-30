@@ -39,11 +39,11 @@ println!("{}", tree.root_node().to_sexp());
 
 This grammar ships with the following query files in `queries/`:
 
-| File | Description |
-|------|-------------|
-| `highlights.scm` | Syntax highlighting (keywords, literals, operators, etc.) |
-| `tags.scm` | Code navigation tags (definitions and references for methods, classes, modules, constants) |
-| `locals.scm` | Local variable scoping |
+| File             | Description                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| `highlights.scm` | Syntax highlighting (keywords, literals, operators, etc.)                                  |
+| `tags.scm`       | Code navigation tags (definitions and references for methods, classes, modules, constants) |
+| `locals.scm`     | Local variable scoping                                                                     |
 
 ## Known limitations
 
@@ -141,14 +141,14 @@ ruby-prism 2.1.0 (released 2026-10-28) was still inside the one-week release age
 policy. Two warmups precede seven alternating measurements; values are medians
 [min–max].
 
-| Corpus | Files | Bytes | Prism ms (range) | tree-sitter ms (range) | Prism/TS |
-|---|---:|---:|---:|---:|---:|
-| Rails | 3,481 | 20,011,502 | 204.393 [174.603–405.264] | 3126.046 [2845.781–6228.623] | 0.0654 |
-| Ruby | 7,480 | 36,165,003 | 406.229 [388.464–800.066] | 7243.782 [6324.487–13260.486] | 0.0561 |
-| RuboCop | 1,791 | 11,624,842 | 97.200 [85.682–174.849] | 1159.100 [1045.517–1618.507] | 0.0839 |
-| Homebrew | 2,407 | 13,575,237 | 151.381 [138.107–228.735] | 2234.169 [2088.687–3140.624] | 0.0678 |
-| Mastodon | 3,355 | 6,069,022 | 71.402 [63.656–115.726] | 1010.398 [948.143–1483.045] | 0.0707 |
-| Total | 18,514 | 87,445,606 | 913.301 [870.940–1713.570] | 14731.034 [13358.444–25466.858] | 0.0620 |
+| Corpus   |  Files |      Bytes |           Prism ms (range) |          tree-sitter ms (range) | Prism/TS |
+| -------- | -----: | ---------: | -------------------------: | ------------------------------: | -------: |
+| Rails    |  3,481 | 20,011,502 |  204.393 [174.603–405.264] |    3126.046 [2845.781–6228.623] |   0.0654 |
+| Ruby     |  7,480 | 36,165,003 |  406.229 [388.464–800.066] |   7243.782 [6324.487–13260.486] |   0.0561 |
+| RuboCop  |  1,791 | 11,624,842 |    97.200 [85.682–174.849] |    1159.100 [1045.517–1618.507] |   0.0839 |
+| Homebrew |  2,407 | 13,575,237 |  151.381 [138.107–228.735] |    2234.169 [2088.687–3140.624] |   0.0678 |
+| Mastodon |  3,355 |  6,069,022 |    71.402 [63.656–115.726] |     1010.398 [948.143–1483.045] |   0.0707 |
+| Total    | 18,514 | 87,445,606 | 913.301 [870.940–1713.570] | 14731.034 [13358.444–25466.858] |   0.0620 |
 
 The overall Prism/TS ratio is 0.0620; values above 1 would favor tree-sitter.
 The goal of beating Prism on fresh full parses was **not achieved**. The wide

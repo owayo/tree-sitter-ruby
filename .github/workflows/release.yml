@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run (skip actual release)'
+        description: "Dry run (skip actual release)"
         type: boolean
         default: false
 

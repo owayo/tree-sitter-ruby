@@ -1,181 +1,181 @@
 {
-  "python": "3.15.1 (main, Oct 21 2026, 17:51:31) [MSC v.1951 64 bit (AMD64)]",
-  "platform": "Windows-11-10.0.26300-SP0",
-  "baseline": "scripts/corpus_test.py at 2b400b5",
-  "warmup": "one RSS query per implementation",
-  "unavailable": "null RSS includes baseline command timeout; kept in wall samples",
-  "target": "one idle Python process holding a 64 MiB bytearray",
-  "handles_before": 167,
-  "handles_after_200_extra_candidate_queries": 167,
-  "samples": [
-    {
-      "round": 0,
-      "engine": "baseline",
-      "wall_ms": 2173.5229,
-      "cpu_ms": 31.25,
-      "rss_mb": null
-    },
-    {
-      "round": 0,
-      "engine": "candidate",
-      "wall_ms": 0.1592,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 1,
-      "engine": "candidate",
-      "wall_ms": 0.071,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 1,
-      "engine": "baseline",
-      "wall_ms": 2150.2326,
-      "cpu_ms": 0.0,
-      "rss_mb": null
-    },
-    {
-      "round": 2,
-      "engine": "baseline",
-      "wall_ms": 2119.8478,
-      "cpu_ms": 15.625,
-      "rss_mb": null
-    },
-    {
-      "round": 2,
-      "engine": "candidate",
-      "wall_ms": 0.1492,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 3,
-      "engine": "candidate",
-      "wall_ms": 0.0827,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 3,
-      "engine": "baseline",
-      "wall_ms": 2183.045,
-      "cpu_ms": 0.0,
-      "rss_mb": null
-    },
-    {
-      "round": 4,
-      "engine": "baseline",
-      "wall_ms": 2317.7004,
-      "cpu_ms": 0.0,
-      "rss_mb": null
-    },
-    {
-      "round": 4,
-      "engine": "candidate",
-      "wall_ms": 0.2356,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 5,
-      "engine": "candidate",
-      "wall_ms": 0.1162,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 5,
-      "engine": "baseline",
-      "wall_ms": 2328.8991,
-      "cpu_ms": 0.0,
-      "rss_mb": null
-    },
-    {
-      "round": 6,
-      "engine": "baseline",
-      "wall_ms": 2197.5114,
-      "cpu_ms": 0.0,
-      "rss_mb": null
-    },
-    {
-      "round": 6,
-      "engine": "candidate",
-      "wall_ms": 0.1606,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 7,
-      "engine": "candidate",
-      "wall_ms": 0.0841,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 7,
-      "engine": "baseline",
-      "wall_ms": 2157.3523,
-      "cpu_ms": 0.0,
-      "rss_mb": null
-    },
-    {
-      "round": 8,
-      "engine": "baseline",
-      "wall_ms": 1531.6616,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 8,
-      "engine": "candidate",
-      "wall_ms": 0.151,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 9,
-      "engine": "candidate",
-      "wall_ms": 0.0739,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 9,
-      "engine": "baseline",
-      "wall_ms": 2258.7508,
-      "cpu_ms": 0.0,
-      "rss_mb": null
-    },
-    {
-      "round": 10,
-      "engine": "baseline",
-      "wall_ms": 1247.3401,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    },
-    {
-      "round": 10,
-      "engine": "candidate",
-      "wall_ms": 0.1737,
-      "cpu_ms": 0.0,
-      "rss_mb": 74.9453125
-    }
-  ],
-  "summary": {
-    "baseline": {
-      "median_ms": 2173.5229,
-      "min_ms": 1247.3401,
-      "max_ms": 2328.8991,
-      "successful_queries": 2
-    },
-    "candidate": {
-      "median_ms": 0.1492,
-      "min_ms": 0.071,
-      "max_ms": 0.2356,
-      "successful_queries": 11
-    }
-  },
-  "reduction_percent": 99.99313556806786
+	"python": "3.15.1 (main, Oct 21 2026, 17:51:31) [MSC v.1951 64 bit (AMD64)]",
+	"platform": "Windows-11-10.0.26300-SP0",
+	"baseline": "scripts/corpus_test.py at 2b400b5",
+	"warmup": "one RSS query per implementation",
+	"unavailable": "null RSS includes baseline command timeout; kept in wall samples",
+	"target": "one idle Python process holding a 64 MiB bytearray",
+	"handles_before": 167,
+	"handles_after_200_extra_candidate_queries": 167,
+	"samples": [
+		{
+			"round": 0,
+			"engine": "baseline",
+			"wall_ms": 2173.5229,
+			"cpu_ms": 31.25,
+			"rss_mb": null
+		},
+		{
+			"round": 0,
+			"engine": "candidate",
+			"wall_ms": 0.1592,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 1,
+			"engine": "candidate",
+			"wall_ms": 0.071,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 1,
+			"engine": "baseline",
+			"wall_ms": 2150.2326,
+			"cpu_ms": 0.0,
+			"rss_mb": null
+		},
+		{
+			"round": 2,
+			"engine": "baseline",
+			"wall_ms": 2119.8478,
+			"cpu_ms": 15.625,
+			"rss_mb": null
+		},
+		{
+			"round": 2,
+			"engine": "candidate",
+			"wall_ms": 0.1492,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 3,
+			"engine": "candidate",
+			"wall_ms": 0.0827,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 3,
+			"engine": "baseline",
+			"wall_ms": 2183.045,
+			"cpu_ms": 0.0,
+			"rss_mb": null
+		},
+		{
+			"round": 4,
+			"engine": "baseline",
+			"wall_ms": 2317.7004,
+			"cpu_ms": 0.0,
+			"rss_mb": null
+		},
+		{
+			"round": 4,
+			"engine": "candidate",
+			"wall_ms": 0.2356,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 5,
+			"engine": "candidate",
+			"wall_ms": 0.1162,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 5,
+			"engine": "baseline",
+			"wall_ms": 2328.8991,
+			"cpu_ms": 0.0,
+			"rss_mb": null
+		},
+		{
+			"round": 6,
+			"engine": "baseline",
+			"wall_ms": 2197.5114,
+			"cpu_ms": 0.0,
+			"rss_mb": null
+		},
+		{
+			"round": 6,
+			"engine": "candidate",
+			"wall_ms": 0.1606,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 7,
+			"engine": "candidate",
+			"wall_ms": 0.0841,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 7,
+			"engine": "baseline",
+			"wall_ms": 2157.3523,
+			"cpu_ms": 0.0,
+			"rss_mb": null
+		},
+		{
+			"round": 8,
+			"engine": "baseline",
+			"wall_ms": 1531.6616,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 8,
+			"engine": "candidate",
+			"wall_ms": 0.151,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 9,
+			"engine": "candidate",
+			"wall_ms": 0.0739,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 9,
+			"engine": "baseline",
+			"wall_ms": 2258.7508,
+			"cpu_ms": 0.0,
+			"rss_mb": null
+		},
+		{
+			"round": 10,
+			"engine": "baseline",
+			"wall_ms": 1247.3401,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		},
+		{
+			"round": 10,
+			"engine": "candidate",
+			"wall_ms": 0.1737,
+			"cpu_ms": 0.0,
+			"rss_mb": 74.9453125
+		}
+	],
+	"summary": {
+		"baseline": {
+			"median_ms": 2173.5229,
+			"min_ms": 1247.3401,
+			"max_ms": 2328.8991,
+			"successful_queries": 2
+		},
+		"candidate": {
+			"median_ms": 0.1492,
+			"min_ms": 0.071,
+			"max_ms": 0.2356,
+			"successful_queries": 11
+		}
+	},
+	"reduction_percent": 99.99313556806786
 }

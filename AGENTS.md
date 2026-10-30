@@ -4,23 +4,23 @@ Ruby の tree-sitter 文法パーサー。
 
 ## プロジェクト構成
 
-| パス | 説明 |
-|------|------|
-| `grammar.js` | Ruby 文法定義（メインファイル） |
-| `src/` | tree-sitter generate で生成されるパーサーコード（手動編集不可） |
-| `src/scanner.c` | 外部スキャナー（手動管理、heredoc・リテラル・空白処理・状態シリアライズ） |
-| `scripts/` | テストランナー（corpus_test.py）とユニットテスト |
-| `queries/highlights.scm` | シンタックスハイライトクエリ |
-| `queries/tags.scm` | コードナビゲーション用タグクエリ（定義・参照） |
-| `queries/locals.scm` | ローカル変数スコープクエリ |
-| `bindings/` | Rust バインディングと C/C++ ヘッダー・pkg-config テンプレート |
-| `bindings/rust/build_support.rs` | 最適化するCargoプロファイル向けに、生成Cのビルド用コピーを準備する |
-| `test/corpus/` | パーサーのコーパステスト |
-| `test/highlight/` | ハイライトクエリのテスト |
-| `test/tags/` | タグクエリのテスト |
-| `tools/parse-benchmark/` | Prism と比較する独立した開発用ハーネス（通常の利用依存には含めない）。関数別の CPU 採取・reduce の記号別集計・交互測定も含む |
-| `.depup` | `depup` をリポジトリ直下で実行したときに、直下に加えて依存を更新するディレクトリ（計測ハーネス） |
-| `docs/benchmarks/` | 入力のハッシュ・受理差・新規フルパースの測定記録 |
+| パス                             | 説明                                                                                                                         |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `grammar.js`                     | Ruby 文法定義（メインファイル）                                                                                              |
+| `src/`                           | tree-sitter generate で生成されるパーサーコード（手動編集不可）                                                              |
+| `src/scanner.c`                  | 外部スキャナー（手動管理、heredoc・リテラル・空白処理・状態シリアライズ）                                                    |
+| `scripts/`                       | テストランナー（corpus_test.py）とユニットテスト                                                                             |
+| `queries/highlights.scm`         | シンタックスハイライトクエリ                                                                                                 |
+| `queries/tags.scm`               | コードナビゲーション用タグクエリ（定義・参照）                                                                               |
+| `queries/locals.scm`             | ローカル変数スコープクエリ                                                                                                   |
+| `bindings/`                      | Rust バインディングと C/C++ ヘッダー・pkg-config テンプレート                                                                |
+| `bindings/rust/build_support.rs` | 最適化するCargoプロファイル向けに、生成Cのビルド用コピーを準備する                                                           |
+| `test/corpus/`                   | パーサーのコーパステスト                                                                                                     |
+| `test/highlight/`                | ハイライトクエリのテスト                                                                                                     |
+| `test/tags/`                     | タグクエリのテスト                                                                                                           |
+| `tools/parse-benchmark/`         | Prism と比較する独立した開発用ハーネス（通常の利用依存には含めない）。関数別の CPU 採取・reduce の記号別集計・交互測定も含む |
+| `.depup`                         | `depup` をリポジトリ直下で実行したときに、直下に加えて依存を更新するディレクトリ（計測ハーネス）                             |
+| `docs/benchmarks/`               | 入力のハッシュ・受理差・新規フルパースの測定記録                                                                             |
 
 ## 開発コマンド
 
@@ -230,11 +230,11 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 防ぐため。ライブラリが見つからない場合は 1 件もパースせず setup error（exit 2）で終わる。
 場所は次の順で解決する:
 
-| 優先度 | 指定方法 | 例 |
-|---|---|---|
-| 1 | `TREE_SITTER_LIB_PATH`（ファイル） | `/tmp/ts-lib/ruby.dylib` |
-| 2 | `TREE_SITTER_LIBDIR`（ディレクトリ）+ プラットフォーム既定名 | `/tmp/ts-lib` → `ruby.dylib` |
-| 3 | 既定（POSIX は `/tmp/ts-lib`、Windows は TEMP 配下の `ts-lib`） | — |
+| 優先度 | 指定方法                                                        | 例                           |
+| ------ | --------------------------------------------------------------- | ---------------------------- |
+| 1      | `TREE_SITTER_LIB_PATH`（ファイル）                              | `/tmp/ts-lib/ruby.dylib`     |
+| 2      | `TREE_SITTER_LIBDIR`（ディレクトリ）+ プラットフォーム既定名    | `/tmp/ts-lib` → `ruby.dylib` |
+| 3      | 既定（POSIX は `/tmp/ts-lib`、Windows は TEMP 配下の `ts-lib`） | —                            |
 
 やむを得ず `tree-sitter test` を実行する場合は、**必ず RSS と VSIZE の両方を監視**し、VSIZE 50GB または RSS 6GB 超過で即座に kill すること。
 
