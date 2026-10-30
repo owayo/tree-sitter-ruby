@@ -230,6 +230,57 @@ fn profile(inputs: &[Input], path: &str) {
     println!("{}", json!({"path":path,"events":*counts.lock().unwrap()}));
 }
 
+// 全入力をロガー付きでパースし、reduce の記号別回数 (うち子 1 個の単位 reduce) と、
+// 各トークンの処理時に並んでいた GLR の版の数を数える。時間の計測には使わない。
+fn reductions(inputs: &[Input]) {
+    #[derive(Default)]
+    struct Counts {
+        events: std::collections::BTreeMap<String, u64>,
+        reduce: std::collections::BTreeMap<String, u64>,
+        unit_reduce: std::collections::BTreeMap<String, u64>,
+        versions: std::collections::BTreeMap<u32, u64>,
+    }
+    let counts = std::sync::Arc::new(std::sync::Mutex::new(Counts::default()));
+    let logged_counts = counts.clone();
+    let mut parser = parser();
+    parser.set_logger(Some(Box::new(move |kind, message| {
+        if kind != tree_sitter::LogType::Parse {
+            return;
+        }
+        let mut counts = logged_counts.lock().unwrap();
+        let head = message.split_whitespace().next().unwrap_or("");
+        *counts.events.entry(head.to_string()).or_insert(0) += 1;
+        if let Some(rest) = message.strip_prefix("reduce sym:") {
+            let (symbol, child_count) = rest.split_once(", child_count:").unwrap_or((rest, ""));
+            *counts.reduce.entry(symbol.to_string()).or_insert(0) += 1;
+            if child_count == "1" {
+                *counts.unit_reduce.entry(symbol.to_string()).or_insert(0) += 1;
+            }
+        } else if let Some((_, rest)) = message.split_once("version_count:") {
+            let count = rest
+                .split(',')
+                .next()
+                .unwrap_or("")
+                .trim()
+                .parse()
+                .unwrap_or(0);
+            *counts.versions.entry(count).or_insert(0) += 1;
+        }
+    })));
+    for input in inputs {
+        let tree = parser
+            .parse(&input.source, None)
+            .expect("parse interrupted");
+        black_box(tree.root_node());
+    }
+    drop(parser);
+    let counts = counts.lock().unwrap();
+    println!(
+        "{}",
+        json!({"files":inputs.len(),"events":counts.events,"reduce":counts.reduce,"unit_reduce":counts.unit_reduce,"process_version_count":counts.versions})
+    );
+}
+
 fn main() {
     let args: Vec<_> = env::args().collect();
     assert!(
@@ -241,6 +292,7 @@ fn main() {
     match args[1].as_str() {
         "validate" => validate(&inputs),
         "profile" => profile(&inputs, &args[4]),
+        "reductions" => reductions(&inputs),
         // 別プロセスを起動したまま反復指示を待ち、実装の測定順を交互にできる。
         "serve" => {
             for line in io::stdin().lock().lines() {

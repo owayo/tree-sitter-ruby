@@ -56,6 +56,39 @@ tree-sitter loggerのイベント数も計測区間と別に保存できる。
 
 測定結果の例は [2026-10-25の記録](../../docs/benchmarks/2026-10-25/README.md)。
 
+## 関数別の CPU 割合
+
+```powershell
+mise exec -- python tools/parse-benchmark/sample_profile.py --binary tools/parse-benchmark/target/release/ruby-parse-benchmark.exe --manifest docs/benchmarks/<date>/common.jsonl --source-root C:/temp/source --rounds 2 --output <profile.json>
+```
+
+Windows用。管理者権限の要るWPRを使わず、`serve` の主スレッドを約1ミリ秒ごとに一時停止して
+命令位置を読み、隣のPDBで関数名を引く。数えるのは最内の関数だけで、呼び出し先を含む時間ではない。
+入力の読み込みと最初の1反復は採取しない。PDBのないntdllなどは最寄りのエクスポート名になるので、
+モジュール別の合計で読む。
+
+## reduce の記号別回数
+
+```powershell
+& tools/parse-benchmark/target/release/ruby-parse-benchmark.exe reductions <manifest> C:/temp/source
+```
+
+ロガー付きで全入力をパースし、reduce の記号別回数（うち子1個の単位reduce）、ロガーのイベント数、
+各トークンを処理したときのGLRの版の数を1行のJSONで出す。ロガーの負荷があるので時間の測定には使わない。
+`inline` の候補を探すときは、supertype でも `conflicts` の対象でもない隠し規則の単位reduceを見る。
+
+## 揺れのある環境での交互測定
+
+```powershell
+mise exec -- python tools/parse-benchmark/paired.py --candidate <候補.exe> --control <対照.exe> --manifest <部分集合.jsonl> --source-root C:/temp/source --pairs 30 --cpu 6 --output <paired.json>
+```
+
+デスクトップで他の処理と同居すると、反復ごとの所要時間が数十%揺れ、`bench` の長い反復の
+中央値では数%の差を判別できない。候補と対照の `serve` を同じ論理CPUと高い優先度に固定し、
+部分集合の1反復ずつを順番を入れ替えながら交互に測る。隣り合う2回の比（候補÷対照）の中央値と、
+seedを固定したブートストラップによる中央値の95%区間を保存する。部分集合は共通集合から
+一定間隔で抜き出し、5コーパスをすべて含める。Prismとの比較表には `bench` を使う。
+
 ## Windows の RSS 監視の比較
 
 変更前の `scripts/corpus_test.py` を別ファイルに保存し、同じ Python・同じ子プロセスで
