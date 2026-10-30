@@ -130,8 +130,21 @@ parser.cは26,163,506→26,191,107バイト。サイズの変化を高速化の�
 - Pythonランナー160件: pass、既定の1件skip。プロファイラーの追加10件を含む。
 - lint、Ruff lint/format、cargo fmt、Python 3.7構文確認: pass。
 - プロファイラー起動失敗の回帰は変更前に5秒の期限超過で失敗し、修正後に成功。Windowsの実採取も成功。
-- PR #32/#33/#34 はWindows/Linux/macOSの3件のCIが成功し、マージ・Issueクローズを確認した。#34のmacOSランナー取得失敗によるキャンセルは、同じSHAの再実行で成功した。
+- PR #32/#33/#34/#35 はWindows/Linux/macOSの3件のCIが成功し、マージ・Issueクローズを確認した。#34のmacOSランナー取得失敗によるキャンセルは、同じSHAの再実行で成功した。
 - tree-sitter testは実行していない。CMakeのCバインディング検証はUnix CIで実行した。
+
+## CIのmacOS移行
+
+PR #35 の初回CIは、`macos-14` のジョブがテスト開始前に計画停止を理由としてキャンセルされた。
+[GitHub公式の告知](https://github.com/actions/runner-images/issues/13518)で、
+2026-10-30 14:00 UTCから翌日00:00 UTCの計画停止と、2026-11-02のサポート終了を確認した。
+PR #35でOS行列の1項目を `macos-15` へ変更し、テスト工程と権限を維持した。
+更新した同一SHA `f3eababf4e4f2c27223b749c3c0fb6a510793cea` の
+[CI](https://github.com/owayo/tree-sitter-ruby/actions/runs/41102320033)は3OSすべて成功し、
+`8730d72`としてマージした。
+[Issue #36](https://github.com/owayo/tree-sitter-ruby/issues/36)と
+[ci-runner-migration.json](ci-runner-migration.json)に根拠と実行結果を残す。
+文法・scanner・Rust本体は変更しておらず、上の正確性・性能の測定対象ソースと一致する。
 
 ## 生データと再現
 
