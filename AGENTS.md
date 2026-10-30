@@ -240,6 +240,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 
 ## 重要なルール
 
+- バージョン更新後は `python scripts/sync_lock_versions.py` で、ルートと計測ハーネスの
+  `Cargo.lock` の自パッケージ版を同期する。依存版は更新せず、両lockもリリースコミットに含める。
 - `src/` 配下は自動生成ファイルのため直接編集しない（ただし `src/scanner.c` は手動管理の外部スキャナー）
 - `grammar.js` を変更した場合は必ず `tree-sitter generate` を実行する
 - `tools/parse-benchmark/sample_profile.py` の応答待ちは EOF を失敗として扱い、駆動スレッドの例外でも完了通知を行う。例外・中断時の子プロセス、パイプ、Windows ハンドルとタイマーの回収は `scripts/test_benchmark_profile.py` で検証する
