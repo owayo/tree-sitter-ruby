@@ -1156,6 +1156,26 @@ static inline bool scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
     return true;
 }
 
+// `<<` の直後から heredoc の開始 (`-` / `~` と終端語) を読み、heredoc を開く。
+// 終端語を読めないときと、状態に保存できない長さの終端語のときは何も開かずに false を返す。
+// 保存できない heredoc を開くと、状態の喪失で後続行を通常のコードとして誤ってパースする。
+static inline bool scan_heredoc_start(Scanner *scanner, TSLexer *lexer) {
+    Heredoc heredoc = {0};
+    if (lexer->lookahead == '-' || lexer->lookahead == '~') {
+        advance(lexer);
+        heredoc.end_word_indentation_allowed = true;
+    }
+    if (!scan_heredoc_word(lexer, &heredoc)) {
+        return false;
+    }
+    if (!can_serialize_with(scanner, &heredoc, 0)) {
+        array_delete(&heredoc.word);
+        return false;
+    }
+    open_heredoc(scanner, heredoc);
+    return true;
+}
+
 static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_content, const TSSymbol content_symbol) {
     // `lexer->lookahead` は `int32_t` で Unicode 文字を保持する。
     // `(char)` に切り詰めると、ASCII 範囲外で下位 8 bit が
@@ -1535,6 +1555,16 @@ static inline bool accept_token(TSLexer *lexer, TokenType symbol) {
     return true;
 }
 
+// リテラルを開き、その開始トークンを返す。リテラルの追加でも、開いている heredoc と
+// 合わせた保存容量を確認し、収まらなければ開かずに false を返す。
+static inline bool open_literal(Scanner *scanner, TSLexer *lexer, Literal literal) {
+    if (!can_serialize_with(scanner, NULL, 1)) {
+        return false;
+    }
+    array_push(&scanner->literal_stack, literal);
+    return accept_token(lexer, literal.type);
+}
+
 static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
     scanner->has_leading_whitespace = false;
     scanner->binary_operator_hint = false;
@@ -1637,22 +1667,11 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 }
                 lexer->mark_end(lexer);
 
-                // ローカル変数の後の `<<` は heredoc を開かない。
-                if (valid_symbols[STRING_START] && scanner->has_leading_whitespace && !scanner->binary_operator_hint) {
-                    Heredoc heredoc = {0};
-                    if (lexer->lookahead == '-' || lexer->lookahead == '~') {
-                        advance(lexer);
-                        heredoc.end_word_indentation_allowed = true;
-                    }
-                    if (scan_heredoc_word(lexer, &heredoc)) {
-                        if (can_serialize_with(scanner, &heredoc, 0)) {
-                            lexer->mark_end(lexer);
-                            open_heredoc(scanner, heredoc);
-                            lexer->result_symbol = HEREDOC_START;
-                            return true;
-                        }
-                        array_delete(&heredoc.word);
-                    }
+                // ローカル変数の後の `<<` は heredoc を開かない。heredoc にならなければ、
+                // 終端を `<<` の直後に残したまま左シフト演算子として返す。
+                if (valid_symbols[STRING_START] && scanner->has_leading_whitespace && !scanner->binary_operator_hint &&
+                    scan_heredoc_start(scanner, lexer)) {
+                    return accept_token(lexer, HEREDOC_START);
                 }
 
                 lexer->result_symbol = BINARY_LEFT_SHIFT;
@@ -1765,22 +1784,11 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
 
                 switch (lexer->lookahead) {
                     case '"':
-                        advance(lexer);
-                        literal.open_delimiter = '"';
-                        literal.close_delimiter = '"';
-                        literal.allows_interpolation = true;
-                        if (!can_serialize_with(scanner, NULL, 1)) return false;
-                        array_push(&scanner->literal_stack, literal);
-                        return accept_token(lexer, SYMBOL_START);
-
                     case '\'':
+                        literal.open_delimiter = literal.close_delimiter = lexer->lookahead;
+                        literal.allows_interpolation = lexer->lookahead == '"';
                         advance(lexer);
-                        literal.open_delimiter = '\'';
-                        literal.close_delimiter = '\'';
-                        literal.allows_interpolation = false;
-                        if (!can_serialize_with(scanner, NULL, 1)) return false;
-                        array_push(&scanner->literal_stack, literal);
-                        return accept_token(lexer, SYMBOL_START);
+                        return open_literal(scanner, lexer, literal);
 
                     default:
                         if (scan_symbol_identifier(lexer)) {
@@ -1855,31 +1863,14 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 return false;
             }
             advance(lexer);
-
-            Heredoc heredoc = {0};
-            if (lexer->lookahead == '-' || lexer->lookahead == '~') {
-                advance(lexer);
-                heredoc.end_word_indentation_allowed = true;
-            }
-
-            if (!scan_heredoc_word(lexer, &heredoc)) {
+            if (!scan_heredoc_start(scanner, lexer)) {
                 return false;
             }
-            // 状態に保存できない長さの終端語は、後続行を誤って通常コードとして
-            // パースしないため heredoc 開始自体を不成立にする。
-            if (!can_serialize_with(scanner, &heredoc, 0)) {
-                array_delete(&heredoc.word);
-                return false;
-            }
-            open_heredoc(scanner, heredoc);
             return accept_token(lexer, HEREDOC_START);
         }
 
         if (scan_open_delimiter(scanner, lexer, &literal, valid_symbols)) {
-            // リテラルの追加でも、開いている heredoc と合わせた保存容量を確認する。
-            if (!can_serialize_with(scanner, NULL, 1)) return false;
-            array_push(&scanner->literal_stack, literal);
-            return accept_token(lexer, literal.type);
+            return open_literal(scanner, lexer, literal);
         }
         return false;
     }

@@ -101,6 +101,28 @@ fn literal_capacity_overflow_preserves_pending_heredoc() {
     assert_eq!(end.utf8_text(source.as_bytes()).unwrap(), delimiter);
 }
 
+#[test]
+fn delimited_symbol_capacity_overflow_preserves_pending_heredoc() {
+    let delimiter = "A".repeat(1000);
+    // 補間の中で開く区切りシンボル (`:"` と `:'`) も、文字列と同じ保存容量の確認を通る。
+    for symbol in [":\"#{1}\"", ":'a'"] {
+        let source = format!("x = <<{delimiter} + \"#{{{symbol}}}\"\nbody\n{delimiter}\ny = 1\n");
+        let tree = parse(&source);
+        let root = tree.root_node();
+        assert!(root.has_error(), "{symbol}: {}", root.to_sexp());
+        let start_byte = source.find("\nbody").unwrap() + 1;
+        let end_byte = source.rfind(&delimiter).unwrap() + delimiter.len();
+        let body = root
+            .descendant_for_byte_range(start_byte, end_byte)
+            .unwrap();
+        assert_eq!(body.kind(), "heredoc_body", "{symbol}: {}", root.to_sexp());
+        let mut cursor = body.walk();
+        let end = body.named_children(&mut cursor).last().unwrap();
+        assert_eq!(end.kind(), "heredoc_end");
+        assert_eq!(end.utf8_text(source.as_bytes()).unwrap(), delimiter);
+    }
+}
+
 // 木のすべてのノードの種類・範囲・extra かどうかを先行順で並べる。
 fn node_ranges(tree: &tree_sitter::Tree) -> Vec<(String, std::ops::Range<usize>, bool)> {
     let mut nodes = Vec::new();
