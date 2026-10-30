@@ -19,7 +19,8 @@ CRLFの編集後の増分パースは、新規パースと全ノードのフィ�
 全18,532件に新しいERROR/MISSINGはない。AST差110ファイルは全件デフォルト仮引数の分離で、
 `method_parameters` 以外のノード・フィールド・範囲は一致した。入力のSHA・各ファイルのハッシュ、
 既知の除外6件、Prismの診断、最終候補の計測は[保守記録](benchmarks/2026-10-31/README.md)に保存している。
-node-types.jsonは不変。コーパス432件、Rust debug/release、ランナー160件（既定の1件skip）が通った。
+node-types.jsonは不変。nilデフォルト値の分離と括弧内代入を独立した2件のRust回帰テストで固定した（#31）。
+コーパス432件、Rust debug/release全106件、ランナー160件（既定の1件skip）が通った。
 プロファイラーのEOFと例外時の資源回収も修正した（[PR #33](https://github.com/owayo/tree-sitter-ruby/pull/33)）。
 
 ## 2026-10-30
