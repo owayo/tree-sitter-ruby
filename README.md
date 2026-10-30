@@ -161,7 +161,7 @@ the one from the previous master (`c3c70a2`).
 
 Function-level CPU sampling shows that the external scanner takes about 4% of the
 time; most of it is in tree-sitter's GLR stack, subtree allocation, parse-table
-lookups and the heap. This release inlines six hidden grammar rules that are
+lookups and the heap. The grammar now inlines six hidden grammar rules that are
 neither supertypes nor conflict members, which removes 7.97% of all reductions
 without changing `node-types.json`. Because desktop noise made whole rounds vary
 by up to 50% in this session, the speedup was measured by pinning the candidate
