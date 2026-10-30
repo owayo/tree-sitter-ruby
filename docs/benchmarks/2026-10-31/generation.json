@@ -1,5 +1,5 @@
 {
-  "parser_identical": true,
-  "command": "mise exec -- pnpm exec tree-sitter generate",
-  "wall_seconds": 8.0723044
+	"parser_identical": true,
+	"command": "mise exec -- pnpm exec tree-sitter generate",
+	"wall_seconds": 8.0723044
 }

@@ -1,3040 +1,3040 @@
 [
-  {
-    "corpus": "ruby_ruby",
-    "path": "bootstraptest/runner.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "22",
-          "scol": "18",
-          "erow": "22",
-          "ecol": "49"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "ext/openssl/lib/openssl/buffering.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "112",
-          "scol": "10",
-          "erow": "112",
-          "ecol": "29"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler/definition.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "389",
-          "scol": "12",
-          "erow": "389",
-          "ecol": "100"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler/gem_helper.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "32",
-          "scol": "18",
-          "erow": "32",
-          "ecol": "42"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "96",
-          "scol": "19",
-          "erow": "96",
-          "ecol": "56"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler/mirror.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "66",
-          "scol": "20",
-          "erow": "66",
-          "ecol": "53"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler/runtime.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "110",
-          "scol": "13",
-          "erow": "110",
-          "ecol": "47"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler/ui/shell.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "26",
-          "scol": "14",
-          "erow": "26",
-          "ecol": "40"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "32",
-          "scol": "17",
-          "erow": "32",
-          "ecol": "43"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "38",
-          "scol": "14",
-          "erow": "38",
-          "ecol": "57"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "46",
-          "scol": "15",
-          "erow": "46",
-          "ecol": "55"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "52",
-          "scol": "15",
-          "erow": "52",
-          "ecol": "41"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler/ui/silent.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "15",
-          "scol": "14",
-          "erow": "15",
-          "ecol": "44"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "18",
-          "scol": "17",
-          "erow": "18",
-          "ecol": "47"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "21",
-          "scol": "14",
-          "erow": "21",
-          "ecol": "44"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "25",
-          "scol": "15",
-          "erow": "25",
-          "ecol": "45"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "28",
-          "scol": "15",
-          "erow": "28",
-          "ecol": "45"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler/vendor/thor/lib/thor/base.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "582",
-          "scol": "15",
-          "erow": "582",
-          "ecol": "47"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler/vendor/thor/lib/thor/runner.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "224",
-          "scol": "26",
-          "erow": "224",
-          "ecol": "66"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "252",
-          "scol": "15",
-          "erow": "252",
-          "ecol": "55"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "288",
-          "scol": "21",
-          "erow": "288",
-          "ecol": "108"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler/vendor/thor/lib/thor.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "308",
-          "scol": "26",
-          "erow": "308",
-          "ecol": "58"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "662",
-          "scol": "10",
-          "erow": "662",
-          "ecol": "45"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/bundler.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "228",
-          "scol": "18",
-          "erow": "228",
-          "ecol": "61"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/erb.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1234",
-          "scol": "15",
-          "erow": "1234",
-          "ecol": "55"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/mkmf.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "2765",
-          "scol": "15",
-          "erow": "2765",
-          "ecol": "61"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/optparse.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "550",
-          "scol": "18",
-          "erow": "552",
-          "ecol": "84"
-        },
-        "before_parameters": 6,
-        "after_parameters": 9,
-        "before_assignments": 3,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/prettyprint.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "61",
-          "scol": "35",
-          "erow": "61",
-          "ecol": "91"
-        },
-        "before_parameters": 1,
-        "after_parameters": 4,
-        "before_assignments": 3,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/random/formatter.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "145",
-          "scol": "20",
-          "erow": "145",
-          "ecol": "42"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/rubygems/package.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "360",
-          "scol": "11",
-          "erow": "360",
-          "ecol": "63"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "402",
-          "scol": "36",
-          "erow": "402",
-          "ecol": "88"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/rubygems/remote_fetcher.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "78",
-          "scol": "16",
-          "erow": "78",
-          "ecol": "54"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/rubygems/specification.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1975",
-          "scol": "16",
-          "erow": "1975",
-          "ecol": "43"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "2579",
-          "scol": "14",
-          "erow": "2579",
-          "ecol": "48"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/rubygems/vendor/optparse/lib/optparse.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "550",
-          "scol": "18",
-          "erow": "552",
-          "ecol": "84"
-        },
-        "before_parameters": 6,
-        "after_parameters": 9,
-        "before_assignments": 3,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "lib/rubygems.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "464",
-          "scol": "36",
-          "erow": "464",
-          "ecol": "63"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "477",
-          "scol": "44",
-          "erow": "477",
-          "ecol": "71"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "sample/mine.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "58",
-          "scol": "10",
-          "erow": "58",
-          "ecol": "23"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "spec/bundler/support/helpers.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "206",
-          "scol": "21",
-          "erow": "206",
-          "ecol": "73"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "spec/bundler/support/vendor/compact_index/lib/compact_index/versions_file.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "12",
-          "scol": "16",
-          "erow": "12",
-          "ecol": "39"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "spec/mspec/lib/mspec/matchers/complain.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "3",
-          "scol": "16",
-          "erow": "3",
-          "ecol": "48"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "65",
-          "scol": "22",
-          "erow": "65",
-          "ecol": "54"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "spec/mspec/lib/mspec/matchers/output.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "63",
-          "scol": "20",
-          "erow": "63",
-          "ecol": "48"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "spec/mspec/lib/mspec/runner/actions/filter.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "12",
-          "scol": "16",
-          "erow": "12",
-          "ecol": "41"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "spec/ruby/core/array/fixtures/classes.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "3",
-          "scol": "17",
-          "erow": "3",
-          "ecol": "40"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "spec/ruby/core/string/fixtures/classes.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "3",
-          "scol": "19",
-          "erow": "3",
-          "ecol": "42"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "spec/ruby/core/thread/fixtures/classes.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "285",
-          "scol": "48",
-          "erow": "285",
-          "ecol": "93"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "test/openssl/utils.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "104",
-          "scol": "14",
-          "erow": "104",
-          "ecol": "74"
-        },
-        "before_parameters": 4,
-        "after_parameters": 5,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "112",
-          "scol": "15",
-          "erow": "112",
-          "ecol": "52"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "test/ruby/test_complex.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "641",
-          "scol": "18",
-          "erow": "641",
-          "ecol": "38"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "test/ruby/test_method.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1377",
-          "scol": "13",
-          "erow": "1377",
-          "ecol": "37"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "test/rubygems/installer_test_case.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "179",
-          "scol": "20",
-          "erow": "179",
-          "ecol": "44"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "test/rubygems/test_gem_commands_signin_command.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "291",
-          "scol": "18",
-          "erow": "291",
-          "ecol": "131"
-        },
-        "before_parameters": 4,
-        "after_parameters": 6,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "tool/lib/test/unit/assertions.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "539",
-          "scol": "14",
-          "erow": "539",
-          "ecol": "38"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "tool/lib/test/unit.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1889",
-          "scol": "20",
-          "erow": "1889",
-          "ecol": "78"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "ruby_ruby",
-    "path": "win32/mkexports.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "71",
-          "scol": "13",
-          "erow": "71",
-          "ecol": "75"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/config.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "30",
-          "scol": "18",
-          "erow": "30",
-          "ecol": "89"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/cop/base.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "163",
-          "scol": "20",
-          "erow": "163",
-          "ecol": "49"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/cop/correctors/if_then_corrector.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "21",
-          "scol": "21",
-          "erow": "21",
-          "ecol": "56"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/cop/layout/empty_lines_around_access_modifier.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "55",
-          "scol": "22",
-          "erow": "55",
-          "ecol": "51"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/cop/lint/duplicate_methods.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "191",
-          "scol": "22",
-          "erow": "191",
-          "ecol": "51"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/cop/lint/redundant_cop_disable_directive.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "36",
-          "scol": "22",
-          "erow": "36",
-          "ecol": "67"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/cop/lint/unreachable_code.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "34",
-          "scol": "22",
-          "erow": "34",
-          "ecol": "51"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/cop/naming/inclusive_language.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "83",
-          "scol": "22",
-          "erow": "83",
-          "ecol": "51"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/cop/style/explicit_block_argument.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "59",
-          "scol": "22",
-          "erow": "59",
-          "ecol": "51"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rubocop_rubocop",
-    "path": "lib/rubocop/cop/style/redundant_self.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "59",
-          "scol": "22",
-          "erow": "59",
-          "ecol": "51"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/bottle.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "502",
-          "scol": "14",
-          "erow": "502",
-          "ecol": "37"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/bottle_specification.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "45",
-          "scol": "14",
-          "erow": "45",
-          "ecol": "37"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/cask/dsl.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "492",
-          "scol": "14",
-          "erow": "492",
-          "ecol": "36"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/cmd/update_report/reporter.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "451",
-          "scol": "25",
-          "erow": "452",
-          "ecol": "59"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/extend/os/mac/hardware/cpu/hardware.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "99",
-          "scol": "22",
-          "erow": "99",
-          "ecol": "55"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/formula.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "4452",
-          "scol": "11",
-          "erow": "4452",
-          "ecol": "34"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/mcp_server.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "396",
-          "scol": "22",
-          "erow": "396",
-          "ecol": "45"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/rubocops/components_order.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "19",
-          "scol": "22",
-          "erow": "19",
-          "ecol": "51"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/software_spec.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "144",
-          "scol": "9",
-          "erow": "144",
-          "ecol": "32"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/utils/github/api.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "57",
-          "scol": "20",
-          "erow": "57",
-          "ecol": "57"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/bindata-3.0.1/lib/bindata/base.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "103",
-          "scol": "11",
-          "erow": "103",
-          "ecol": "38"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/bindata-3.0.1/lib/bindata/sanitize.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "37",
-          "scol": "19",
-          "erow": "37",
-          "ecol": "46"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "61",
-          "scol": "19",
-          "erow": "61",
-          "ecol": "46"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/concurrent-ruby-1.3.8/lib/concurrent-ruby/concurrent/atomic/atomic_markable_reference.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "14",
-          "scol": "18",
-          "erow": "14",
-          "ecol": "45"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/concurrent-ruby-1.3.8/lib/concurrent-ruby/concurrent/errors.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "35",
-          "scol": "18",
-          "erow": "35",
-          "ecol": "56"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/concurrent-ruby-1.3.8/lib/concurrent-ruby/concurrent/mvar.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "53",
-          "scol": "18",
-          "erow": "53",
-          "ecol": "44"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/concurrent-ruby-1.3.8/lib/concurrent-ruby/concurrent/promises.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "173",
-          "scol": "21",
-          "erow": "173",
-          "ecol": "79"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "950",
-          "scol": "15",
-          "erow": "950",
-          "ecol": "51"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "966",
-          "scol": "16",
-          "erow": "966",
-          "ecol": "52"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "997",
-          "scol": "16",
-          "erow": "997",
-          "ecol": "52"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1329",
-          "scol": "17",
-          "erow": "1329",
-          "ecol": "61"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1347",
-          "scol": "14",
-          "erow": "1347",
-          "ecol": "57"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1370",
-          "scol": "17",
-          "erow": "1370",
-          "ecol": "106"
-        },
-        "before_parameters": 1,
-        "after_parameters": 5,
-        "before_assignments": 4,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1426",
-          "scol": "14",
-          "erow": "1426",
-          "ecol": "55"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1443",
-          "scol": "15",
-          "erow": "1443",
-          "ecol": "56"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1464",
-          "scol": "15",
-          "erow": "1464",
-          "ecol": "77"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1486",
-          "scol": "16",
-          "erow": "1486",
-          "ecol": "78"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1508",
-          "scol": "16",
-          "erow": "1508",
-          "ecol": "78"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1529",
-          "scol": "16",
-          "erow": "1529",
-          "ecol": "57"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "Homebrew_brew",
-    "path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/plist-3.7.2/lib/plist/generator.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "27",
-          "scol": "16",
-          "erow": "27",
-          "ecol": "47"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actioncable/lib/action_cable/server/socket/client_socket.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "90",
-          "scol": "17",
-          "erow": "90",
-          "ecol": "43"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actioncable/test/client_test.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "77",
-          "scol": "22",
-          "erow": "77",
-          "ecol": "66"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionpack/lib/abstract_controller/base.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "13",
-          "scol": "18",
-          "erow": "13",
-          "ecol": "65"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionpack/lib/abstract_controller/rendering.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "70",
-          "scol": "23",
-          "erow": "70",
-          "ecol": "51"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionpack/lib/action_dispatch/http/content_security_policy.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "296",
-          "scol": "13",
-          "erow": "296",
-          "ecol": "65"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionpack/lib/action_dispatch/http/upload.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "60",
-          "scol": "14",
-          "erow": "60",
-          "ecol": "42"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionpack/test/controller/request_forgery_protection_test.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "739",
-          "scol": "27",
-          "erow": "739",
-          "ecol": "67"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1619",
-          "scol": "27",
-          "erow": "1619",
-          "ecol": "67"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1972",
-          "scol": "29",
-          "erow": "1972",
-          "ecol": "69"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionpack/test/lib/controller/fake_models.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "65",
-          "scol": "16",
-          "erow": "65",
-          "ecol": "41"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actiontext/lib/action_text/content.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "38",
-          "scol": "18",
-          "erow": "38",
-          "ecol": "47"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionview/lib/action_view/helpers/form_helper.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "2922",
-          "scol": "16",
-          "erow": "2922",
-          "ecol": "43"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionview/lib/action_view/helpers/form_options_helper.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "618",
-          "scol": "38",
-          "erow": "618",
-          "ecol": "111"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionview/lib/action_view/helpers/tag_helper.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "1743",
-          "scol": "13",
-          "erow": "1743",
-          "ecol": "69"
-        },
-        "before_parameters": 1,
-        "after_parameters": 4,
-        "before_assignments": 3,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionview/lib/action_view/helpers/tags/base.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "115",
-          "scol": "22",
-          "erow": "115",
-          "ecol": "53"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "119",
-          "scol": "20",
-          "erow": "119",
-          "ecol": "50"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionview/lib/action_view/rendering.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "153",
-          "scol": "25",
-          "erow": "153",
-          "ecol": "53"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionview/test/fixtures/project.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "5",
-          "scol": "31",
-          "erow": "5",
-          "ecol": "81"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "actionview/test/lib/controller/fake_models.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "84",
-          "scol": "16",
-          "erow": "84",
-          "ecol": "41"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "105",
-          "scol": "16",
-          "erow": "105",
-          "ecol": "41"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "124",
-          "scol": "16",
-          "erow": "124",
-          "ecol": "44"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "140",
-          "scol": "16",
-          "erow": "140",
-          "ecol": "40"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/active_record/associations/errors.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "7",
-          "scol": "18",
-          "erow": "7",
-          "ecol": "56"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "36",
-          "scol": "18",
-          "erow": "36",
-          "ecol": "60"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "77",
-          "scol": "18",
-          "erow": "77",
-          "ecol": "55"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "105",
-          "scol": "18",
-          "erow": "105",
-          "ecol": "85"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "115",
-          "scol": "18",
-          "erow": "115",
-          "ecol": "60"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "125",
-          "scol": "18",
-          "erow": "125",
-          "ecol": "85"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "135",
-          "scol": "18",
-          "erow": "135",
-          "ecol": "86"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "145",
-          "scol": "18",
-          "erow": "145",
-          "ecol": "60"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "168",
-          "scol": "18",
-          "erow": "168",
-          "ecol": "86"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "178",
-          "scol": "18",
-          "erow": "178",
-          "ecol": "49"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "225",
-          "scol": "18",
-          "erow": "225",
-          "ecol": "49"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/active_record/connection_adapters/ractor_connection_handler/proxy.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "14",
-          "scol": "24",
-          "erow": "14",
-          "ecol": "58"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/active_record/errors.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "147",
-          "scol": "18",
-          "erow": "147",
-          "ecol": "75"
-        },
-        "before_parameters": 1,
-        "after_parameters": 4,
-        "before_assignments": 3,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "174",
-          "scol": "18",
-          "erow": "174",
-          "ecol": "47"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "197",
-          "scol": "18",
-          "erow": "197",
-          "ecol": "47"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "329",
-          "scol": "18",
-          "erow": "329",
-          "ecol": "92"
-        },
-        "before_parameters": 1,
-        "after_parameters": 5,
-        "before_assignments": 4,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "396",
-          "scol": "18",
-          "erow": "396",
-          "ecol": "56"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "476",
-          "scol": "18",
-          "erow": "476",
-          "ecol": "67"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "499",
-          "scol": "18",
-          "erow": "499",
-          "ecol": "50"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/active_record/integration.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "187",
-          "scol": "30",
-          "erow": "187",
-          "ecol": "80"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/active_record/migration.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "133",
-          "scol": "18",
-          "erow": "133",
-          "ecol": "45"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "829",
-          "scol": "18",
-          "erow": "829",
-          "ecol": "57"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/active_record/relation/finder_methods.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "457",
-          "scol": "41",
-          "erow": "457",
-          "ecol": "132"
-        },
-        "before_parameters": 1,
-        "after_parameters": 5,
-        "before_assignments": 4,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/active_record/schema_dumper.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "60",
-          "scol": "14",
-          "erow": "60",
-          "ecol": "104"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/active_record/tasks/database_tasks.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "174",
-          "scol": "24",
-          "erow": "174",
-          "ecol": "55"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "338",
-          "scol": "25",
-          "erow": "338",
-          "ecol": "57"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "348",
-          "scol": "27",
-          "erow": "348",
-          "ecol": "59"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      },
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "503",
-          "scol": "29",
-          "erow": "503",
-          "ecol": "74"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/arel/nodes/case.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "8",
-          "scol": "20",
-          "erow": "8",
-          "ecol": "53"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/lib/arel/nodes/delete_statement.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "8",
-          "scol": "20",
-          "erow": "8",
-          "ecol": "49"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/test/cases/migrator_test.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "13",
-          "scol": "18",
-          "erow": "13",
-          "ecol": "57"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/test/cases/multi_db_migrator_test.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "14",
-          "scol": "18",
-          "erow": "14",
-          "ecol": "57"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activerecord/test/models/post.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "221",
-          "scol": "14",
-          "erow": "221",
-          "ecol": "59"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activesupport/lib/active_support/callbacks.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "558",
-          "scol": "22",
-          "erow": "558",
-          "ecol": "80"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activesupport/lib/active_support/core_ext/date_time/conversions.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "59",
-          "scol": "22",
-          "erow": "59",
-          "ecol": "64"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activesupport/lib/active_support/core_ext/numeric/conversions.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "113",
-          "scol": "13",
-          "erow": "113",
-          "ecol": "42"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activesupport/lib/active_support/core_ext/string/inflections.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "39",
-          "scol": "15",
-          "erow": "39",
-          "ecol": "42"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activesupport/lib/active_support/core_ext/time/conversions.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "63",
-          "scol": "22",
-          "erow": "63",
-          "ecol": "64"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activesupport/lib/active_support/deprecation/reporting.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "20",
-          "scol": "14",
-          "erow": "20",
-          "ecol": "46"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activesupport/lib/active_support/notifications/fanout.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "65",
-          "scol": "22",
-          "erow": "65",
-          "ecol": "92"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activesupport/lib/active_support/time_with_zone.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "144",
-          "scol": "24",
-          "erow": "144",
-          "ecol": "66"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "activesupport/lib/active_support/values/time_zone.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "364",
-          "scol": "24",
-          "erow": "364",
-          "ecol": "66"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "railties/lib/minitest/rails_plugin.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "31",
-          "scol": "18",
-          "erow": "31",
-          "ecol": "46"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "railties/lib/rails/command/base.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "32",
-          "scol": "16",
-          "erow": "32",
-          "ecol": "62"
-        },
-        "before_parameters": 1,
-        "after_parameters": 3,
-        "before_assignments": 2,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "railties/lib/rails/generators/actions.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "207",
-          "scol": "21",
-          "erow": "207",
-          "ecol": "47"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "railties/lib/rails/generators/testing/behavior.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "74",
-          "scol": "25",
-          "erow": "74",
-          "ecol": "64"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "rails_rails",
-    "path": "railties/lib/rails/source_annotation_extractor.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "134",
-          "scol": "22",
-          "erow": "134",
-          "ecol": "47"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  },
-  {
-    "corpus": "mastodon_mastodon",
-    "path": "app/controllers/concerns/api/pagination.rb",
-    "outside_parameters_equal": true,
-    "default_parameters_separated": true,
-    "changes": [
-      {
-        "range": {
-          "field": "parameters",
-          "srow": "17",
-          "scol": "28",
-          "erow": "17",
-          "ecol": "62"
-        },
-        "before_parameters": 1,
-        "after_parameters": 2,
-        "before_assignments": 1,
-        "after_assignments": 0
-      }
-    ]
-  }
+	{
+		"corpus": "ruby_ruby",
+		"path": "bootstraptest/runner.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "22",
+					"scol": "18",
+					"erow": "22",
+					"ecol": "49"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "ext/openssl/lib/openssl/buffering.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "112",
+					"scol": "10",
+					"erow": "112",
+					"ecol": "29"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler/definition.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "389",
+					"scol": "12",
+					"erow": "389",
+					"ecol": "100"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler/gem_helper.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "32",
+					"scol": "18",
+					"erow": "32",
+					"ecol": "42"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "96",
+					"scol": "19",
+					"erow": "96",
+					"ecol": "56"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler/mirror.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "66",
+					"scol": "20",
+					"erow": "66",
+					"ecol": "53"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler/runtime.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "110",
+					"scol": "13",
+					"erow": "110",
+					"ecol": "47"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler/ui/shell.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "26",
+					"scol": "14",
+					"erow": "26",
+					"ecol": "40"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "32",
+					"scol": "17",
+					"erow": "32",
+					"ecol": "43"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "38",
+					"scol": "14",
+					"erow": "38",
+					"ecol": "57"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "46",
+					"scol": "15",
+					"erow": "46",
+					"ecol": "55"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "52",
+					"scol": "15",
+					"erow": "52",
+					"ecol": "41"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler/ui/silent.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "15",
+					"scol": "14",
+					"erow": "15",
+					"ecol": "44"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "18",
+					"scol": "17",
+					"erow": "18",
+					"ecol": "47"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "21",
+					"scol": "14",
+					"erow": "21",
+					"ecol": "44"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "25",
+					"scol": "15",
+					"erow": "25",
+					"ecol": "45"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "28",
+					"scol": "15",
+					"erow": "28",
+					"ecol": "45"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler/vendor/thor/lib/thor/base.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "582",
+					"scol": "15",
+					"erow": "582",
+					"ecol": "47"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler/vendor/thor/lib/thor/runner.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "224",
+					"scol": "26",
+					"erow": "224",
+					"ecol": "66"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "252",
+					"scol": "15",
+					"erow": "252",
+					"ecol": "55"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "288",
+					"scol": "21",
+					"erow": "288",
+					"ecol": "108"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler/vendor/thor/lib/thor.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "308",
+					"scol": "26",
+					"erow": "308",
+					"ecol": "58"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "662",
+					"scol": "10",
+					"erow": "662",
+					"ecol": "45"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/bundler.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "228",
+					"scol": "18",
+					"erow": "228",
+					"ecol": "61"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/erb.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1234",
+					"scol": "15",
+					"erow": "1234",
+					"ecol": "55"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/mkmf.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "2765",
+					"scol": "15",
+					"erow": "2765",
+					"ecol": "61"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/optparse.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "550",
+					"scol": "18",
+					"erow": "552",
+					"ecol": "84"
+				},
+				"before_parameters": 6,
+				"after_parameters": 9,
+				"before_assignments": 3,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/prettyprint.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "61",
+					"scol": "35",
+					"erow": "61",
+					"ecol": "91"
+				},
+				"before_parameters": 1,
+				"after_parameters": 4,
+				"before_assignments": 3,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/random/formatter.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "145",
+					"scol": "20",
+					"erow": "145",
+					"ecol": "42"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/rubygems/package.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "360",
+					"scol": "11",
+					"erow": "360",
+					"ecol": "63"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "402",
+					"scol": "36",
+					"erow": "402",
+					"ecol": "88"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/rubygems/remote_fetcher.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "78",
+					"scol": "16",
+					"erow": "78",
+					"ecol": "54"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/rubygems/specification.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1975",
+					"scol": "16",
+					"erow": "1975",
+					"ecol": "43"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "2579",
+					"scol": "14",
+					"erow": "2579",
+					"ecol": "48"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/rubygems/vendor/optparse/lib/optparse.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "550",
+					"scol": "18",
+					"erow": "552",
+					"ecol": "84"
+				},
+				"before_parameters": 6,
+				"after_parameters": 9,
+				"before_assignments": 3,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "lib/rubygems.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "464",
+					"scol": "36",
+					"erow": "464",
+					"ecol": "63"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "477",
+					"scol": "44",
+					"erow": "477",
+					"ecol": "71"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "sample/mine.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "58",
+					"scol": "10",
+					"erow": "58",
+					"ecol": "23"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "spec/bundler/support/helpers.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "206",
+					"scol": "21",
+					"erow": "206",
+					"ecol": "73"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "spec/bundler/support/vendor/compact_index/lib/compact_index/versions_file.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "12",
+					"scol": "16",
+					"erow": "12",
+					"ecol": "39"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "spec/mspec/lib/mspec/matchers/complain.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "3",
+					"scol": "16",
+					"erow": "3",
+					"ecol": "48"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "65",
+					"scol": "22",
+					"erow": "65",
+					"ecol": "54"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "spec/mspec/lib/mspec/matchers/output.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "63",
+					"scol": "20",
+					"erow": "63",
+					"ecol": "48"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "spec/mspec/lib/mspec/runner/actions/filter.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "12",
+					"scol": "16",
+					"erow": "12",
+					"ecol": "41"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "spec/ruby/core/array/fixtures/classes.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "3",
+					"scol": "17",
+					"erow": "3",
+					"ecol": "40"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "spec/ruby/core/string/fixtures/classes.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "3",
+					"scol": "19",
+					"erow": "3",
+					"ecol": "42"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "spec/ruby/core/thread/fixtures/classes.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "285",
+					"scol": "48",
+					"erow": "285",
+					"ecol": "93"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "test/openssl/utils.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "104",
+					"scol": "14",
+					"erow": "104",
+					"ecol": "74"
+				},
+				"before_parameters": 4,
+				"after_parameters": 5,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "112",
+					"scol": "15",
+					"erow": "112",
+					"ecol": "52"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "test/ruby/test_complex.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "641",
+					"scol": "18",
+					"erow": "641",
+					"ecol": "38"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "test/ruby/test_method.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1377",
+					"scol": "13",
+					"erow": "1377",
+					"ecol": "37"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "test/rubygems/installer_test_case.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "179",
+					"scol": "20",
+					"erow": "179",
+					"ecol": "44"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "test/rubygems/test_gem_commands_signin_command.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "291",
+					"scol": "18",
+					"erow": "291",
+					"ecol": "131"
+				},
+				"before_parameters": 4,
+				"after_parameters": 6,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "tool/lib/test/unit/assertions.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "539",
+					"scol": "14",
+					"erow": "539",
+					"ecol": "38"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "tool/lib/test/unit.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1889",
+					"scol": "20",
+					"erow": "1889",
+					"ecol": "78"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "ruby_ruby",
+		"path": "win32/mkexports.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "71",
+					"scol": "13",
+					"erow": "71",
+					"ecol": "75"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/config.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "30",
+					"scol": "18",
+					"erow": "30",
+					"ecol": "89"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/cop/base.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "163",
+					"scol": "20",
+					"erow": "163",
+					"ecol": "49"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/cop/correctors/if_then_corrector.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "21",
+					"scol": "21",
+					"erow": "21",
+					"ecol": "56"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/cop/layout/empty_lines_around_access_modifier.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "55",
+					"scol": "22",
+					"erow": "55",
+					"ecol": "51"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/cop/lint/duplicate_methods.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "191",
+					"scol": "22",
+					"erow": "191",
+					"ecol": "51"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/cop/lint/redundant_cop_disable_directive.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "36",
+					"scol": "22",
+					"erow": "36",
+					"ecol": "67"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/cop/lint/unreachable_code.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "34",
+					"scol": "22",
+					"erow": "34",
+					"ecol": "51"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/cop/naming/inclusive_language.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "83",
+					"scol": "22",
+					"erow": "83",
+					"ecol": "51"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/cop/style/explicit_block_argument.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "59",
+					"scol": "22",
+					"erow": "59",
+					"ecol": "51"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rubocop_rubocop",
+		"path": "lib/rubocop/cop/style/redundant_self.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "59",
+					"scol": "22",
+					"erow": "59",
+					"ecol": "51"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/bottle.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "502",
+					"scol": "14",
+					"erow": "502",
+					"ecol": "37"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/bottle_specification.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "45",
+					"scol": "14",
+					"erow": "45",
+					"ecol": "37"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/cask/dsl.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "492",
+					"scol": "14",
+					"erow": "492",
+					"ecol": "36"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/cmd/update_report/reporter.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "451",
+					"scol": "25",
+					"erow": "452",
+					"ecol": "59"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/extend/os/mac/hardware/cpu/hardware.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "99",
+					"scol": "22",
+					"erow": "99",
+					"ecol": "55"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/formula.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "4452",
+					"scol": "11",
+					"erow": "4452",
+					"ecol": "34"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/mcp_server.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "396",
+					"scol": "22",
+					"erow": "396",
+					"ecol": "45"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/rubocops/components_order.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "19",
+					"scol": "22",
+					"erow": "19",
+					"ecol": "51"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/software_spec.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "144",
+					"scol": "9",
+					"erow": "144",
+					"ecol": "32"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/utils/github/api.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "57",
+					"scol": "20",
+					"erow": "57",
+					"ecol": "57"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/bindata-3.0.1/lib/bindata/base.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "103",
+					"scol": "11",
+					"erow": "103",
+					"ecol": "38"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/bindata-3.0.1/lib/bindata/sanitize.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "37",
+					"scol": "19",
+					"erow": "37",
+					"ecol": "46"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "61",
+					"scol": "19",
+					"erow": "61",
+					"ecol": "46"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/concurrent-ruby-1.3.8/lib/concurrent-ruby/concurrent/atomic/atomic_markable_reference.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "14",
+					"scol": "18",
+					"erow": "14",
+					"ecol": "45"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/concurrent-ruby-1.3.8/lib/concurrent-ruby/concurrent/errors.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "35",
+					"scol": "18",
+					"erow": "35",
+					"ecol": "56"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/concurrent-ruby-1.3.8/lib/concurrent-ruby/concurrent/mvar.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "53",
+					"scol": "18",
+					"erow": "53",
+					"ecol": "44"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/concurrent-ruby-1.3.8/lib/concurrent-ruby/concurrent/promises.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "173",
+					"scol": "21",
+					"erow": "173",
+					"ecol": "79"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "950",
+					"scol": "15",
+					"erow": "950",
+					"ecol": "51"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "966",
+					"scol": "16",
+					"erow": "966",
+					"ecol": "52"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "997",
+					"scol": "16",
+					"erow": "997",
+					"ecol": "52"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1329",
+					"scol": "17",
+					"erow": "1329",
+					"ecol": "61"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1347",
+					"scol": "14",
+					"erow": "1347",
+					"ecol": "57"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1370",
+					"scol": "17",
+					"erow": "1370",
+					"ecol": "106"
+				},
+				"before_parameters": 1,
+				"after_parameters": 5,
+				"before_assignments": 4,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1426",
+					"scol": "14",
+					"erow": "1426",
+					"ecol": "55"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1443",
+					"scol": "15",
+					"erow": "1443",
+					"ecol": "56"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1464",
+					"scol": "15",
+					"erow": "1464",
+					"ecol": "77"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1486",
+					"scol": "16",
+					"erow": "1486",
+					"ecol": "78"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1508",
+					"scol": "16",
+					"erow": "1508",
+					"ecol": "78"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1529",
+					"scol": "16",
+					"erow": "1529",
+					"ecol": "57"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "Homebrew_brew",
+		"path": "Library/Homebrew/vendor/bundle/ruby/4.0.0/gems/plist-3.7.2/lib/plist/generator.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "27",
+					"scol": "16",
+					"erow": "27",
+					"ecol": "47"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actioncable/lib/action_cable/server/socket/client_socket.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "90",
+					"scol": "17",
+					"erow": "90",
+					"ecol": "43"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actioncable/test/client_test.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "77",
+					"scol": "22",
+					"erow": "77",
+					"ecol": "66"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionpack/lib/abstract_controller/base.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "13",
+					"scol": "18",
+					"erow": "13",
+					"ecol": "65"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionpack/lib/abstract_controller/rendering.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "70",
+					"scol": "23",
+					"erow": "70",
+					"ecol": "51"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionpack/lib/action_dispatch/http/content_security_policy.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "296",
+					"scol": "13",
+					"erow": "296",
+					"ecol": "65"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionpack/lib/action_dispatch/http/upload.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "60",
+					"scol": "14",
+					"erow": "60",
+					"ecol": "42"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionpack/test/controller/request_forgery_protection_test.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "739",
+					"scol": "27",
+					"erow": "739",
+					"ecol": "67"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1619",
+					"scol": "27",
+					"erow": "1619",
+					"ecol": "67"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1972",
+					"scol": "29",
+					"erow": "1972",
+					"ecol": "69"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionpack/test/lib/controller/fake_models.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "65",
+					"scol": "16",
+					"erow": "65",
+					"ecol": "41"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actiontext/lib/action_text/content.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "38",
+					"scol": "18",
+					"erow": "38",
+					"ecol": "47"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionview/lib/action_view/helpers/form_helper.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "2922",
+					"scol": "16",
+					"erow": "2922",
+					"ecol": "43"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionview/lib/action_view/helpers/form_options_helper.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "618",
+					"scol": "38",
+					"erow": "618",
+					"ecol": "111"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionview/lib/action_view/helpers/tag_helper.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "1743",
+					"scol": "13",
+					"erow": "1743",
+					"ecol": "69"
+				},
+				"before_parameters": 1,
+				"after_parameters": 4,
+				"before_assignments": 3,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionview/lib/action_view/helpers/tags/base.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "115",
+					"scol": "22",
+					"erow": "115",
+					"ecol": "53"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "119",
+					"scol": "20",
+					"erow": "119",
+					"ecol": "50"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionview/lib/action_view/rendering.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "153",
+					"scol": "25",
+					"erow": "153",
+					"ecol": "53"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionview/test/fixtures/project.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "5",
+					"scol": "31",
+					"erow": "5",
+					"ecol": "81"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "actionview/test/lib/controller/fake_models.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "84",
+					"scol": "16",
+					"erow": "84",
+					"ecol": "41"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "105",
+					"scol": "16",
+					"erow": "105",
+					"ecol": "41"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "124",
+					"scol": "16",
+					"erow": "124",
+					"ecol": "44"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "140",
+					"scol": "16",
+					"erow": "140",
+					"ecol": "40"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/active_record/associations/errors.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "7",
+					"scol": "18",
+					"erow": "7",
+					"ecol": "56"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "36",
+					"scol": "18",
+					"erow": "36",
+					"ecol": "60"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "77",
+					"scol": "18",
+					"erow": "77",
+					"ecol": "55"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "105",
+					"scol": "18",
+					"erow": "105",
+					"ecol": "85"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "115",
+					"scol": "18",
+					"erow": "115",
+					"ecol": "60"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "125",
+					"scol": "18",
+					"erow": "125",
+					"ecol": "85"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "135",
+					"scol": "18",
+					"erow": "135",
+					"ecol": "86"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "145",
+					"scol": "18",
+					"erow": "145",
+					"ecol": "60"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "168",
+					"scol": "18",
+					"erow": "168",
+					"ecol": "86"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "178",
+					"scol": "18",
+					"erow": "178",
+					"ecol": "49"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "225",
+					"scol": "18",
+					"erow": "225",
+					"ecol": "49"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/active_record/connection_adapters/ractor_connection_handler/proxy.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "14",
+					"scol": "24",
+					"erow": "14",
+					"ecol": "58"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/active_record/errors.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "147",
+					"scol": "18",
+					"erow": "147",
+					"ecol": "75"
+				},
+				"before_parameters": 1,
+				"after_parameters": 4,
+				"before_assignments": 3,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "174",
+					"scol": "18",
+					"erow": "174",
+					"ecol": "47"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "197",
+					"scol": "18",
+					"erow": "197",
+					"ecol": "47"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "329",
+					"scol": "18",
+					"erow": "329",
+					"ecol": "92"
+				},
+				"before_parameters": 1,
+				"after_parameters": 5,
+				"before_assignments": 4,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "396",
+					"scol": "18",
+					"erow": "396",
+					"ecol": "56"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "476",
+					"scol": "18",
+					"erow": "476",
+					"ecol": "67"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "499",
+					"scol": "18",
+					"erow": "499",
+					"ecol": "50"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/active_record/integration.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "187",
+					"scol": "30",
+					"erow": "187",
+					"ecol": "80"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/active_record/migration.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "133",
+					"scol": "18",
+					"erow": "133",
+					"ecol": "45"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "829",
+					"scol": "18",
+					"erow": "829",
+					"ecol": "57"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/active_record/relation/finder_methods.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "457",
+					"scol": "41",
+					"erow": "457",
+					"ecol": "132"
+				},
+				"before_parameters": 1,
+				"after_parameters": 5,
+				"before_assignments": 4,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/active_record/schema_dumper.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "60",
+					"scol": "14",
+					"erow": "60",
+					"ecol": "104"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/active_record/tasks/database_tasks.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "174",
+					"scol": "24",
+					"erow": "174",
+					"ecol": "55"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "338",
+					"scol": "25",
+					"erow": "338",
+					"ecol": "57"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "348",
+					"scol": "27",
+					"erow": "348",
+					"ecol": "59"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			},
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "503",
+					"scol": "29",
+					"erow": "503",
+					"ecol": "74"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/arel/nodes/case.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "8",
+					"scol": "20",
+					"erow": "8",
+					"ecol": "53"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/lib/arel/nodes/delete_statement.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "8",
+					"scol": "20",
+					"erow": "8",
+					"ecol": "49"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/test/cases/migrator_test.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "13",
+					"scol": "18",
+					"erow": "13",
+					"ecol": "57"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/test/cases/multi_db_migrator_test.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "14",
+					"scol": "18",
+					"erow": "14",
+					"ecol": "57"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activerecord/test/models/post.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "221",
+					"scol": "14",
+					"erow": "221",
+					"ecol": "59"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activesupport/lib/active_support/callbacks.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "558",
+					"scol": "22",
+					"erow": "558",
+					"ecol": "80"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activesupport/lib/active_support/core_ext/date_time/conversions.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "59",
+					"scol": "22",
+					"erow": "59",
+					"ecol": "64"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activesupport/lib/active_support/core_ext/numeric/conversions.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "113",
+					"scol": "13",
+					"erow": "113",
+					"ecol": "42"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activesupport/lib/active_support/core_ext/string/inflections.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "39",
+					"scol": "15",
+					"erow": "39",
+					"ecol": "42"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activesupport/lib/active_support/core_ext/time/conversions.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "63",
+					"scol": "22",
+					"erow": "63",
+					"ecol": "64"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activesupport/lib/active_support/deprecation/reporting.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "20",
+					"scol": "14",
+					"erow": "20",
+					"ecol": "46"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activesupport/lib/active_support/notifications/fanout.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "65",
+					"scol": "22",
+					"erow": "65",
+					"ecol": "92"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activesupport/lib/active_support/time_with_zone.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "144",
+					"scol": "24",
+					"erow": "144",
+					"ecol": "66"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "activesupport/lib/active_support/values/time_zone.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "364",
+					"scol": "24",
+					"erow": "364",
+					"ecol": "66"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "railties/lib/minitest/rails_plugin.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "31",
+					"scol": "18",
+					"erow": "31",
+					"ecol": "46"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "railties/lib/rails/command/base.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "32",
+					"scol": "16",
+					"erow": "32",
+					"ecol": "62"
+				},
+				"before_parameters": 1,
+				"after_parameters": 3,
+				"before_assignments": 2,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "railties/lib/rails/generators/actions.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "207",
+					"scol": "21",
+					"erow": "207",
+					"ecol": "47"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "railties/lib/rails/generators/testing/behavior.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "74",
+					"scol": "25",
+					"erow": "74",
+					"ecol": "64"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "rails_rails",
+		"path": "railties/lib/rails/source_annotation_extractor.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "134",
+					"scol": "22",
+					"erow": "134",
+					"ecol": "47"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	},
+	{
+		"corpus": "mastodon_mastodon",
+		"path": "app/controllers/concerns/api/pagination.rb",
+		"outside_parameters_equal": true,
+		"default_parameters_separated": true,
+		"changes": [
+			{
+				"range": {
+					"field": "parameters",
+					"srow": "17",
+					"scol": "28",
+					"erow": "17",
+					"ecol": "62"
+				},
+				"before_parameters": 1,
+				"after_parameters": 2,
+				"before_assignments": 1,
+				"after_assignments": 0
+			}
+		]
+	}
 ]

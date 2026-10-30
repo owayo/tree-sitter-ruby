@@ -1,127 +1,127 @@
 {
-  "date": "2026-10-31",
-  "timezone": "Asia/Tokyo",
-  "os": "Windows 11 Home 10.0.26300",
-  "cpu": "AMD Ryzen 7 5700X (8 cores, 16 logical processors)",
-  "toolchain": {
-    "rustc": "1.99.1 (58cf8f9c3)",
-    "target": "x86_64-pc-windows-msvc",
-    "msvc": "19.51.36260",
-    "python": "3.15.1",
-    "ruby": "4.0.9 (syntax check only)",
-    "cli": "0.27.1",
-    "llvm": "23.1.1"
-  },
-  "build": {
-    "rust_opt_level": 3,
-    "debug": 1,
-    "lto": false,
-    "c_optimization": "-O2 (both implementations)",
-    "features": "default; ruby-prism vendored",
-    "allocator": "default (no replacement)",
-    "environment_flags": {
-      "RUSTFLAGS": null,
-      "CARGO_ENCODED_RUSTFLAGS": null,
-      "CFLAGS": null,
-      "CXXFLAGS": null,
-      "CARGO_PROFILE_RELEASE_LTO": null
-    }
-  },
-  "dependencies": {
-    "tree-sitter": "0.27.1",
-    "ruby-prism": "2.1.0",
-    "ruby-prism-sys": "2.1.0",
-    "prism_c": "2.1.0",
-    "cc": "1.10.0"
-  },
-  "latest_verification": {
-    "date": "2026-10-31",
-    "crates": "https://crates.io/api/v1/crates/ruby-prism",
-    "release": "https://github.com/ruby/prism/releases/tag/v2.1.0",
-    "released_at": "2026-10-28T05:17:17Z",
-    "crate_vcs_sha": "ca15cb3d8b30144b8589e053db24c9be5a204fcf",
-    "crate_vcs_dirty": true,
-    "reference_checkout_sha": "37d2d0d273eb23ab486e1f656888c8837068010d",
-    "reference_checkout_clean": true
-  },
-  "source": {
-    "baseline": "37080b40b558d0f3ad1f4d8f5ee129ed74960f59",
-    "final_base": "75f36d1c0cfda03ae6b3fd64fbd4728454f50bf0",
-    "sha256_as_built": {
-      "grammar.js": "b560eb7d6d52e9728228575e7a544de0f35669ea2db1a92aab9bb7a0e84c0843",
-      "src/parser.c": "d27283b3dfc5e1a7bd3bbb83bc5dc1746713f020a75b7b717420acfb5c658c4e",
-      "src/scanner.c": "4b053a2de494da34d555fdf42a062d509c6ec69197dedf0dd37c187a7bbf42f0",
-      "src/node-types.json": "dd74b523f724373fea9ee6fd2d90c0e8a1b633f62be89190a4055c9eb03f6b8c",
-      "bindings/rust/build.rs": "6ea973594572d0f1ebe3bb1d8a201e41e13ffb57fc8c24e63d082b8f41fc994f",
-      "bindings/rust/build_support.rs": "00fc932ed46a8d41e66acc45f18491dec11d30d82de37600df32b25a3aa4383f",
-      "Cargo.toml": "f54ab0613b2e40edd51a1dfbb00bdebb0ddd5e21d6773cd0f48759c66055da34",
-      "Cargo.lock": "07c2d75c9e6c6bc65e151c5b07564a5efac1d3de0800de65f3b098af881cec09",
-      "tools/parse-benchmark/src/main.rs": "4c05a5f9018079025e27fb985147f53b4f7c153aa08950a81191548086bef046",
-      "tools/parse-benchmark/Cargo.toml": "b194f172a2364b8180db22f42f53e6e4cb95499152f70e92b04480c6003458ab",
-      "tools/parse-benchmark/Cargo.lock": "582d0cdddbe1f0077ed78ead0590abe16f160ffd7f884584e87ac3852f61d72e",
-      "tools/parse-benchmark/run.py": "3353fb655fa228407e00f1af59061dec69edb81a41d547b8b99508720373b9c2",
-      "tools/parse-benchmark/paired.py": "743ccd6e7d4c182c2cca61dad339693010d7cef46fad17e0b78f9b18150e38d1",
-      "tools/parse-benchmark/sample_profile.py": "bcc8439db4a5ac0286fd43694ef36a995ffe2f774cb7174405738ebe72c7e3d6"
-    }
-  },
-  "parser": {
-    "before": {
-      "STATE_COUNT": 9337,
-      "LARGE_STATE_COUNT": 3552,
-      "SYMBOL_COUNT": 374,
-      "PRODUCTION_ID_COUNT": 161,
-      "bytes": 26163506
-    },
-    "final": {
-      "STATE_COUNT": 9361,
-      "LARGE_STATE_COUNT": 3556,
-      "SYMBOL_COUNT": 377,
-      "PRODUCTION_ID_COUNT": 161,
-      "bytes": 26191107
-    },
-    "node_types_unchanged": true
-  },
-  "binaries": {
-    "baseline_cc_1_9_prism_2_0": {
-      "sha256": "744898e9b39c2b7948cd3ed4b3e3a01d6b4b6d44fdcdd3e58db04fb32c3d87f9",
-      "bytes": 4449792
-    },
-    "updated_dependencies_before_grammar": {
-      "sha256": "e26234df485cfbd3b14a9676d8d636b9a927ecd586ab16a7c4c0b8d9a5578c5c",
-      "bytes": 4448768
-    },
-    "corrected_parameters": {
-      "sha256": "fe7a1f3ffef2fddcea4ac5c9fc7f1aa7c0348f82a370045c75417a10630aabee",
-      "bytes": 4474880
-    },
-    "body_inline_trial": {
-      "sha256": "4dda9831e213107656002ad964662f6ff0043aa745c744957ced4357bbed1f32",
-      "bytes": 4443136
-    },
-    "integrated_inline_trial": {
-      "sha256": "af7c95a9023bbd6109ce065ecd4fceda1c14bdeca90f874448c80b4b6244050a",
-      "bytes": 4469760
-    },
-    "final": {
-      "sha256": "4409cc67ab35aca71cac8fdc77ab3eb3424d3342c614e7c399f7588db04bc521",
-      "bytes": 4474880
-    }
-  },
-  "measurement": {
-    "mode": "fresh parser, single thread, initialization and destruction included; input I/O/AST output/queries excluded",
-    "warmups": 2,
-    "rounds": 7,
-    "engine_order": "ts,prism,control; reverse on alternating rounds",
-    "rss_commit_limit_bytes": 6442450944,
-    "initial_response_timeout_seconds": 600,
-    "later_response_timeout_seconds": 60,
-    "memory_note": "Independent processes per engine. Peaks include preloaded sources and earlier corpora/rounds; commit is not virtual address space.",
-    "inputs_rehashed_unchanged": 18532
-  },
-  "paired_settings": {
-    "warmup_rounds": 2,
-    "bootstrap_seed": 20261030,
-    "bootstrap_samples": 5000,
-    "pairs": 30
-  }
+	"date": "2026-10-31",
+	"timezone": "Asia/Tokyo",
+	"os": "Windows 11 Home 10.0.26300",
+	"cpu": "AMD Ryzen 7 5700X (8 cores, 16 logical processors)",
+	"toolchain": {
+		"rustc": "1.99.1 (58cf8f9c3)",
+		"target": "x86_64-pc-windows-msvc",
+		"msvc": "19.51.36260",
+		"python": "3.15.1",
+		"ruby": "4.0.9 (syntax check only)",
+		"cli": "0.27.1",
+		"llvm": "23.1.1"
+	},
+	"build": {
+		"rust_opt_level": 3,
+		"debug": 1,
+		"lto": false,
+		"c_optimization": "-O2 (both implementations)",
+		"features": "default; ruby-prism vendored",
+		"allocator": "default (no replacement)",
+		"environment_flags": {
+			"RUSTFLAGS": null,
+			"CARGO_ENCODED_RUSTFLAGS": null,
+			"CFLAGS": null,
+			"CXXFLAGS": null,
+			"CARGO_PROFILE_RELEASE_LTO": null
+		}
+	},
+	"dependencies": {
+		"tree-sitter": "0.27.1",
+		"ruby-prism": "2.1.0",
+		"ruby-prism-sys": "2.1.0",
+		"prism_c": "2.1.0",
+		"cc": "1.10.0"
+	},
+	"latest_verification": {
+		"date": "2026-10-31",
+		"crates": "https://crates.io/api/v1/crates/ruby-prism",
+		"release": "https://github.com/ruby/prism/releases/tag/v2.1.0",
+		"released_at": "2026-10-28T05:17:17Z",
+		"crate_vcs_sha": "ca15cb3d8b30144b8589e053db24c9be5a204fcf",
+		"crate_vcs_dirty": true,
+		"reference_checkout_sha": "37d2d0d273eb23ab486e1f656888c8837068010d",
+		"reference_checkout_clean": true
+	},
+	"source": {
+		"baseline": "37080b40b558d0f3ad1f4d8f5ee129ed74960f59",
+		"final_base": "75f36d1c0cfda03ae6b3fd64fbd4728454f50bf0",
+		"sha256_as_built": {
+			"grammar.js": "b560eb7d6d52e9728228575e7a544de0f35669ea2db1a92aab9bb7a0e84c0843",
+			"src/parser.c": "d27283b3dfc5e1a7bd3bbb83bc5dc1746713f020a75b7b717420acfb5c658c4e",
+			"src/scanner.c": "4b053a2de494da34d555fdf42a062d509c6ec69197dedf0dd37c187a7bbf42f0",
+			"src/node-types.json": "dd74b523f724373fea9ee6fd2d90c0e8a1b633f62be89190a4055c9eb03f6b8c",
+			"bindings/rust/build.rs": "6ea973594572d0f1ebe3bb1d8a201e41e13ffb57fc8c24e63d082b8f41fc994f",
+			"bindings/rust/build_support.rs": "00fc932ed46a8d41e66acc45f18491dec11d30d82de37600df32b25a3aa4383f",
+			"Cargo.toml": "f54ab0613b2e40edd51a1dfbb00bdebb0ddd5e21d6773cd0f48759c66055da34",
+			"Cargo.lock": "07c2d75c9e6c6bc65e151c5b07564a5efac1d3de0800de65f3b098af881cec09",
+			"tools/parse-benchmark/src/main.rs": "4c05a5f9018079025e27fb985147f53b4f7c153aa08950a81191548086bef046",
+			"tools/parse-benchmark/Cargo.toml": "b194f172a2364b8180db22f42f53e6e4cb95499152f70e92b04480c6003458ab",
+			"tools/parse-benchmark/Cargo.lock": "582d0cdddbe1f0077ed78ead0590abe16f160ffd7f884584e87ac3852f61d72e",
+			"tools/parse-benchmark/run.py": "3353fb655fa228407e00f1af59061dec69edb81a41d547b8b99508720373b9c2",
+			"tools/parse-benchmark/paired.py": "743ccd6e7d4c182c2cca61dad339693010d7cef46fad17e0b78f9b18150e38d1",
+			"tools/parse-benchmark/sample_profile.py": "bcc8439db4a5ac0286fd43694ef36a995ffe2f774cb7174405738ebe72c7e3d6"
+		}
+	},
+	"parser": {
+		"before": {
+			"STATE_COUNT": 9337,
+			"LARGE_STATE_COUNT": 3552,
+			"SYMBOL_COUNT": 374,
+			"PRODUCTION_ID_COUNT": 161,
+			"bytes": 26163506
+		},
+		"final": {
+			"STATE_COUNT": 9361,
+			"LARGE_STATE_COUNT": 3556,
+			"SYMBOL_COUNT": 377,
+			"PRODUCTION_ID_COUNT": 161,
+			"bytes": 26191107
+		},
+		"node_types_unchanged": true
+	},
+	"binaries": {
+		"baseline_cc_1_9_prism_2_0": {
+			"sha256": "744898e9b39c2b7948cd3ed4b3e3a01d6b4b6d44fdcdd3e58db04fb32c3d87f9",
+			"bytes": 4449792
+		},
+		"updated_dependencies_before_grammar": {
+			"sha256": "e26234df485cfbd3b14a9676d8d636b9a927ecd586ab16a7c4c0b8d9a5578c5c",
+			"bytes": 4448768
+		},
+		"corrected_parameters": {
+			"sha256": "fe7a1f3ffef2fddcea4ac5c9fc7f1aa7c0348f82a370045c75417a10630aabee",
+			"bytes": 4474880
+		},
+		"body_inline_trial": {
+			"sha256": "4dda9831e213107656002ad964662f6ff0043aa745c744957ced4357bbed1f32",
+			"bytes": 4443136
+		},
+		"integrated_inline_trial": {
+			"sha256": "af7c95a9023bbd6109ce065ecd4fceda1c14bdeca90f874448c80b4b6244050a",
+			"bytes": 4469760
+		},
+		"final": {
+			"sha256": "4409cc67ab35aca71cac8fdc77ab3eb3424d3342c614e7c399f7588db04bc521",
+			"bytes": 4474880
+		}
+	},
+	"measurement": {
+		"mode": "fresh parser, single thread, initialization and destruction included; input I/O/AST output/queries excluded",
+		"warmups": 2,
+		"rounds": 7,
+		"engine_order": "ts,prism,control; reverse on alternating rounds",
+		"rss_commit_limit_bytes": 6442450944,
+		"initial_response_timeout_seconds": 600,
+		"later_response_timeout_seconds": 60,
+		"memory_note": "Independent processes per engine. Peaks include preloaded sources and earlier corpora/rounds; commit is not virtual address space.",
+		"inputs_rehashed_unchanged": 18532
+	},
+	"paired_settings": {
+		"warmup_rounds": 2,
+		"bootstrap_seed": 20261030,
+		"bootstrap_samples": 5000,
+		"pairs": 30
+	}
 }

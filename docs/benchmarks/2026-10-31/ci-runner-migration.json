@@ -1,28 +1,40 @@
 {
-  "issue": "https://github.com/owayo/tree-sitter-ruby/issues/36",
-  "announcement": "https://github.com/actions/runner-images/issues/13518",
-  "old_runner": "macos-14",
-  "new_runner": "macos-15",
-  "brownout_start_utc": "2026-10-30T14:00:00Z",
-  "brownout_end_utc": "2026-10-31T00:00:00Z",
-  "retirement_date": "2026-11-02",
-  "cancelled_run": {
-    "url": "https://github.com/owayo/tree-sitter-ruby/actions/runs/41100782022",
-    "head_sha": "f18eef175f476340d3ff57e8faac6cb130801dae",
-    "job_id": 124217507990,
-    "reason": "Scheduled macOS 14 runner image brownout before test execution"
-  },
-  "successful_run": {
-    "url": "https://github.com/owayo/tree-sitter-ruby/actions/runs/41102320033",
-    "head_sha": "f3eababf4e4f2c27223b749c3c0fb6a510793cea",
-    "jobs": [
-      { "name": "Test parser (ubuntu-latest)", "id": 124221499869, "conclusion": "success" },
-      { "name": "Test parser (windows-latest)", "id": 124221499421, "conclusion": "success" },
-      { "name": "Test parser (macos-15)", "id": 124221499716, "conclusion": "success" }
-    ]
-  },
-  "merged_pr": "https://github.com/owayo/tree-sitter-ruby/pull/35",
-  "merge_commit": "8730d72b153afa1f80524eee0478b6b1567fdb62",
-  "scope": "Only the macOS matrix label changed. Existing test steps and permissions were preserved.",
-  "production_sources_changed": false
+	"issue": "https://github.com/owayo/tree-sitter-ruby/issues/36",
+	"announcement": "https://github.com/actions/runner-images/issues/13518",
+	"old_runner": "macos-14",
+	"new_runner": "macos-15",
+	"brownout_start_utc": "2026-10-30T14:00:00Z",
+	"brownout_end_utc": "2026-10-31T00:00:00Z",
+	"retirement_date": "2026-11-02",
+	"cancelled_run": {
+		"url": "https://github.com/owayo/tree-sitter-ruby/actions/runs/41100782022",
+		"head_sha": "f18eef175f476340d3ff57e8faac6cb130801dae",
+		"job_id": 124217507990,
+		"reason": "Scheduled macOS 14 runner image brownout before test execution"
+	},
+	"successful_run": {
+		"url": "https://github.com/owayo/tree-sitter-ruby/actions/runs/41102320033",
+		"head_sha": "f3eababf4e4f2c27223b749c3c0fb6a510793cea",
+		"jobs": [
+			{
+				"name": "Test parser (ubuntu-latest)",
+				"id": 124221499869,
+				"conclusion": "success"
+			},
+			{
+				"name": "Test parser (windows-latest)",
+				"id": 124221499421,
+				"conclusion": "success"
+			},
+			{
+				"name": "Test parser (macos-15)",
+				"id": 124221499716,
+				"conclusion": "success"
+			}
+		]
+	},
+	"merged_pr": "https://github.com/owayo/tree-sitter-ruby/pull/35",
+	"merge_commit": "8730d72b153afa1f80524eee0478b6b1567fdb62",
+	"scope": "Only the macOS matrix label changed. Existing test steps and permissions were preserved.",
+	"production_sources_changed": false
 }

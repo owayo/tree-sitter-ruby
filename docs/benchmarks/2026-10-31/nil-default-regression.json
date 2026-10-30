@@ -1,25 +1,25 @@
 {
-  "before": "37080b40b558d0f3ad1f4d8f5ee129ed74960f59",
-  "fixed_by": "https://github.com/owayo/tree-sitter-ruby/pull/32",
-  "integrated_base": "89d90218f7a52622e21252940391a8906495b5ee",
-  "baseline_test_result": {
-    "passed": 1,
-    "failed": 1,
-    "failure": "nil_defaults_stay_in_individual_parameters: expected two parameters but got one assignment-containing parameter"
-  },
-  "added_tests": 2,
-  "final_rust_passed": {
-    "debug": 106,
-    "release": 106
-  },
-  "measured_production_sources_unchanged": true,
-  "checked_sources": [
-    "grammar.js",
-    "src/parser.c",
-    "src/scanner.c",
-    "src/node-types.json",
-    "bindings/rust/build.rs",
-    "bindings/rust/build_support.rs",
-    "tools/parse-benchmark/src/main.rs"
-  ]
+	"before": "37080b40b558d0f3ad1f4d8f5ee129ed74960f59",
+	"fixed_by": "https://github.com/owayo/tree-sitter-ruby/pull/32",
+	"integrated_base": "89d90218f7a52622e21252940391a8906495b5ee",
+	"baseline_test_result": {
+		"passed": 1,
+		"failed": 1,
+		"failure": "nil_defaults_stay_in_individual_parameters: expected two parameters but got one assignment-containing parameter"
+	},
+	"added_tests": 2,
+	"final_rust_passed": {
+		"debug": 106,
+		"release": 106
+	},
+	"measured_production_sources_unchanged": true,
+	"checked_sources": [
+		"grammar.js",
+		"src/parser.c",
+		"src/scanner.c",
+		"src/node-types.json",
+		"bindings/rust/build.rs",
+		"bindings/rust/build_support.rs",
+		"tools/parse-benchmark/src/main.rs"
+	]
 }
