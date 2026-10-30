@@ -1156,24 +1156,34 @@ static inline bool scan_heredoc_word(TSLexer *lexer, Heredoc *heredoc) {
     return true;
 }
 
-// `<<` の直後から heredoc の開始 (`-` / `~` と終端語) を読み、heredoc を開く。
-// 終端語を読めないときと、状態に保存できない長さの終端語のときは何も開かずに false を返す。
+// `<<` の直後から heredoc の開始を読んだ結果。
+typedef enum {
+    // heredoc を開いた。
+    HEREDOC_START_OPENED,
+    // 終端語がなく、heredoc の開始ではない。
+    HEREDOC_START_ABSENT,
+    // 終端語は読めたが、開いているリテラル・heredoc と合わせて状態に保存できない。
+    HEREDOC_START_OVERFLOW,
+} HeredocStart;
+
+// `<<` の直後から heredoc の開始 (`-` / `~` と終端語) を読み、状態に保存できれば heredoc を開く。
 // 保存できない heredoc を開くと、状態の喪失で後続行を通常のコードとして誤ってパースする。
-static inline bool scan_heredoc_start(Scanner *scanner, TSLexer *lexer) {
+// 呼び出し元は HEREDOC_START_OVERFLOW のときトークンを返さず (ERROR)、他のトークンに読み替えない。
+static inline HeredocStart scan_heredoc_start(Scanner *scanner, TSLexer *lexer) {
     Heredoc heredoc = {0};
     if (lexer->lookahead == '-' || lexer->lookahead == '~') {
         advance(lexer);
         heredoc.end_word_indentation_allowed = true;
     }
     if (!scan_heredoc_word(lexer, &heredoc)) {
-        return false;
+        return HEREDOC_START_ABSENT;
     }
     if (!can_serialize_with(scanner, &heredoc, 0)) {
         array_delete(&heredoc.word);
-        return false;
+        return HEREDOC_START_OVERFLOW;
     }
     open_heredoc(scanner, heredoc);
-    return true;
+    return HEREDOC_START_OPENED;
 }
 
 static inline bool scan_short_interpolation(TSLexer *lexer, const bool has_content, const TSSymbol content_symbol) {
@@ -1667,11 +1677,18 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 }
                 lexer->mark_end(lexer);
 
-                // ローカル変数の後の `<<` は heredoc を開かない。heredoc にならなければ、
-                // 終端を `<<` の直後に残したまま左シフト演算子として返す。
-                if (valid_symbols[STRING_START] && scanner->has_leading_whitespace && !scanner->binary_operator_hint &&
-                    scan_heredoc_start(scanner, lexer)) {
-                    return accept_token(lexer, HEREDOC_START);
+                // ローカル変数の後の `<<` は heredoc を開かない。終端語が続かなければ、終端を `<<` の
+                // 直後に残したまま左シフト演算子として返す。終端語を状態に保存できないときは、
+                // 左シフトに読み替えて本文をコードにせず、式の開始位置と同じくトークンを返さない。
+                if (valid_symbols[STRING_START] && scanner->has_leading_whitespace && !scanner->binary_operator_hint) {
+                    switch (scan_heredoc_start(scanner, lexer)) {
+                        case HEREDOC_START_OPENED:
+                            return accept_token(lexer, HEREDOC_START);
+                        case HEREDOC_START_OVERFLOW:
+                            return false;
+                        case HEREDOC_START_ABSENT:
+                            break;
+                    }
                 }
 
                 lexer->result_symbol = BINARY_LEFT_SHIFT;
@@ -1863,7 +1880,7 @@ static inline bool scan(Scanner *scanner, TSLexer *lexer, const bool *valid_symb
                 return false;
             }
             advance(lexer);
-            if (!scan_heredoc_start(scanner, lexer)) {
+            if (scan_heredoc_start(scanner, lexer) != HEREDOC_START_OPENED) {
                 return false;
             }
             return accept_token(lexer, HEREDOC_START);

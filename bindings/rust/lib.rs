@@ -578,6 +578,36 @@ end
     }
 
     #[test]
+    fn test_scanner_rejects_oversized_heredoc_delimiter_at_left_shift_position() {
+        // `<<` を左シフト演算子とも読める位置 (`puts <<WORD`) でも、保存できない終端語を
+        // 左シフトに読み替えて本文をコードにせず、式の開始位置と同じく ERROR にする。
+        let word = "A".repeat(1100);
+        let code = format!("puts <<{word}\nbody\n{word}\n");
+        assert!(
+            parse_has_error(&code),
+            "保存できない heredoc 終端語を左シフトとして誤って受理しています"
+        );
+
+        // 保存できる長さなら heredoc の引数になり、`<<` の後に空白があれば左シフトになる。
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&LANGUAGE.into())
+            .expect("Error loading Ruby parser");
+        let fitting_word = "A".repeat(1015);
+        let fitting_code = format!("puts <<{fitting_word}\nbody\n{fitting_word}\n");
+        let fitting_tree = parser.parse(&fitting_code, None).unwrap();
+        let fitting_root = fitting_tree.root_node();
+        assert!(!fitting_root.has_error(), "{}", fitting_root.to_sexp());
+        assert_eq!(fitting_root.named_child(1).unwrap().kind(), "heredoc_body");
+
+        let spaced_code = format!("puts << {word}\n");
+        let spaced_tree = parser.parse(&spaced_code, None).unwrap();
+        let spaced_root = spaced_tree.root_node();
+        assert!(!spaced_root.has_error(), "{}", spaced_root.to_sexp());
+        assert_eq!(spaced_root.named_child(0).unwrap().kind(), "binary");
+    }
+
+    #[test]
     fn test_scanner_symbol_regex_and_percent_equal_boundaries() {
         assert!(!parse_has_error(":foo=\n:Foo=\n:[]=\n/a/i\n"));
         assert!(!parse_has_error("x = %=abc=\nx %= 1\n"));
