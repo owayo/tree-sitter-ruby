@@ -19,7 +19,7 @@ class CorpusTestScriptTests(unittest.TestCase):
     """コーパス補助関数の振る舞いを検証する。"""
 
     def setUp(self):
-        """Patch resolve_library_path so main() checks stay environment agnostic."""
+        """環境に依存せず main() を検証できるよう resolve_library_path を差し替える。"""
         patcher = patch.object(
             corpus_test, "resolve_library_path", return_value=__file__
         )

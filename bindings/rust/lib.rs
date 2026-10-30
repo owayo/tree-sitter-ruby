@@ -1,7 +1,7 @@
-//! This crate provides Ruby language support for the [tree-sitter][] parsing library.
+//! [tree-sitter][] 構文解析ライブラリ向けに Ruby の言語サポートを提供するクレート。
 //!
-//! Typically, you will use the [LANGUAGE][] constant to add this language to a
-//! tree-sitter [Parser][], and then use the parser to parse some code:
+//! 通常は [LANGUAGE][] 定数を tree-sitter の [Parser][] に設定し、
+//! そのパーサーでコードをパースする:
 //!
 //! ```
 //! use tree_sitter::Parser;
@@ -29,23 +29,23 @@ extern "C" {
     fn tree_sitter_ruby() -> *const ();
 }
 
-/// The tree-sitter [`LanguageFn`][LanguageFn] for this grammar.
+/// この文法の tree-sitter [`LanguageFn`][LanguageFn]。
 ///
 /// [LanguageFn]: https://docs.rs/tree-sitter-language/*/tree_sitter_language/struct.LanguageFn.html
 pub const LANGUAGE: LanguageFn = unsafe { LanguageFn::from_raw(tree_sitter_ruby) };
 
-/// The content of the [`node-types.json`][] file for this grammar.
+/// この文法の [`node-types.json`][] ファイルの内容。
 ///
 /// [`node-types.json`]: https://tree-sitter.github.io/tree-sitter/using-parsers#static-node-types
 pub const NODE_TYPES: &str = include_str!("../../src/node-types.json");
 
-/// The syntax highlighting query for this language.
+/// この言語のシンタックスハイライト用クエリ。
 pub const HIGHLIGHTS_QUERY: &str = include_str!("../../queries/highlights.scm");
 
-/// The local-variable syntax highlighting query for this language.
+/// この言語のローカル変数をハイライトするクエリ。
 pub const LOCALS_QUERY: &str = include_str!("../../queries/locals.scm");
 
-/// The symbol tagging query for this language.
+/// この言語のシンボルにタグを付けるクエリ。
 pub const TAGS_QUERY: &str = include_str!("../../queries/tags.scm");
 
 #[cfg(test)]

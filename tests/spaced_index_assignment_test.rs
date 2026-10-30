@@ -29,9 +29,8 @@ fn assert_index_assignment(node: tree_sitter::Node, code: &str, kind: &str, gap:
 
 #[test]
 fn known_limitation_spaced_assignment_does_not_resolve_local_bindings() {
-    // Ruby rejects the unbound and later-bound forms. This test documents the
-    // permissive syntax tree, not Ruby validity; revisit it if binding resolution
-    // becomes part of the parser.
+    // Ruby は未束縛の形と後で束縛する形を拒否する。このテストは Ruby としての妥当性ではなく、
+    // 寛容に作る構文木を記録する。束縛の解決をパーサーで扱うようになったら見直す。
     for (operator, kind) in [("=", "assignment"), ("+=", "operator_assignment")] {
         let bare_code = format!("v [0] {operator} 1\n");
         let bare_tree = parse_source(&bare_code);
@@ -62,8 +61,8 @@ fn known_limitation_spaced_assignment_does_not_resolve_local_bindings() {
 fn known_limitation_spaced_assignment_does_not_resolve_method_scope() {
     for (operator, kind) in [("=", "assignment"), ("+=", "operator_assignment")] {
         for (prefix, parameters, index) in [("", "(v)", 0), ("v = []\n", "", 1)] {
-            // A parameter binds v, but an outer assignment is invisible inside
-            // a Ruby method. Both currently yield the same assignment structure.
+            // 仮引数は v を束縛するが、外側の代入は Ruby のメソッドの中から見えない。
+            // 現状はどちらも同じ代入の構造になる。
             let code = format!("{prefix}def update{parameters}\n  v [0] {operator} 1\nend\n");
             let tree = parse_source(&code);
             let method = tree.root_node().named_child(index).unwrap();
