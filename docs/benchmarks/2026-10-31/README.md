@@ -126,11 +126,11 @@ EOF待機と例外時の回収を妨げていたプロファイラーの重複�
 parser.cは26,163,506→26,191,107バイト。サイズの変化を高速化の根拠には使っていない。
 
 - コーパス432件: pass。
-- Rust debug/release全104件（doctestを含む）: pass。クエリcapture、scanner保存状態、Unicode/heredoc、増分パースの全ノード比較を含む。
+- Rust debug/release全106件（doctestを含む）: pass。クエリcapture、scanner保存状態、Unicode/heredoc、増分パースの全ノード比較を含む。
 - Pythonランナー160件: pass、既定の1件skip。プロファイラーの追加10件を含む。
 - lint、Ruff lint/format、cargo fmt、Python 3.7構文確認: pass。
 - プロファイラー起動失敗の回帰は変更前に5秒の期限超過で失敗し、修正後に成功。Windowsの実採取も成功。
-- PR #32/#33 はWindows/Linux/macOSの3件のCIが成功し、マージ・Issueクローズを確認した。
+- PR #32/#33/#34 はWindows/Linux/macOSの3件のCIが成功し、マージ・Issueクローズを確認した。#34のmacOSランナー取得失敗によるキャンセルは、同じSHAの再実行で成功した。
 - tree-sitter testは実行していない。CMakeのCバインディング検証はUnix CIで実行した。
 
 ## 生データと再現
@@ -153,3 +153,7 @@ mise exec -- cargo build --release --locked --manifest-path tools/parse-benchmar
 mise exec -- python tools/parse-benchmark/run.py validate --binary tools/parse-benchmark/target/release/ruby-parse-benchmark.exe --source-root <source-root> --output docs/benchmarks/2026-10-31 --label reproduced
 mise exec -- python tools/parse-benchmark/run.py bench --binary tools/parse-benchmark/target/release/ruby-parse-benchmark.exe --control-binary <control.exe> --source-root <source-root> --output docs/benchmarks/2026-10-31 --label reproduced
 ```
+
+## nilデフォルト値の独立回帰
+
+[Issue #31](https://github.com/owayo/tree-sitter-ruby/issues/31) の境界を、[Rustテスト](../../../tests/nil_default_parameters_test.rs) 2件で固定した。通常・特異・endlessメソッド、3個の仮引数、Unicode名、末尾カンマで、名前・nil値・仮引数の範囲を確認する。括弧内の正当な多重代入はデフォルト値の中に残る。変更前の同じテストは1件失敗・1件成功、修正済みの最終統合結果では両方成功する（[記録](nil-default-regression.json)）。本体ソースのハッシュは測定時と一致し、性能に関わる変更は追加していない。
