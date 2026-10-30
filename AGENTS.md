@@ -18,7 +18,8 @@ Ruby の tree-sitter 文法パーサー。
 | `test/corpus/` | パーサーのコーパステスト |
 | `test/highlight/` | ハイライトクエリのテスト |
 | `test/tags/` | タグクエリのテスト |
-| `tools/parse-benchmark/` | Prism と比較する独立した開発用ハーネス（通常の利用依存には含めない） |
+| `tools/parse-benchmark/` | Prism と比較する独立した開発用ハーネス（通常の利用依存には含めない）。関数別の CPU 採取・reduce の記号別集計・交互測定も含む |
+| `.depup` | `depup` をリポジトリ直下で実行したときに、直下に加えて依存を更新するディレクトリ（計測ハーネス） |
 | `docs/benchmarks/` | 入力のハッシュ・受理差・新規フルパースの測定記録 |
 
 ## 開発コマンド
@@ -182,6 +183,7 @@ pnpm run test:unit
 #   char 切り詰めで誤って消費しないこと、正当なオプションと EOF は
 #   従来どおり扱われることの検証
 # - heredoc の増分パースと、リテラル追加時の合計保存容量超過を検証する
+#   （補間の中で開く区切りシンボル `:"` / `:'` でも、開始待ちの heredoc 本文を保つ）
 # - scanner 保存状態の空終端語・Unicode・容量上限の往復、切り詰め・末尾ゴミを検証する
 # - 入れ子の heredoc 本文の位置（LF・CRLF・単独 CR・行継続）と、入れ子の追加・削除・編集後の
 #   増分パースが新規パースの全ノード範囲と一致することを検証する
@@ -246,6 +248,7 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 - 単項 `+` は `**` より強く、単項 `-` は弱く結合する。範囲演算子の後は `_range_operand` のヒントで式の開始として扱い、`1..-1` / `1..+value` を二項演算と誤認しない
 - `return` / `break` / `next` の直後も `_jump_argument` で式の開始を伝える。符号や正規表現をキーワードの外側の演算とせず、改行では引数を継続しない。`yield` は同じ字句状態ではない
 - 外部トークンを追加するときは `externals` と `TokenType` の末尾へ同じ順序で追加し、保存状態に入る既存のリテラルトークンの番号を変えない
+- 隠し規則は reduce のたびに見えない部分木を割り当てる。`inline` には、supertype でも `conflicts` の対象でもなく、優先順位を持たない隠し規則だけを加える。supertype の隠しノードはクエリの supertype 照合に使うので inline にしない。追加したら `src/node-types.json` が変わらないことと、実ソース全体の木のハッシュ（`tools/parse-benchmark` の `validate`）が一致することを確認し、速度は `paired.py` で対照と交互に測る
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `python3 scripts/corpus_test.py` で確認する
@@ -253,9 +256,9 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 - Rustの最適化プロファイルでは、生成器が入れた最適化無効化pragmaをOUT_DIRのコピーだけで外す。src/parser.cを手編集せず、最適化フラグと実際のコピーの両方を確認し、cargo test --releaseも実行する。opt-level=0では生成物の原本を使う
 - Unicode heredoc 終端語は UTF-8 バイト列として保存・照合し、ASCII 終端語の 1 文字 1 バイト表現と serialization buffer 容量を維持すること
 - `global_variable` の名前部分は共通の Unicode 識別子文字ルールと同期し、`scan_short_interpolation()` の `$name` / `$-x` 判定でも ASCII 外文字を locale 非依存で許可すること
-- tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う
+- tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う。heredoc は `scan_heredoc_start()` で開き、保存容量の確認を迂回しない
 - scanner serialization buffer の上限ぴったりに収まる状態は有効として扱い、超過した場合だけ ERROR として扱う
-- リテラル追加時も開いている heredoc と合計した保存容量を確認する。終端行の再開フラグは既存の started バイトに詰め、7 バイトのヘッダーサイズを維持する
+- リテラルは `open_literal()` で開き、開いている heredoc と合計した保存容量の確認を迂回しない。終端行の再開フラグは既存の started バイトに詰め、7 バイトのヘッダーサイズを維持する
 - heredoc 終端語は物理行の先頭でだけ認識し、直後は LF・CRLF・EOF に限る。末尾空白や単独 CR は本文とし、空終端語の EOF を架空の空行として受理しない
 - heredoc 本文の補間で開いた heredoc は、開いた行の次の行から、外側の本文の続きや外側の行で開いた後続の heredoc より先に読む（Ruby と同じ順）。`open_heredocs` は同じ行で開いた heredoc の列（段）を外側から順に連結し、index 0 以外の段の先頭にフラグバイトの bit 2（`nested`）を立てる。開始済みになれるのは段の先頭だけで、最後の段以外の先頭は開始済みである。追加と終了は `open_heredoc()` / `close_heredoc()` を通し、本文を読む heredoc は `find_current_heredoc()`、次の改行で本文を始める heredoc は `pending_heredoc()` で求める。外側の本文は入れ子の本文が始まる行末（CRLF は `\r`、単独 CR は本文）の手前で区切る。その行が行継続の `\` で終わるときは、`\` を本文として返して行末を escape_sequence に飲ませない。`deserialize()` は走査で作られない段の並びと未使用のフラグを破棄する
 - heredoc の本文は、heredoc を開いた行が改行以外の形で続くときも、その行の次の行から読む。コード中の行継続（`foo(<<~A, \` の直後の改行）、heredoc の開始の後で改行をまたぐリテラル（文字列・正規表現・シンボル・サブシェル・`%w` などの配列。`[<<~A, "x` の直後の改行）、その中の `\` + 改行のどれでも、改行（CRLF は `\r`）の位置の幅 0 の `_heredoc_body_start` から本文を始める。リテラルの中では本文が extra としてリテラルのノードに入り、配列の語の間の空白は改行の手前まで読み飛ばす

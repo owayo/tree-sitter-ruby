@@ -1,0 +1,55 @@
+{
+	"date": "2026-10-30",
+	"os": "Windows 11 Home 10.0.26300",
+	"cpu": "AMD Ryzen 7 5700X 8-Core Processor (8 cores, 16 logical processors, 3.4 GHz base)",
+	"toolchain": {
+		"rustc": "1.99.1",
+		"msvc_cl": "19.51.36260 (Visual Studio Build Tools 18)",
+		"python": "3.15.1",
+		"tree_sitter_cli": "0.27.1"
+	},
+	"harness": {
+		"profile": "release (opt-level 3, debug = 1 for line tables)",
+		"tree_sitter": "0.27.1",
+		"ruby_prism": "2.0.0",
+		"ruby_prism_sys": "2.0.0",
+		"cc": "1.9.0",
+		"ruby_prism_note": "ruby-prism 2.1.0 (2026-10-28) was not adopted because depup's one-week release age filter excluded it"
+	},
+	"source": {
+		"before": "c3c70a2 (master before this maintenance)",
+		"after": "this maintenance's final candidate"
+	},
+	"parser": {
+		"before": {
+			"state_count": 9135,
+			"large_state_count": 3462,
+			"symbol_count": 380,
+			"production_id_count": 145,
+			"parser_c_bytes": 25654077
+		},
+		"after": {
+			"state_count": 9337,
+			"large_state_count": 3552,
+			"symbol_count": 374,
+			"production_id_count": 161,
+			"parser_c_bytes": 26163506
+		}
+	},
+	"binaries_sha256": {
+		"before": "1e8ca5f84083bc45e89fcd5516d36ef9bf51ea198de3dc596e441fcdabd60620",
+		"refactor": "707d093f07f2b90d7ce7ae7f36630959bdb98aae1b3c0917642deb998ee63991",
+		"inline": "d7265220e6c4738fe0f57dec4539e2abd4cffd5fd03badd3f14de5a5cb9669f5",
+		"final": "0607432cfa2d6f2d04324f2bf83981b59435caab5ddc21c2ce8d1ee649d6a57b"
+	},
+	"binary_bytes": {
+		"before": 4388864,
+		"refactor": 4388864,
+		"inline": 4427264,
+		"final": 4449792
+	},
+	"subsets": {
+		"subset4": "every 4th line of common.jsonl starting at line 0 (4,629 files)",
+		"subset4b": "every 4th line of common.jsonl starting at line 2 (4,628 files)"
+	}
+}

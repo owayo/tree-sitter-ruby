@@ -1,5 +1,85 @@
 # 構文検証と保守記録
 
+## 2026-10-30
+
+取得済みの5リポジトリ（SHA は 2026-10-29 と同じ）にある全18,520件の `.rb` を、変更前（`c3c70a2`）・
+scanner とランナーの整理後・文法の `inline` 追加後・最終候補（#24 の修正を含む）で比較した。匿名ノードを含む種別・
+フィールド・バイト範囲・行列範囲・named/extra 属性の全木ハッシュと、ERROR/MISSING の件数、
+Prism の診断はすべて一致した。2026-10-29 に入力の読み込みで中断した全件検証も、今回完了した。
+入力・スナップショット・生データは[測定記録](benchmarks/2026-10-30/README.md)に保存している。
+
+| リポジトリ | `.rb` 数 | tree-sitter の失敗 | Prism の診断あり | 共通集合 | 新しい失敗 |
+|---|---:|---:|---:|---:|---:|
+| ruby/ruby | 7,486 | 5 | 3 | 7,480 | 0 |
+| rubocop/rubocop | 1,791 | 0 | 0 | 1,791 | 0 |
+| Homebrew/brew | 2,407 | 0 | 0 | 2,407 | 0 |
+| rails/rails | 3,481 | 0 | 0 | 3,481 | 0 |
+| mastodon/mastodon | 3,355 | 0 | 0 | 3,355 | 0 |
+| 合計 | 18,520 | 5 | 3 | 18,514 | 0 |
+
+Ruby の5件は既知の意図的な負例2件・UTF-16入力2件・束縛に依存する三項演算子1件、
+Prism の3件は負例2件と shebang の `-n` を前提にした `tool/fetch-bundled_gems.rb` である。
+
+### 起票した不具合
+
+レビューで再現を確かめた次の2件を起票した。修正は Issue ごとの PR で行う。
+
+| Issue | 再現条件と原因 |
+|---|---|
+| [#24](https://github.com/owayo/tree-sitter-ruby/issues/24) | `puts <<A…A`（1,100 文字など、状態に保存できない長さの終端語）の後に本文と終端行がある。`<<` を左シフトとも読める位置では、heredoc を保存できないと左シフト演算子へ戻していたため、ERROR なしで `(binary)` と、本文・終端行をコードとして返す |
+| [#25](https://github.com/owayo/tree-sitter-ruby/issues/25) | scanner の `iswalpha` などによる文字種の判定は、ASCII 外の文字では C ランタイムとロケールで結果が変わる。Linux（glibc の C ロケール）では `x.保存!` などの ASCII 外の文字を含む bang メソッドが ERROR になり、Windows（MSVC）では `%w[a　b]`（語の間が U+3000）が ERROR になる |
+
+### 構造の整理
+
+scanner で heredoc を開く2か所（`<<` 演算子の位置と式の開始位置）と、リテラルを開く3か所（`:"`・`:'`・
+区切りリテラル）に重複していた、保存容量の確認と失敗時の解放を `scan_heredoc_start()` と
+`open_literal()` に集約した。`scan()` の循環的複雑度は 84 から 76 になった。
+コーパスランナーの `main()` からは、1件のパース実行（`run_corpus_case()`）と結果の判定
+（`classify_parse_result()`）を分け、複雑度は 20 から 12 になった。どちらも上の全木ハッシュと
+既存のテストで振る舞いが変わらないことを確認した。`%` の型指定の分岐は upstream と同じ構造で、
+表に置き換えると upstream の修正を取り込みにくくなるため残した。
+
+upstream の `ad907a6`（heredoc の保存時のバッファ超過）は、このフォークでは 32 ビットの終端語の長さ、
+ヘッダーを含む容量の確認、復元時の境界確認と、255 文字を超える終端語のコーパスで同等以上に
+対応済みであり、取り込みは不要だった。
+
+### 文法
+
+supertype でも `conflicts` の対象でもない隠し規則 `_terminator`・`_literal`・`_numeric`・
+`_formal_parameter`・`_simple_formal_parameter`・`_function_identifier` を `inline` にした。
+実行時に作る見えない部分木が無くなり、共通集合全体の reduce は 35,811,103 回から
+32,956,741 回（−7.97%）に減った。shift と GLR の版の数は変わらない。`src/node-types.json` は
+1 バイトも変わらず、状態数は 9,135 から 9,337、記号は 380 から 374、parser.c は 25,654,077 から
+26,163,506 バイトになった。速度の比較は[測定記録](benchmarks/2026-10-30/README.md)にある。
+
+### 依存更新と設定
+
+`mise exec -- depup --install --include-pinned` で Ruff を 0.17.1 から 0.17.2 へ更新した。
+ルートでの実行は `tools/parse-benchmark` の Cargo.toml を対象にしないため、そのディレクトリを指定して
+別に実行し、serde / serde_json の下限を 1.0.229 / 1.0.154 にそろえた（ロックファイルは不変）。
+depup の仕様どおり、次回からルートでの実行に含まれるよう `.depup` にこのディレクトリを列挙した。
+ruby-prism 2.1.0（2026-10-28 公開）、Biome 2.6.3・2.6.4、cc 1.10.0 は depup の公開経過期間の条件で
+見送った。メジャー更新はなく、`biome migrate` も不要だった。
+
+Biome 2.6.2 から YAML と Markdown も整形の対象になり、リポジトリ全体への `biome check --write .` が
+pnpm の生成物である `pnpm-lock.yaml` と、`AGENTS.md` へのシンボリックリンクである `CLAUDE.md` を
+書き換えていた。`core.symlinks=false` の Windows では `CLAUDE.md` がリンク先を書いた通常のファイルになり、
+末尾に改行が付くとリンク先が `AGENTS.md\n` に変わって、POSIX では壊れたリンクになる。
+`biome.jsonc` の `files.includes` でこの2つを整形の対象から外した。
+
+### テストと未確認の指摘
+
+コーパス427件、Rustテスト99件（doc testを含む、Debug/Release）、Pythonテスト150件
+（Windowsで1件skip）を確認した。Biome（`grammar.js`）、Ruff lint/format、Rust fmt/Clippy
+（`-D warnings`）も通る。Cバインディングは変更していないため、CMakeの再検証は CI に任せた。
+全木が一致したため、Sonicop側の比較は追加していない。
+
+次の点は確認できた事実だけを記録し、修正していない。
+
+- `bindings/rust/build.rs` の `#[cfg(target_env = "msvc")]` はホストの設定で評価されるため、
+  MSVC のホストから別の環境へ交差ビルドすると `-utf-8` が渡る。clang と gcc はこれを `-u` の
+  引数として扱う可能性が高く、失敗するかは確認していない。tree-sitter 0.27.1 の生成テンプレートと同じ書き方である。
+
 ## 2026-10-25
 
 取得済みの5リポジトリにある全18,487件の `.rb` を、依存更新前・更新後・

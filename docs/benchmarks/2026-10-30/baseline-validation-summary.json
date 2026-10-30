@@ -1,0 +1,37 @@
+{
+  "ruby_ruby": {
+    "files": 7486,
+    "bytes": 36167206,
+    "ts_failures": 5,
+    "prism_failures": 3,
+    "common": 7480
+  },
+  "rubocop_rubocop": {
+    "files": 1791,
+    "bytes": 11624842,
+    "ts_failures": 0,
+    "prism_failures": 0,
+    "common": 1791
+  },
+  "Homebrew_brew": {
+    "files": 2407,
+    "bytes": 13575237,
+    "ts_failures": 0,
+    "prism_failures": 0,
+    "common": 2407
+  },
+  "rails_rails": {
+    "files": 3481,
+    "bytes": 20011502,
+    "ts_failures": 0,
+    "prism_failures": 0,
+    "common": 3481
+  },
+  "mastodon_mastodon": {
+    "files": 3355,
+    "bytes": 6069022,
+    "ts_failures": 0,
+    "prism_failures": 0,
+    "common": 3355
+  }
+}
