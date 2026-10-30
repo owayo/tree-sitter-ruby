@@ -53,7 +53,16 @@ const ALPHA_CHAR = choice(
 
 module.exports = grammar({
 	name: "ruby",
-	inline: ($) => [$._arg_rhs, $._call_operator],
+	inline: ($) => [
+		$._arg_rhs,
+		$._call_operator,
+		$._terminator,
+		$._literal,
+		$._numeric,
+		$._formal_parameter,
+		$._simple_formal_parameter,
+		$._function_identifier,
+	],
 	externals: ($) => [
 		$._line_break,
 		$._no_line_break,

@@ -9887,7 +9887,16 @@
 			"name": "_heredoc_line_end"
 		}
 	],
-	"inline": ["_arg_rhs", "_call_operator"],
+	"inline": [
+		"_arg_rhs",
+		"_call_operator",
+		"_terminator",
+		"_literal",
+		"_numeric",
+		"_formal_parameter",
+		"_simple_formal_parameter",
+		"_function_identifier"
+	],
 	"supertypes": [
 		"_statement",
 		"_arg",
