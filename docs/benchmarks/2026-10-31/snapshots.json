@@ -1,0 +1,32 @@
+{
+  "ruby_ruby": {
+    "head": "ca1ec04e0ad69764185a5d7e65c73a5924ea9b48",
+    "source_sha": "ca1ec04e0ad69764185a5d7e65c73a5924ea9b48",
+    "status": "",
+    "files": 7486
+  },
+  "rubocop_rubocop": {
+    "head": "bde5d420a007bc24d5daacc8286f03100de35db4",
+    "source_sha": "bde5d420a007bc24d5daacc8286f03100de35db4",
+    "status": "",
+    "files": 1791
+  },
+  "Homebrew_brew": {
+    "head": "6969bb3a222958a2c653c5ff77bd43a91e9720ec",
+    "source_sha": "6969bb3a222958a2c653c5ff77bd43a91e9720ec",
+    "status": "",
+    "files": 2419
+  },
+  "rails_rails": {
+    "head": "86e12cd4dc4a7530319e0721554e79c63e1cbff4",
+    "source_sha": "86e12cd4dc4a7530319e0721554e79c63e1cbff4",
+    "status": "",
+    "files": 3481
+  },
+  "mastodon_mastodon": {
+    "head": "15a0c98b5dcacbb94bf8e48a51062c8103480b2e",
+    "source_sha": "15a0c98b5dcacbb94bf8e48a51062c8103480b2e",
+    "status": "",
+    "files": 3355
+  }
+}

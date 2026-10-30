@@ -13,9 +13,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.9.0"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "877bf67ac8e52449eb2f9e98a344ea163beb70dd1f9eebe3cc5357dcfeaee4df"
+checksum = "86e055fa6e3e40ad6187ba25b6855eeb635d5271f8e0f0e1e9a5826b8d75bea0"
 dependencies = [
  "find-msvc-tools",
  "shlex",
@@ -127,9 +127,9 @@ dependencies = [
 
 [[package]]
 name = "ruby-prism"
-version = "2.0.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e292a6139b28657899a18778d281cd4829d5e46ccc060edc1d0cdcd6b1fae774"
+checksum = "ef9dd23fe10d6335d390c9fd23cf7dac83f594be5676ad28de58d6f2bac65f4c"
 dependencies = [
  "ruby-prism-sys",
  "serde",
@@ -138,9 +138,9 @@ dependencies = [
 
 [[package]]
 name = "ruby-prism-sys"
-version = "2.0.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0080aa6a022c43438c9f33533e2da926407776e96583be67d7864c4037fb84b3"
+checksum = "f3e6b1801eb164c6b2c6c6cd42e55bf61d73f973719f675370769ce0295ba7f1"
 dependencies = [
  "cc",
  "shlex",
@@ -235,7 +235,7 @@ checksum = "d0af592be68c579aa78a16846bd19422978c3c52e438523d45ff5d1bff1f9d4a"
 
 [[package]]
 name = "tree-sitter-ruby"
-version = "26.10.104"
+version = "26.10.105"
 dependencies = [
  "cc",
  "tree-sitter-language",

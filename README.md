@@ -130,46 +130,39 @@ form feeds again against the tree parsed with them. The ternary `?` versus a
 character literal, and `::`, are decided by the internal lexer and are not
 covered by this hint.
 
-## Full-parse benchmark (2026-10-30)
+## Full-parse benchmark (2026-10-31)
 
-Single-threaded Rust APIs on Windows 11, Ryzen 7 5700X. Each file gets a new
-parser; initialization, language setup, tree construction and destruction are
-included. Input I/O, AST output, queries and Ruby VM startup are excluded. Both C
-implementations use Release optimization. Rust 1.99.1, tree-sitter 0.27.1 and
-[ruby-prism 2.0.0](https://github.com/ruby/prism/releases/tag/v2.0.0) are used;
-ruby-prism 2.1.0 (released 2026-10-28) was still inside the one-week release age
-policy. Two warmups precede seven alternating measurements; values are medians
-[min–max].
+Single-threaded Rust APIs on Windows 11, Ryzen 7 5700X, Rust 1.99.1 and MSVC
+19.51.36260, using tree-sitter 0.27.1 and the latest stable
+[ruby-prism 2.1.0](https://github.com/ruby/prism/releases/tag/v2.1.0).
+Each file gets a new parser, including initialization, language setup, tree
+construction and destruction. Input I/O, AST output, queries and Ruby VM startup
+are excluded. Both C implementations use Release -O2 optimization; the generated
+parser's optimization-disabling pragmas are removed from the build copy only.
+Two warmups precede seven alternating measurements. Values are medians [min–max].
 
-| Corpus   |  Files |      Bytes |           Prism ms (range) |          tree-sitter ms (range) | Prism/TS |
-| -------- | -----: | ---------: | -------------------------: | ------------------------------: | -------: |
-| Rails    |  3,481 | 20,011,502 |  204.393 [174.603–405.264] |    3126.046 [2845.781–6228.623] |   0.0654 |
-| Ruby     |  7,480 | 36,165,003 |  406.229 [388.464–800.066] |   7243.782 [6324.487–13260.486] |   0.0561 |
-| RuboCop  |  1,791 | 11,624,842 |    97.200 [85.682–174.849] |    1159.100 [1045.517–1618.507] |   0.0839 |
-| Homebrew |  2,407 | 13,575,237 |  151.381 [138.107–228.735] |    2234.169 [2088.687–3140.624] |   0.0678 |
-| Mastodon |  3,355 |  6,069,022 |    71.402 [63.656–115.726] |     1010.398 [948.143–1483.045] |   0.0707 |
-| Total    | 18,514 | 87,445,606 | 913.301 [870.940–1713.570] | 14731.034 [13358.444–25466.858] |   0.0620 |
+| Corpus | Files | Bytes | Prism ms (range) | tree-sitter ms (range) | Prism/TS |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Rails | 3,481 | 20,022,696 | 171.074 [169.354–173.668] | 2473.682 [2441.950–2551.166] | 0.0692 |
+| Ruby | 7,480 | 36,175,846 | 355.654 [350.429–375.481] | 5918.070 [5819.242–6079.022] | 0.0601 |
+| RuboCop | 1,791 | 11,643,866 | 80.209 [79.897–83.588] | 996.305 [987.912–1030.638] | 0.0805 |
+| Homebrew | 2,419 | 13,716,704 | 132.423 [130.931–134.118] | 1903.235 [1889.473–1981.197] | 0.0696 |
+| Mastodon | 3,355 | 6,072,014 | 60.088 [59.250–63.316] | 868.516 [849.404–963.090] | 0.0692 |
+| Total | 18,526 | 87,631,126 | 799.690 [791.080–822.075] | 12308.813 [11996.863–12462.721] | 0.0650 |
 
-The overall Prism/TS ratio is 0.0620; values above 1 would favor tree-sitter.
-The goal of beating Prism on fresh full parses was **not achieved**. The wide
-ranges come from other desktop load during this session; the per-round Prism/TS
-ratio stayed between 0.059 and 0.074.
-Both implementations accept the fixed 18,514-file comparison set. Across all
-18,520 inputs, tree-sitter retains five known failures and introduces none, and
-every tree (node kinds, fields, ranges and named/extra flags) is identical to
-the one from the previous master (`c3c70a2`).
+The overall Prism/TS ratio is **0.0650**; values above 1 would favor tree-sitter.
+The goal of beating Prism on fresh full parses was **not achieved**.
+Both implementations accept the fixed 18,526-file comparison set. Across all
+18,532 inputs, tree-sitter retains five known failures and introduces none.
+The 110 changed trees correct default parameters that were previously combined
+into assignments; nodes, fields and ranges outside `method_parameters` match.
 
-Function-level CPU sampling shows that the external scanner takes about 4% of the
-time; most of it is in tree-sitter's GLR stack, subtree allocation, parse-table
-lookups and the heap. The grammar now inlines six hidden grammar rules that are
-neither supertypes nor conflict members, which removes 7.97% of all reductions
-without changing `node-types.json`. Because desktop noise made whole rounds vary
-by up to 50% in this session, the speedup was measured by pinning the candidate
-and the control to the same logical CPU and alternating short rounds: the median
-candidate/control ratio was 0.968 and 0.964 in two independent runs (95%
-bootstrap intervals 0.953–0.986 and 0.952–0.969). See the
-[raw data and investigation report](docs/benchmarks/2026-10-30/README.md) and the
-[reproduction harness](tools/parse-benchmark/README.md).
+Inlining `_body_statement` gave small gains in initial trials but did not reproduce
+with the final syntax corrections (candidate/control 1.0007, 95% interval
+0.9997–1.0019), so it was not adopted. CPU sampling still places most time in
+the GLR stack, subtree allocation/release, parse-table lookup and the heap.
+See the [raw data and maintenance report](docs/benchmarks/2026-10-31/README.md)
+and [reproduction harness](tools/parse-benchmark/README.md).
 
 ## Prerequisites
 

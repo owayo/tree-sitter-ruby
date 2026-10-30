@@ -1,0 +1,92 @@
+{
+  "rails_rails": {
+    "ts": {
+      "median_ms": 2619.1441,
+      "min_ms": 2531.7801,
+      "max_ms": 2669.0137,
+      "cpu_median_ms": 2609.375
+    },
+    "prism": {
+      "median_ms": 174.9347,
+      "min_ms": 174.0801,
+      "max_ms": 177.7372,
+      "cpu_median_ms": 171.875
+    },
+    "prism_over_ts": 0.0667907886396934
+  },
+  "ruby_ruby": {
+    "ts": {
+      "median_ms": 6209.1944,
+      "min_ms": 6078.5624,
+      "max_ms": 6568.2776,
+      "cpu_median_ms": 6218.75
+    },
+    "prism": {
+      "median_ms": 353.2039,
+      "min_ms": 350.7293,
+      "max_ms": 362.6927,
+      "cpu_median_ms": 359.375
+    },
+    "prism_over_ts": 0.05688401381022955
+  },
+  "rubocop_rubocop": {
+    "ts": {
+      "median_ms": 1039.2091,
+      "min_ms": 1020.9883,
+      "max_ms": 1101.9555,
+      "cpu_median_ms": 1031.25
+    },
+    "prism": {
+      "median_ms": 81.213,
+      "min_ms": 79.2622,
+      "max_ms": 89.5147,
+      "cpu_median_ms": 78.125
+    },
+    "prism_over_ts": 0.07814885377735818
+  },
+  "Homebrew_brew": {
+    "ts": {
+      "median_ms": 2000.764,
+      "min_ms": 1916.9164,
+      "max_ms": 2119.7464,
+      "cpu_median_ms": 1984.375
+    },
+    "prism": {
+      "median_ms": 135.0598,
+      "min_ms": 131.4765,
+      "max_ms": 140.6048,
+      "cpu_median_ms": 140.625
+    },
+    "prism_over_ts": 0.06750411342867024
+  },
+  "mastodon_mastodon": {
+    "ts": {
+      "median_ms": 888.7449,
+      "min_ms": 875.0461,
+      "max_ms": 899.9447,
+      "cpu_median_ms": 890.625
+    },
+    "prism": {
+      "median_ms": 62.5947,
+      "min_ms": 61.0955,
+      "max_ms": 63.7069,
+      "cpu_median_ms": 62.5
+    },
+    "prism_over_ts": 0.07043044635192844
+  },
+  "total": {
+    "ts": {
+      "median_ms": 12779.6341,
+      "min_ms": 12566.5637,
+      "max_ms": 13171.7615,
+      "cpu_median_ms": 12734.375
+    },
+    "prism": {
+      "median_ms": 809.6372,
+      "min_ms": 803.529,
+      "max_ms": 828.8142,
+      "cpu_median_ms": 812.5
+    },
+    "prism_over_ts": 0.06335370744300105
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "ts": {
+    "peak_rss_mib": 239.34375,
+    "peak_commit_mib": 242.875
+  },
+  "prism": {
+    "peak_rss_mib": 108.21875,
+    "peak_commit_mib": 113.42578125
+  },
+  "control": {
+    "peak_rss_mib": 237.93359375,
+    "peak_commit_mib": 242.765625
+  }
+}
