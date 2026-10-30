@@ -549,6 +549,89 @@ def _parse_timeout_micros():
     return int(PARSE_TIMEOUT_SECONDS * 1_000_000 * 0.8)
 
 
+def run_corpus_case(command, library_path, code, *, timeout_arg, memory_limit_mb, env):
+    """1 件のコードを一時ファイルに書き、メモリ監視付きで tree-sitter parse にかける。"""
+    tmpfile = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".rb",
+            delete=False,
+            encoding="utf-8",
+            # Windows で LF が CRLF に翻訳されると、単独 CR や
+            # バックスラッシュ行継続の回帰ケースが崩れる。
+            newline="",
+        ) as f:
+            f.write(code + "\n")
+            tmpfile = f.name
+
+        return run_with_memory_guard(
+            [
+                command,
+                "parse",
+                # 共有ライブラリを直接指定して、CLI 側の暗黙の再ビルド
+                # （Windows では MSVC -O2）に落ちないようにする。
+                "--lib-path",
+                library_path,
+                "--lang-name",
+                LIBRARY_STEM,
+                "--no-ranges",
+                timeout_arg,
+                tmpfile,
+            ],
+            timeout=PARSE_TIMEOUT_SECONDS,
+            memory_limit_mb=memory_limit_mb,
+            env=env,
+        )
+    finally:
+        if tmpfile is not None:
+            try:
+                os.unlink(tmpfile)
+            except OSError:
+                pass
+
+
+def classify_parse_result(result, expected_ast, expects_error):
+    """パース結果を期待値と照合し、成功なら None、失敗なら表示用の理由を返す。
+
+    理由は文字列か、木に含まれる ERROR / MISSING の件数（int）になる。
+    """
+    kill_reason = getattr(result, "kill_reason", None)
+    if isinstance(kill_reason, str):
+        return kill_reason
+
+    stdout = result.stdout or ""
+    output = stdout + (result.stderr or "")
+    # 構文エラーでも tree-sitter は stdout にツリーを出す。ツリーが
+    # 出ないままの非 0 終了は CLI 自体の失敗なので、期待 ERROR
+    # ケースでも成功と誤判定しない。
+    if result.returncode != 0 and "(" not in stdout:
+        return summarize_command_failure(result.returncode, output)
+
+    has_error = "(ERROR" in output or "(MISSING" in output
+    if expects_error:
+        # ERROR を期待するケースは「構文エラーになること」だけを見て、
+        # AST の完全一致までは要求しない。エラー回復後の木の形は
+        # tree-sitter のリカバリ実装に依存し CLI の更新で変わるため、
+        # 固定すると本質と無関係な失敗でテストが落ち続ける。
+        return None if has_error else "expected ERROR but parsed OK"
+
+    # 期待値にフィールドを指定したケースでは、その束縛も比較する。
+    keep_fields = re.search(r"\b[A-Za-z_][A-Za-z0-9_]*:", expected_ast) is not None
+    expected_norm = normalize_tree(expected_ast, keep_fields=keep_fields)
+    actual_norm = normalize_tree(output, keep_fields=keep_fields)
+    ast_matches = not expected_ast.strip() or actual_norm == expected_norm
+    if not has_error and result.returncode == 0 and ast_matches:
+        return None
+
+    errs = output.count("(ERROR") + output.count("(MISSING")
+    if errs == 0 and result.returncode != 0:
+        return summarize_command_failure(result.returncode, output)
+    if errs == 0 and not ast_matches:
+        return "AST mismatch"
+    return errs
+
+
 def check_tree_sitter_cli(env, command=None):
     """tree-sitter CLI が実行可能か事前に検証する。"""
     if command is None:
@@ -638,93 +721,20 @@ def main():
 
         for name, code, expected_ast, expects_error in tests:
             total += 1
-            tmpfile = None
-            try:
-                with tempfile.NamedTemporaryFile(
-                    mode="w",
-                    suffix=".rb",
-                    delete=False,
-                    encoding="utf-8",
-                    # Windows で LF が CRLF に翻訳されると、単独 CR や
-                    # バックスラッシュ行継続の回帰ケースが崩れる。
-                    newline="",
-                ) as f:
-                    f.write(code + "\n")
-                    tmpfile = f.name
-
-                result = run_with_memory_guard(
-                    [
-                        command,
-                        "parse",
-                        # 共有ライブラリを直接指定して、CLI 側の暗黙の再ビルド
-                        # （Windows では MSVC -O2）に落ちないようにする。
-                        "--lib-path",
-                        library_path,
-                        "--lang-name",
-                        LIBRARY_STEM,
-                        "--no-ranges",
-                        parse_timeout_arg,
-                        tmpfile,
-                    ],
-                    timeout=PARSE_TIMEOUT_SECONDS,
-                    memory_limit_mb=memory_limit_mb,
-                    env=env,
-                )
-
-                kill_reason = getattr(result, "kill_reason", None)
-                if isinstance(kill_reason, str):
-                    failed += 1
-                    failures.append((fname, name, kill_reason))
-                    continue
-
-                stdout = result.stdout or ""
-                stderr = result.stderr or ""
-                output = stdout + stderr
-                # 構文エラーでも tree-sitter は stdout にツリーを出す。ツリーが
-                # 出ないままの非 0 終了は CLI 自体の失敗なので、期待 ERROR
-                # ケースでも成功と誤判定しない。
-                if result.returncode != 0 and "(" not in stdout:
-                    failed += 1
-                    detail = summarize_command_failure(result.returncode, output)
-                    failures.append((fname, name, detail))
-                    continue
-
-                has_error = "(ERROR" in output or "(MISSING" in output
-                # 期待値にフィールドを指定したケースでは、その束縛も比較する。
-                keep_fields = (
-                    re.search(r"\b[A-Za-z_][A-Za-z0-9_]*:", expected_ast) is not None
-                )
-                expected_norm = normalize_tree(expected_ast, keep_fields=keep_fields)
-                actual_norm = normalize_tree(output, keep_fields=keep_fields)
-                ast_matches = not expected_ast.strip() or actual_norm == expected_norm
-                if expects_error:
-                    # ERROR を期待するケースは「構文エラーになること」だけを見て、
-                    # AST の完全一致までは要求しない。エラー回復後の木の形は
-                    # tree-sitter のリカバリ実装に依存し CLI の更新で変わるため、
-                    # 固定すると本質と無関係な失敗でテストが落ち続ける。
-                    if has_error:
-                        passed += 1
-                    else:
-                        failed += 1
-                        failures.append((fname, name, "expected ERROR but parsed OK"))
-                elif not has_error and result.returncode == 0 and ast_matches:
-                    passed += 1
-                else:
-                    failed += 1
-                    errs = output.count("(ERROR") + output.count("(MISSING")
-                    if errs == 0 and result.returncode != 0:
-                        detail = summarize_command_failure(result.returncode, output)
-                    elif errs == 0 and not ast_matches:
-                        detail = "AST mismatch"
-                    else:
-                        detail = errs
-                    failures.append((fname, name, detail))
-            finally:
-                if tmpfile is not None:
-                    try:
-                        os.unlink(tmpfile)
-                    except OSError:
-                        pass
+            result = run_corpus_case(
+                command,
+                library_path,
+                code,
+                timeout_arg=parse_timeout_arg,
+                memory_limit_mb=memory_limit_mb,
+                env=env,
+            )
+            detail = classify_parse_result(result, expected_ast, expects_error)
+            if detail is None:
+                passed += 1
+            else:
+                failed += 1
+                failures.append((fname, name, detail))
 
     if failures:
         print("\n--- Failures ---")
