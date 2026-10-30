@@ -1,0 +1,65 @@
+[
+  {
+    "bytes": 171,
+    "corpus": "ruby_ruby",
+    "path": "sample/trick2018/04-colin/entry.rb",
+    "prism_errors": [],
+    "tree_hash": "c510d754730a842a",
+    "ts_errors": 1,
+    "ts_missing": 1
+  },
+  {
+    "bytes": 4,
+    "corpus": "ruby_ruby",
+    "path": "spec/ruby/command_line/fixtures/bad_syntax.rb",
+    "prism_errors": [
+      "unexpected end-of-input, assuming it is closing the parent top level context",
+      "expected a block beginning with `{` to end with `}`"
+    ],
+    "tree_hash": "fdbf7218e64e5f5c",
+    "ts_errors": 0,
+    "ts_missing": 1
+  },
+  {
+    "bytes": 65,
+    "corpus": "ruby_ruby",
+    "path": "spec/ruby/core/exception/fixtures/syntax_error.rb",
+    "prism_errors": [
+      "unexpected '='; target cannot be written",
+      "unexpected integer, expecting end-of-input"
+    ],
+    "tree_hash": "cd3e033ddd53b2dc",
+    "ts_errors": 1,
+    "ts_missing": 0
+  },
+  {
+    "bytes": 68,
+    "corpus": "ruby_ruby",
+    "path": "spec/ruby/language/fixtures/utf16-be-nobom.rb",
+    "prism_errors": [],
+    "tree_hash": "7c2a5d619be3fe65",
+    "ts_errors": 35,
+    "ts_missing": 0
+  },
+  {
+    "bytes": 69,
+    "corpus": "ruby_ruby",
+    "path": "spec/ruby/language/fixtures/utf16-le-nobom.rb",
+    "prism_errors": [],
+    "tree_hash": "933de65bfb8e6bfc",
+    "ts_errors": 34,
+    "ts_missing": 0
+  },
+  {
+    "bytes": 1826,
+    "corpus": "ruby_ruby",
+    "path": "tool/fetch-bundled_gems.rb",
+    "prism_errors": [
+      "Invalid next",
+      "Invalid next"
+    ],
+    "tree_hash": "40d692f4f7338419",
+    "ts_errors": 0,
+    "ts_missing": 0
+  }
+]

@@ -62,6 +62,7 @@ module.exports = grammar({
 		$._formal_parameter,
 		$._simple_formal_parameter,
 		$._function_identifier,
+		$._unaliased_literal_contents,
 	],
 	externals: ($) => [
 		$._line_break,
@@ -1679,14 +1680,14 @@ module.exports = grammar({
 		string: ($) =>
 			seq(
 				alias($._string_start, '"'),
-				optional($._literal_contents),
+				optional($._unaliased_literal_contents),
 				alias($._string_end, '"'),
 			),
 
 		subshell: ($) =>
 			seq(
 				alias($._subshell_start, "`"),
-				optional($._literal_contents),
+				optional($._unaliased_literal_contents),
 				alias($._string_end, "`"),
 			),
 
@@ -1711,14 +1712,14 @@ module.exports = grammar({
 		delimited_symbol: ($) =>
 			seq(
 				alias($._symbol_start, ':"'),
-				optional($._literal_contents),
+				optional($._unaliased_literal_contents),
 				alias($._string_end, '"'),
 			),
 
 		regex: ($) =>
 			seq(
 				alias($._regex_start, "/"),
-				optional($._literal_contents),
+				optional($._unaliased_literal_contents),
 				alias($._string_end, "/"),
 			),
 
@@ -1738,8 +1739,18 @@ module.exports = grammar({
 				),
 			),
 
+		// %w/%i の bare_string/bare_symbol は、この規則の別名としてノードを残す。
 		_literal_contents: ($) =>
 			repeat1(choice($.string_content, $.interpolation, $.escape_sequence)),
+
+		// 通常リテラルは先頭を親へ直接展開し、内容が1要素だけの隠し部分木を省く。
+		// repeat1 をそのまま inline にしても同じ繰り返し規則が再生成されるため、
+		// 先頭と残りの繰り返しを分ける。別名付きの _literal_contents とは共有しない。
+		_unaliased_literal_contents: ($) =>
+			seq(
+				choice($.string_content, $.interpolation, $.escape_sequence),
+				repeat(choice($.string_content, $.interpolation, $.escape_sequence)),
+			),
 
 		// https://ruby-doc.org/core-2.5.0/doc/syntax/literals_rdoc.html#label-Strings
 		escape_sequence: (_) =>
