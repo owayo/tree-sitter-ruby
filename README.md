@@ -283,6 +283,13 @@ exception synchronized with `test/corpus/identifiers.txt` when changing identifi
 token rules.
 Named global variables reuse these Unicode identifier rules, including the
 single-character option form (`$-名`) and short interpolation (`"#$名前"`).
+The external scanner classifies characters without the C runtime's `isw*`
+functions, whose answers for non-ASCII characters depend on the platform and
+locale (glibc's C locale treats them as neither letters nor spaces, while the
+MSVC runtime uses Unicode categories). As in Ruby, every non-ASCII character is
+an identifier character, only ASCII whitespace separates `%w`/`%i` words, and a
+name ending in `!` is a constant only when it starts with an ASCII uppercase
+letter, so `x.保存!` and `%w[a　b]` parse the same way on every platform.
 
 ### Endless method definitions
 

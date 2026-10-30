@@ -73,6 +73,8 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 #   誤一致させないこともここで確認する
 # - 非引用・引用付き Unicode heredoc 終端語を UTF-8 バイト列として保持・照合する回帰も確認する
 # - `$名前` / `$-名` の Unicode グローバル変数と短縮 interpolation も回帰確認する
+# - ASCII 外の文字を含む `!` 付きのメソッド名（`x.保存!`・`x.Ärger!`）と、`%w` / `%i` の
+#   語の中の全角空白（U+3000）を、C ランタイムのロケールによらず同じに読むことも確認する
 # - Ruby Box 例で使われる式ベースの scope resolution（`box::Foo`）も回帰確認する
 # - `tree-sitter parse --no-ranges` の AST 出力を正規化して期待 AST と比較する
 # - corpus ソース内の単独 CR 文字を LF に正規化せず検証する
@@ -258,6 +260,7 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 - Rustの最適化プロファイルでは、生成器が入れた最適化無効化pragmaをOUT_DIRのコピーだけで外す。src/parser.cを手編集せず、最適化フラグと実際のコピーの両方を確認し、cargo test --releaseも実行する。opt-level=0では生成物の原本を使う
 - Unicode heredoc 終端語は UTF-8 バイト列として保存・照合し、ASCII 終端語の 1 文字 1 バイト表現と serialization buffer 容量を維持すること
 - `global_variable` の名前部分は共通の Unicode 識別子文字ルールと同期し、`scan_short_interpolation()` の `$name` / `$-x` 判定でも ASCII 外文字を locale 非依存で許可すること
+- `src/scanner.c` では C ランタイムの `isw*`（`iswalpha` / `iswspace` など）を使わない。ASCII 外の文字の判定がロケールと実装で変わり（glibc の C ロケールは英字・空白と判定せず、MSVC は Unicode の分類を使う）、同じ Ruby の木が OS で変わる。`is_ascii_*` / `is_ruby_space()` / `is_identifier_start()` / `is_identifier_continue()` で ASCII の範囲を比べ、Ruby と同じく ASCII 外の文字はすべて識別子の文字、空白は ASCII の空白だけ、`!` 付きの名前を定数とするのは文法の `constant` と同じく ASCII の大文字で始まる場合だけとする
 - tree-sitter の scanner serialization buffer に収まらない heredoc 終端語は、状態喪失による誤パースを避けるため ERROR として扱う。heredoc は `scan_heredoc_start()` で開き、保存容量の確認を迂回しない。`<<` を左シフト演算子とも読める位置（`puts <<WORD`）でも左シフトに読み替えず、`HEREDOC_START_OVERFLOW` のときはトークンを返さない（`HEREDOC_START_ABSENT` だけが左シフトになる）
 - scanner serialization buffer の上限ぴったりに収まる状態は有効として扱い、超過した場合だけ ERROR として扱う
 - リテラルは `open_literal()` で開き、開いている heredoc と合計した保存容量の確認を迂回しない。終端行の再開フラグは既存の started バイトに詰め、7 バイトのヘッダーサイズを維持する
