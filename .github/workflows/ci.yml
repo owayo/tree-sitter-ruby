@@ -60,6 +60,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # macos-14 は2026-11-02廃止。サポート中の固定ラベルで検証する。
+        # https://github.com/actions/runner-images/issues/13518
         os: [ubuntu-latest, windows-latest, macos-15]
     steps:
       - name: Checkout repository

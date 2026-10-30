@@ -22,6 +22,9 @@ CRLFの編集後の増分パースは、新規パースと全ノードのフィ�
 node-types.jsonは不変。nilデフォルト値の分離と括弧内代入を独立した2件のRust回帰テストで固定した（#31）。
 コーパス432件、Rust debug/release全106件、ランナー160件（既定の1件skip）が通った。
 プロファイラーのEOFと例外時の資源回収も修正した（[PR #33](https://github.com/owayo/tree-sitter-ruby/pull/33)）。
+nil仮引数の独立回帰テストは[PR #35](https://github.com/owayo/tree-sitter-ruby/pull/35)で統合した。
+同PRでは廃止予定の `macos-14` を `macos-15` に移行し、既存の全テスト工程を維持して3OSのCI成功を確認した。
+計画停止・廃止の根拠と実行SHAは[CI移行記録](benchmarks/2026-10-31/README.md#ciのmacos移行)に保存している。
 
 ## 2026-10-30
 
