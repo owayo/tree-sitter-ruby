@@ -257,6 +257,10 @@ cc -shared -fPIC -O0 -o /tmp/ts-lib/ruby.dylib -I src src/parser.c src/scanner.c
 - `return` / `break` / `next` の直後も `_jump_argument` で式の開始を伝える。符号や正規表現をキーワードの外側の演算とせず、改行では引数を継続しない。`yield` は同じ字句状態ではない
 - 外部トークンを追加するときは `externals` と `TokenType` の末尾へ同じ順序で追加し、保存状態に入る既存のリテラルトークンの番号を変えない
 - 隠し規則は reduce のたびに見えない部分木を割り当てる。`inline` には、supertype でも `conflicts` の対象でもなく、優先順位を持たない隠し規則だけを加える。supertype の隠しノードはクエリの supertype 照合に使うので inline にしない。追加したら `src/node-types.json` が変わらないことと、実ソース全体の木のハッシュ（`tools/parse-benchmark` の `validate`）が一致することを確認し、速度は `paired.py` で対照と交互に測る
+- 通常リテラルの `_unaliased_literal_contents` は、先頭の内容を親へ直接展開するため
+  `seq(要素, repeat(要素))` を inline にする。`repeat1` へ戻すと単位reduceが復活する。
+  `%w` / `%i` の `_literal_contents` は別名ノードを保つため分けておき、
+  `tests/literal_contents_test.rs` で直接の子・別名・範囲とCRLFの増分編集を確認する。
 - `queries/` の変更はテストで検証する（上記テスト方法を参照）
 - `biome.jsonc` で grammar.js のフォーマッタは無効化されている（正規表現の互換性のため）
 - `src/scanner.c` のシリアライズを変更した場合は `test/corpus/literals.txt` の長い heredoc 終端語ケースを含めて `python3 scripts/corpus_test.py` で確認する

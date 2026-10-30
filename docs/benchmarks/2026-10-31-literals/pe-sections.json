@@ -1,0 +1,23 @@
+{
+  "control": {
+    ".text": "749dd58ee5e85d1dd82159131a52cd71d41a97368ddd635e2e0f11ad33af14f9",
+    ".rdata": "9c27f9fd7985b3a07cd52ad081a039d15fa70943b9aee0ccbfc32f687202572a",
+    ".data": "ad9be499c645c401c3ffbac0e247066f926c02b9ffe196c80fec84fab9fd4939",
+    ".pdata": "41e4607a069289e6db4a96de049e26a74d542aa189c467cc14febfd68d7df94c",
+    ".reloc": "5399312c3a39fe9cddd1dbc05d2da8ff0036536d6c00e502e1c9d5546c2f245b"
+  },
+  "first-tail": {
+    ".text": "2c2c912cd125ef15a597f4fd61f897324b901f3ff2ebaf5674c550d7bcf35f4f",
+    ".rdata": "801f67d161842920a5a4bd59c2d783f54860bfc979354286adc0e029c6e4e43c",
+    ".data": "56c2cbca0bda3991a718ee2fe33dbf1fd50950769c4ddfe814ed23b4d06186c3",
+    ".pdata": "31ead4ccef5d11c96a323f3b02a67451b85b604fd1503e1c9e42613a96bb949b",
+    ".reloc": "b0af305b64f5ff6605601f8e470e57cfcbb36673319ca6168455de0eecc2243c"
+  },
+  "final": {
+    ".text": "2c2c912cd125ef15a597f4fd61f897324b901f3ff2ebaf5674c550d7bcf35f4f",
+    ".rdata": "2b98dd81904ee64b40231c69246f808af25dec05e0a8c873207612f101a80dac",
+    ".data": "56c2cbca0bda3991a718ee2fe33dbf1fd50950769c4ddfe814ed23b4d06186c3",
+    ".pdata": "31ead4ccef5d11c96a323f3b02a67451b85b604fd1503e1c9e42613a96bb949b",
+    ".reloc": "b0af305b64f5ff6605601f8e470e57cfcbb36673319ca6168455de0eecc2243c"
+  }
+}
