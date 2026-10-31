@@ -1,770 +1,677 @@
 {
- "summary": {
-  "pairs": 30,
-  "ratio_median": 0.9763204570583638,
-  "ratio_mean": 0.9924854011971052,
-  "ratio_min": 0.858874866998676,
-  "ratio_max": 1.4490537363022444,
-  "ratio_median_ci95": [
-   0.9702262135649884,
-   0.9805770260059069
-  ],
-  "candidate_faster_pairs": 26,
-  "candidate_median_ms": 3128.9011,
-  "control_median_ms": 3218.72995,
-  "cpu": 10,
-  "elapsed_s": 194.5501379000052
- },
- "samples": [
-  {
-   "pair": 0,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3263403500,
-   "control_wall_ns": 3310114500,
-   "candidate_cpu_ns": 3265625000,
-   "control_cpu_ns": 3312500000,
-   "candidate_corpora": {
-    "rails_rails": 621305000,
-    "ruby_ruby": 1690843700,
-    "rubocop_rubocop": 263627100,
-    "Homebrew_brew": 476475100,
-    "mastodon_mastodon": 211152600
-   },
-   "control_corpora": {
-    "rails_rails": 618517900,
-    "ruby_ruby": 1710232700,
-    "rubocop_rubocop": 268233400,
-    "Homebrew_brew": 500382500,
-    "mastodon_mastodon": 212748000
-   }
-  },
-  {
-   "pair": 1,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3399674500,
-   "control_wall_ns": 3306819500,
-   "candidate_cpu_ns": 3406250000,
-   "control_cpu_ns": 3296875000,
-   "candidate_corpora": {
-    "rails_rails": 656839700,
-    "ruby_ruby": 1778821100,
-    "rubocop_rubocop": 269315100,
-    "Homebrew_brew": 480915100,
-    "mastodon_mastodon": 213783500
-   },
-   "control_corpora": {
-    "rails_rails": 612924900,
-    "ruby_ruby": 1711374800,
-    "rubocop_rubocop": 270349200,
-    "Homebrew_brew": 491081000,
-    "mastodon_mastodon": 221089600
-   }
-  },
-  {
-   "pair": 2,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3271943000,
-   "control_wall_ns": 3282613100,
-   "candidate_cpu_ns": 3250000000,
-   "control_cpu_ns": 3265625000,
-   "candidate_corpora": {
-    "rails_rails": 618529600,
-    "ruby_ruby": 1687712700,
-    "rubocop_rubocop": 267808600,
-    "Homebrew_brew": 481503100,
-    "mastodon_mastodon": 216389000
-   },
-   "control_corpora": {
-    "rails_rails": 646019400,
-    "ruby_ruby": 1667078900,
-    "rubocop_rubocop": 271479600,
-    "Homebrew_brew": 483215800,
-    "mastodon_mastodon": 214819400
-   }
-  },
-  {
-   "pair": 3,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3353311300,
-   "control_wall_ns": 3434065400,
-   "candidate_cpu_ns": 3359375000,
-   "control_cpu_ns": 3421875000,
-   "candidate_corpora": {
-    "rails_rails": 650880000,
-    "ruby_ruby": 1720914100,
-    "rubocop_rubocop": 278179000,
-    "Homebrew_brew": 485835700,
-    "mastodon_mastodon": 217502500
-   },
-   "control_corpora": {
-    "rails_rails": 644022700,
-    "ruby_ruby": 1791049500,
-    "rubocop_rubocop": 293016000,
-    "Homebrew_brew": 489221400,
-    "mastodon_mastodon": 216755800
-   }
-  },
-  {
-   "pair": 4,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 4668978800,
-   "control_wall_ns": 3222088100,
-   "candidate_cpu_ns": 4625000000,
-   "control_cpu_ns": 3218750000,
-   "candidate_corpora": {
-    "rails_rails": 616810700,
-    "ruby_ruby": 2744792800,
-    "rubocop_rubocop": 512581800,
-    "Homebrew_brew": 583294400,
-    "mastodon_mastodon": 211499100
-   },
-   "control_corpora": {
-    "rails_rails": 616912900,
-    "ruby_ruby": 1646931100,
-    "rubocop_rubocop": 266954400,
-    "Homebrew_brew": 478366500,
-    "mastodon_mastodon": 212923200
-   }
-  },
-  {
-   "pair": 5,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3320559400,
-   "control_wall_ns": 3463444500,
-   "candidate_cpu_ns": 3296875000,
-   "control_cpu_ns": 3468750000,
-   "candidate_corpora": {
-    "rails_rails": 664441400,
-    "ruby_ruby": 1684692000,
-    "rubocop_rubocop": 275743300,
-    "Homebrew_brew": 476340000,
-    "mastodon_mastodon": 219342700
-   },
-   "control_corpora": {
-    "rails_rails": 694050400,
-    "ruby_ruby": 1773982900,
-    "rubocop_rubocop": 293516000,
-    "Homebrew_brew": 485030400,
-    "mastodon_mastodon": 216864800
-   }
-  },
-  {
-   "pair": 6,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3534707900,
-   "control_wall_ns": 3260759300,
-   "candidate_cpu_ns": 3515625000,
-   "control_cpu_ns": 3250000000,
-   "candidate_corpora": {
-    "rails_rails": 643300200,
-    "ruby_ruby": 1788355700,
-    "rubocop_rubocop": 276394400,
-    "Homebrew_brew": 596187800,
-    "mastodon_mastodon": 230469800
-   },
-   "control_corpora": {
-    "rails_rails": 620418600,
-    "ruby_ruby": 1674610900,
-    "rubocop_rubocop": 266542700,
-    "Homebrew_brew": 481261800,
-    "mastodon_mastodon": 217925300
-   }
-  },
-  {
-   "pair": 7,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3098603800,
-   "control_wall_ns": 3171593900,
-   "candidate_cpu_ns": 3093750000,
-   "control_cpu_ns": 3171875000,
-   "candidate_corpora": {
-    "rails_rails": 588277700,
-    "ruby_ruby": 1566204800,
-    "rubocop_rubocop": 265581800,
-    "Homebrew_brew": 466669000,
-    "mastodon_mastodon": 211870500
-   },
-   "control_corpora": {
-    "rails_rails": 603493900,
-    "ruby_ruby": 1621305000,
-    "rubocop_rubocop": 264420700,
-    "Homebrew_brew": 470080100,
-    "mastodon_mastodon": 212294200
-   }
-  },
-  {
-   "pair": 8,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3103260200,
-   "control_wall_ns": 3175366900,
-   "candidate_cpu_ns": 3093750000,
-   "control_cpu_ns": 3187500000,
-   "candidate_corpora": {
-    "rails_rails": 601545200,
-    "ruby_ruby": 1575411200,
-    "rubocop_rubocop": 262826800,
-    "Homebrew_brew": 456770300,
-    "mastodon_mastodon": 206706700
-   },
-   "control_corpora": {
-    "rails_rails": 603314000,
-    "ruby_ruby": 1621861000,
-    "rubocop_rubocop": 265139000,
-    "Homebrew_brew": 472645700,
-    "mastodon_mastodon": 212407200
-   }
-  },
-  {
-   "pair": 9,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3123026800,
-   "control_wall_ns": 3231553200,
-   "candidate_cpu_ns": 3125000000,
-   "control_cpu_ns": 3218750000,
-   "candidate_corpora": {
-    "rails_rails": 594212900,
-    "ruby_ruby": 1594146800,
-    "rubocop_rubocop": 259327400,
-    "Homebrew_brew": 463739800,
-    "mastodon_mastodon": 211599900
-   },
-   "control_corpora": {
-    "rails_rails": 614328500,
-    "ruby_ruby": 1646575700,
-    "rubocop_rubocop": 274206300,
-    "Homebrew_brew": 480381000,
-    "mastodon_mastodon": 216061700
-   }
-  },
-  {
-   "pair": 10,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3134917200,
-   "control_wall_ns": 3217145700,
-   "candidate_cpu_ns": 3140625000,
-   "control_cpu_ns": 3218750000,
-   "candidate_corpora": {
-    "rails_rails": 601162200,
-    "ruby_ruby": 1592335400,
-    "rubocop_rubocop": 260066900,
-    "Homebrew_brew": 468811500,
-    "mastodon_mastodon": 212541200
-   },
-   "control_corpora": {
-    "rails_rails": 608933100,
-    "ruby_ruby": 1650147100,
-    "rubocop_rubocop": 268901700,
-    "Homebrew_brew": 475561500,
-    "mastodon_mastodon": 213602300
-   }
-  },
-  {
-   "pair": 11,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3082418300,
-   "control_wall_ns": 3157709100,
-   "candidate_cpu_ns": 3078125000,
-   "control_cpu_ns": 3156250000,
-   "candidate_corpora": {
-    "rails_rails": 588110900,
-    "ruby_ruby": 1567474500,
-    "rubocop_rubocop": 258818100,
-    "Homebrew_brew": 460313300,
-    "mastodon_mastodon": 207701500
-   },
-   "control_corpora": {
-    "rails_rails": 602417800,
-    "ruby_ruby": 1610540800,
-    "rubocop_rubocop": 265930600,
-    "Homebrew_brew": 467782300,
-    "mastodon_mastodon": 211037600
-   }
-  },
-  {
-   "pair": 12,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3090433500,
-   "control_wall_ns": 3150891200,
-   "candidate_cpu_ns": 3078125000,
-   "control_cpu_ns": 3140625000,
-   "candidate_corpora": {
-    "rails_rails": 590808300,
-    "ruby_ruby": 1571343100,
-    "rubocop_rubocop": 259214900,
-    "Homebrew_brew": 460310300,
-    "mastodon_mastodon": 208756900
-   },
-   "control_corpora": {
-    "rails_rails": 601987100,
-    "ruby_ruby": 1602345100,
-    "rubocop_rubocop": 264533900,
-    "Homebrew_brew": 468525200,
-    "mastodon_mastodon": 213499900
-   }
-  },
-  {
-   "pair": 13,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3078119200,
-   "control_wall_ns": 3173054500,
-   "candidate_cpu_ns": 3078125000,
-   "control_cpu_ns": 3156250000,
-   "candidate_corpora": {
-    "rails_rails": 590230500,
-    "ruby_ruby": 1557685600,
-    "rubocop_rubocop": 258652700,
-    "Homebrew_brew": 463786500,
-    "mastodon_mastodon": 207763900
-   },
-   "control_corpora": {
-    "rails_rails": 601559200,
-    "ruby_ruby": 1622240900,
-    "rubocop_rubocop": 264328900,
-    "Homebrew_brew": 469479100,
-    "mastodon_mastodon": 215446400
-   }
-  },
-  {
-   "pair": 14,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3076004500,
-   "control_wall_ns": 3159258400,
-   "candidate_cpu_ns": 3062500000,
-   "control_cpu_ns": 3140625000,
-   "candidate_corpora": {
-    "rails_rails": 591112700,
-    "ruby_ruby": 1557578100,
-    "rubocop_rubocop": 258969700,
-    "Homebrew_brew": 459193900,
-    "mastodon_mastodon": 209150100
-   },
-   "control_corpora": {
-    "rails_rails": 606791500,
-    "ruby_ruby": 1609626600,
-    "rubocop_rubocop": 264972500,
-    "Homebrew_brew": 466538200,
-    "mastodon_mastodon": 211329600
-   }
-  },
-  {
-   "pair": 15,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3096443300,
-   "control_wall_ns": 3236304200,
-   "candidate_cpu_ns": 3093750000,
-   "control_cpu_ns": 3234375000,
-   "candidate_corpora": {
-    "rails_rails": 598413200,
-    "ruby_ruby": 1568531800,
-    "rubocop_rubocop": 258488500,
-    "Homebrew_brew": 461060600,
-    "mastodon_mastodon": 209949200
-   },
-   "control_corpora": {
-    "rails_rails": 601599600,
-    "ruby_ruby": 1634365800,
-    "rubocop_rubocop": 304271700,
-    "Homebrew_brew": 480753900,
-    "mastodon_mastodon": 215313200
-   }
-  },
-  {
-   "pair": 16,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3133492800,
-   "control_wall_ns": 3197540000,
-   "candidate_cpu_ns": 3125000000,
-   "control_cpu_ns": 3187500000,
-   "candidate_corpora": {
-    "rails_rails": 602831600,
-    "ruby_ruby": 1595055600,
-    "rubocop_rubocop": 259076200,
-    "Homebrew_brew": 466997800,
-    "mastodon_mastodon": 209531600
-   },
-   "control_corpora": {
-    "rails_rails": 603098900,
-    "ruby_ruby": 1633162100,
-    "rubocop_rubocop": 266636000,
-    "Homebrew_brew": 482190800,
-    "mastodon_mastodon": 212452200
-   }
-  },
-  {
-   "pair": 17,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3110680200,
-   "control_wall_ns": 3205658600,
-   "candidate_cpu_ns": 3078125000,
-   "control_cpu_ns": 3203125000,
-   "candidate_corpora": {
-    "rails_rails": 597825700,
-    "ruby_ruby": 1578403300,
-    "rubocop_rubocop": 260324200,
-    "Homebrew_brew": 465042600,
-    "mastodon_mastodon": 209084400
-   },
-   "control_corpora": {
-    "rails_rails": 607868000,
-    "ruby_ruby": 1636909900,
-    "rubocop_rubocop": 274966500,
-    "Homebrew_brew": 474016800,
-    "mastodon_mastodon": 211897400
-   }
-  },
-  {
-   "pair": 18,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3147422800,
-   "control_wall_ns": 3210537000,
-   "candidate_cpu_ns": 3125000000,
-   "control_cpu_ns": 3203125000,
-   "candidate_corpora": {
-    "rails_rails": 594104800,
-    "ruby_ruby": 1584296900,
-    "rubocop_rubocop": 265648500,
-    "Homebrew_brew": 483120200,
-    "mastodon_mastodon": 220252400
-   },
-   "control_corpora": {
-    "rails_rails": 623041700,
-    "ruby_ruby": 1629345900,
-    "rubocop_rubocop": 266712700,
-    "Homebrew_brew": 477271800,
-    "mastodon_mastodon": 214164900
-   }
-  },
-  {
-   "pair": 19,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3185465100,
-   "control_wall_ns": 3212139300,
-   "candidate_cpu_ns": 3171875000,
-   "control_cpu_ns": 3187500000,
-   "candidate_corpora": {
-    "rails_rails": 596130200,
-    "ruby_ruby": 1617728100,
-    "rubocop_rubocop": 264284600,
-    "Homebrew_brew": 484623500,
-    "mastodon_mastodon": 222698700
-   },
-   "control_corpora": {
-    "rails_rails": 615069800,
-    "ruby_ruby": 1637066700,
-    "rubocop_rubocop": 266773200,
-    "Homebrew_brew": 476095800,
-    "mastodon_mastodon": 217133800
-   }
-  },
-  {
-   "pair": 20,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3265685900,
-   "control_wall_ns": 3298238200,
-   "candidate_cpu_ns": 3265625000,
-   "control_cpu_ns": 3296875000,
-   "candidate_corpora": {
-    "rails_rails": 649454500,
-    "ruby_ruby": 1663410100,
-    "rubocop_rubocop": 264357700,
-    "Homebrew_brew": 476259400,
-    "mastodon_mastodon": 212204200
-   },
-   "control_corpora": {
-    "rails_rails": 616942700,
-    "ruby_ruby": 1687204200,
-    "rubocop_rubocop": 271758100,
-    "Homebrew_brew": 509244100,
-    "mastodon_mastodon": 213089100
-   }
-  },
-  {
-   "pair": 21,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3191285700,
-   "control_wall_ns": 3715658500,
-   "candidate_cpu_ns": 3187500000,
-   "control_cpu_ns": 3703125000,
-   "candidate_corpora": {
-    "rails_rails": 609965200,
-    "ruby_ruby": 1629629800,
-    "rubocop_rubocop": 264511600,
-    "Homebrew_brew": 474136600,
-    "mastodon_mastodon": 213042500
-   },
-   "control_corpora": {
-    "rails_rails": 614448700,
-    "ruby_ruby": 2109011400,
-    "rubocop_rubocop": 282103800,
-    "Homebrew_brew": 491695300,
-    "mastodon_mastodon": 218399300
-   }
-  },
-  {
-   "pair": 22,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3340899100,
-   "control_wall_ns": 3302071800,
-   "candidate_cpu_ns": 3343750000,
-   "control_cpu_ns": 3296875000,
-   "candidate_corpora": {
-    "rails_rails": 618375000,
-    "ruby_ruby": 1742144900,
-    "rubocop_rubocop": 279436100,
-    "Homebrew_brew": 485543600,
-    "mastodon_mastodon": 215399500
-   },
-   "control_corpora": {
-    "rails_rails": 629983500,
-    "ruby_ruby": 1709777500,
-    "rubocop_rubocop": 273790500,
-    "Homebrew_brew": 473913200,
-    "mastodon_mastodon": 214607100
-   }
-  },
-  {
-   "pair": 23,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3138408900,
-   "control_wall_ns": 3277081200,
-   "candidate_cpu_ns": 3125000000,
-   "control_cpu_ns": 3265625000,
-   "candidate_corpora": {
-    "rails_rails": 610212600,
-    "ruby_ruby": 1586053400,
-    "rubocop_rubocop": 260882200,
-    "Homebrew_brew": 470658400,
-    "mastodon_mastodon": 210602300
-   },
-   "control_corpora": {
-    "rails_rails": 610406100,
-    "ruby_ruby": 1672099900,
-    "rubocop_rubocop": 272640700,
-    "Homebrew_brew": 490554000,
-    "mastodon_mastodon": 231380500
-   }
-  },
-  {
-   "pair": 24,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3114340400,
-   "control_wall_ns": 3245627600,
-   "candidate_cpu_ns": 3109375000,
-   "control_cpu_ns": 3250000000,
-   "candidate_corpora": {
-    "rails_rails": 601807000,
-    "ruby_ruby": 1574255200,
-    "rubocop_rubocop": 260244700,
-    "Homebrew_brew": 467647700,
-    "mastodon_mastodon": 210385800
-   },
-   "control_corpora": {
-    "rails_rails": 612231400,
-    "ruby_ruby": 1655357700,
-    "rubocop_rubocop": 272893600,
-    "Homebrew_brew": 482363300,
-    "mastodon_mastodon": 222781600
-   }
-  },
-  {
-   "pair": 25,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3121467500,
-   "control_wall_ns": 3207701200,
-   "candidate_cpu_ns": 3125000000,
-   "control_cpu_ns": 3203125000,
-   "candidate_corpora": {
-    "rails_rails": 595266200,
-    "ruby_ruby": 1578941400,
-    "rubocop_rubocop": 264938700,
-    "Homebrew_brew": 469268100,
-    "mastodon_mastodon": 213053100
-   },
-   "control_corpora": {
-    "rails_rails": 620915900,
-    "ruby_ruby": 1632470900,
-    "rubocop_rubocop": 266781100,
-    "Homebrew_brew": 472366800,
-    "mastodon_mastodon": 215166500
-   }
-  },
-  {
-   "pair": 26,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3124309400,
-   "control_wall_ns": 3183839400,
-   "candidate_cpu_ns": 3125000000,
-   "control_cpu_ns": 3156250000,
-   "candidate_corpora": {
-    "rails_rails": 605698500,
-    "ruby_ruby": 1567992900,
-    "rubocop_rubocop": 268525600,
-    "Homebrew_brew": 470804200,
-    "mastodon_mastodon": 211288200
-   },
-   "control_corpora": {
-    "rails_rails": 608457500,
-    "ruby_ruby": 1623246200,
-    "rubocop_rubocop": 265850300,
-    "Homebrew_brew": 475165000,
-    "mastodon_mastodon": 211120400
-   }
-  },
-  {
-   "pair": 27,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3111739500,
-   "control_wall_ns": 3218983100,
-   "candidate_cpu_ns": 3109375000,
-   "control_cpu_ns": 3218750000,
-   "candidate_corpora": {
-    "rails_rails": 602501000,
-    "ruby_ruby": 1578144700,
-    "rubocop_rubocop": 259515800,
-    "Homebrew_brew": 462812600,
-    "mastodon_mastodon": 208765400
-   },
-   "control_corpora": {
-    "rails_rails": 608604800,
-    "ruby_ruby": 1616763700,
-    "rubocop_rubocop": 269020500,
-    "Homebrew_brew": 504635500,
-    "mastodon_mastodon": 219958600
-   }
-  },
-  {
-   "pair": 28,
-   "order": [
-    "candidate",
-    "control"
-   ],
-   "candidate_wall_ns": 3103662700,
-   "control_wall_ns": 3213805500,
-   "candidate_cpu_ns": 3109375000,
-   "control_cpu_ns": 3203125000,
-   "candidate_corpora": {
-    "rails_rails": 598319300,
-    "ruby_ruby": 1575476800,
-    "rubocop_rubocop": 260358400,
-    "Homebrew_brew": 461452900,
-    "mastodon_mastodon": 208055300
-   },
-   "control_corpora": {
-    "rails_rails": 606525800,
-    "ruby_ruby": 1640896800,
-    "rubocop_rubocop": 271043200,
-    "Homebrew_brew": 480734500,
-    "mastodon_mastodon": 214605200
-   }
-  },
-  {
-   "pair": 29,
-   "order": [
-    "control",
-    "candidate"
-   ],
-   "candidate_wall_ns": 3075973500,
-   "control_wall_ns": 3218476800,
-   "candidate_cpu_ns": 3078125000,
-   "control_cpu_ns": 3218750000,
-   "candidate_corpora": {
-    "rails_rails": 590763000,
-    "ruby_ruby": 1554191100,
-    "rubocop_rubocop": 258150600,
-    "Homebrew_brew": 465181700,
-    "mastodon_mastodon": 207687100
-   },
-   "control_corpora": {
-    "rails_rails": 611666200,
-    "ruby_ruby": 1646697400,
-    "rubocop_rubocop": 268852800,
-    "Homebrew_brew": 478079800,
-    "mastodon_mastodon": 213180600
-   }
-  }
- ]
+	"summary": {
+		"pairs": 30,
+		"ratio_median": 0.9763204570583638,
+		"ratio_mean": 0.9924854011971052,
+		"ratio_min": 0.858874866998676,
+		"ratio_max": 1.4490537363022444,
+		"ratio_median_ci95": [0.9702262135649884, 0.9805770260059069],
+		"candidate_faster_pairs": 26,
+		"candidate_median_ms": 3128.9011,
+		"control_median_ms": 3218.72995,
+		"cpu": 10,
+		"elapsed_s": 194.5501379000052
+	},
+	"samples": [
+		{
+			"pair": 0,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3263403500,
+			"control_wall_ns": 3310114500,
+			"candidate_cpu_ns": 3265625000,
+			"control_cpu_ns": 3312500000,
+			"candidate_corpora": {
+				"rails_rails": 621305000,
+				"ruby_ruby": 1690843700,
+				"rubocop_rubocop": 263627100,
+				"Homebrew_brew": 476475100,
+				"mastodon_mastodon": 211152600
+			},
+			"control_corpora": {
+				"rails_rails": 618517900,
+				"ruby_ruby": 1710232700,
+				"rubocop_rubocop": 268233400,
+				"Homebrew_brew": 500382500,
+				"mastodon_mastodon": 212748000
+			}
+		},
+		{
+			"pair": 1,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3399674500,
+			"control_wall_ns": 3306819500,
+			"candidate_cpu_ns": 3406250000,
+			"control_cpu_ns": 3296875000,
+			"candidate_corpora": {
+				"rails_rails": 656839700,
+				"ruby_ruby": 1778821100,
+				"rubocop_rubocop": 269315100,
+				"Homebrew_brew": 480915100,
+				"mastodon_mastodon": 213783500
+			},
+			"control_corpora": {
+				"rails_rails": 612924900,
+				"ruby_ruby": 1711374800,
+				"rubocop_rubocop": 270349200,
+				"Homebrew_brew": 491081000,
+				"mastodon_mastodon": 221089600
+			}
+		},
+		{
+			"pair": 2,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3271943000,
+			"control_wall_ns": 3282613100,
+			"candidate_cpu_ns": 3250000000,
+			"control_cpu_ns": 3265625000,
+			"candidate_corpora": {
+				"rails_rails": 618529600,
+				"ruby_ruby": 1687712700,
+				"rubocop_rubocop": 267808600,
+				"Homebrew_brew": 481503100,
+				"mastodon_mastodon": 216389000
+			},
+			"control_corpora": {
+				"rails_rails": 646019400,
+				"ruby_ruby": 1667078900,
+				"rubocop_rubocop": 271479600,
+				"Homebrew_brew": 483215800,
+				"mastodon_mastodon": 214819400
+			}
+		},
+		{
+			"pair": 3,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3353311300,
+			"control_wall_ns": 3434065400,
+			"candidate_cpu_ns": 3359375000,
+			"control_cpu_ns": 3421875000,
+			"candidate_corpora": {
+				"rails_rails": 650880000,
+				"ruby_ruby": 1720914100,
+				"rubocop_rubocop": 278179000,
+				"Homebrew_brew": 485835700,
+				"mastodon_mastodon": 217502500
+			},
+			"control_corpora": {
+				"rails_rails": 644022700,
+				"ruby_ruby": 1791049500,
+				"rubocop_rubocop": 293016000,
+				"Homebrew_brew": 489221400,
+				"mastodon_mastodon": 216755800
+			}
+		},
+		{
+			"pair": 4,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 4668978800,
+			"control_wall_ns": 3222088100,
+			"candidate_cpu_ns": 4625000000,
+			"control_cpu_ns": 3218750000,
+			"candidate_corpora": {
+				"rails_rails": 616810700,
+				"ruby_ruby": 2744792800,
+				"rubocop_rubocop": 512581800,
+				"Homebrew_brew": 583294400,
+				"mastodon_mastodon": 211499100
+			},
+			"control_corpora": {
+				"rails_rails": 616912900,
+				"ruby_ruby": 1646931100,
+				"rubocop_rubocop": 266954400,
+				"Homebrew_brew": 478366500,
+				"mastodon_mastodon": 212923200
+			}
+		},
+		{
+			"pair": 5,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3320559400,
+			"control_wall_ns": 3463444500,
+			"candidate_cpu_ns": 3296875000,
+			"control_cpu_ns": 3468750000,
+			"candidate_corpora": {
+				"rails_rails": 664441400,
+				"ruby_ruby": 1684692000,
+				"rubocop_rubocop": 275743300,
+				"Homebrew_brew": 476340000,
+				"mastodon_mastodon": 219342700
+			},
+			"control_corpora": {
+				"rails_rails": 694050400,
+				"ruby_ruby": 1773982900,
+				"rubocop_rubocop": 293516000,
+				"Homebrew_brew": 485030400,
+				"mastodon_mastodon": 216864800
+			}
+		},
+		{
+			"pair": 6,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3534707900,
+			"control_wall_ns": 3260759300,
+			"candidate_cpu_ns": 3515625000,
+			"control_cpu_ns": 3250000000,
+			"candidate_corpora": {
+				"rails_rails": 643300200,
+				"ruby_ruby": 1788355700,
+				"rubocop_rubocop": 276394400,
+				"Homebrew_brew": 596187800,
+				"mastodon_mastodon": 230469800
+			},
+			"control_corpora": {
+				"rails_rails": 620418600,
+				"ruby_ruby": 1674610900,
+				"rubocop_rubocop": 266542700,
+				"Homebrew_brew": 481261800,
+				"mastodon_mastodon": 217925300
+			}
+		},
+		{
+			"pair": 7,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3098603800,
+			"control_wall_ns": 3171593900,
+			"candidate_cpu_ns": 3093750000,
+			"control_cpu_ns": 3171875000,
+			"candidate_corpora": {
+				"rails_rails": 588277700,
+				"ruby_ruby": 1566204800,
+				"rubocop_rubocop": 265581800,
+				"Homebrew_brew": 466669000,
+				"mastodon_mastodon": 211870500
+			},
+			"control_corpora": {
+				"rails_rails": 603493900,
+				"ruby_ruby": 1621305000,
+				"rubocop_rubocop": 264420700,
+				"Homebrew_brew": 470080100,
+				"mastodon_mastodon": 212294200
+			}
+		},
+		{
+			"pair": 8,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3103260200,
+			"control_wall_ns": 3175366900,
+			"candidate_cpu_ns": 3093750000,
+			"control_cpu_ns": 3187500000,
+			"candidate_corpora": {
+				"rails_rails": 601545200,
+				"ruby_ruby": 1575411200,
+				"rubocop_rubocop": 262826800,
+				"Homebrew_brew": 456770300,
+				"mastodon_mastodon": 206706700
+			},
+			"control_corpora": {
+				"rails_rails": 603314000,
+				"ruby_ruby": 1621861000,
+				"rubocop_rubocop": 265139000,
+				"Homebrew_brew": 472645700,
+				"mastodon_mastodon": 212407200
+			}
+		},
+		{
+			"pair": 9,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3123026800,
+			"control_wall_ns": 3231553200,
+			"candidate_cpu_ns": 3125000000,
+			"control_cpu_ns": 3218750000,
+			"candidate_corpora": {
+				"rails_rails": 594212900,
+				"ruby_ruby": 1594146800,
+				"rubocop_rubocop": 259327400,
+				"Homebrew_brew": 463739800,
+				"mastodon_mastodon": 211599900
+			},
+			"control_corpora": {
+				"rails_rails": 614328500,
+				"ruby_ruby": 1646575700,
+				"rubocop_rubocop": 274206300,
+				"Homebrew_brew": 480381000,
+				"mastodon_mastodon": 216061700
+			}
+		},
+		{
+			"pair": 10,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3134917200,
+			"control_wall_ns": 3217145700,
+			"candidate_cpu_ns": 3140625000,
+			"control_cpu_ns": 3218750000,
+			"candidate_corpora": {
+				"rails_rails": 601162200,
+				"ruby_ruby": 1592335400,
+				"rubocop_rubocop": 260066900,
+				"Homebrew_brew": 468811500,
+				"mastodon_mastodon": 212541200
+			},
+			"control_corpora": {
+				"rails_rails": 608933100,
+				"ruby_ruby": 1650147100,
+				"rubocop_rubocop": 268901700,
+				"Homebrew_brew": 475561500,
+				"mastodon_mastodon": 213602300
+			}
+		},
+		{
+			"pair": 11,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3082418300,
+			"control_wall_ns": 3157709100,
+			"candidate_cpu_ns": 3078125000,
+			"control_cpu_ns": 3156250000,
+			"candidate_corpora": {
+				"rails_rails": 588110900,
+				"ruby_ruby": 1567474500,
+				"rubocop_rubocop": 258818100,
+				"Homebrew_brew": 460313300,
+				"mastodon_mastodon": 207701500
+			},
+			"control_corpora": {
+				"rails_rails": 602417800,
+				"ruby_ruby": 1610540800,
+				"rubocop_rubocop": 265930600,
+				"Homebrew_brew": 467782300,
+				"mastodon_mastodon": 211037600
+			}
+		},
+		{
+			"pair": 12,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3090433500,
+			"control_wall_ns": 3150891200,
+			"candidate_cpu_ns": 3078125000,
+			"control_cpu_ns": 3140625000,
+			"candidate_corpora": {
+				"rails_rails": 590808300,
+				"ruby_ruby": 1571343100,
+				"rubocop_rubocop": 259214900,
+				"Homebrew_brew": 460310300,
+				"mastodon_mastodon": 208756900
+			},
+			"control_corpora": {
+				"rails_rails": 601987100,
+				"ruby_ruby": 1602345100,
+				"rubocop_rubocop": 264533900,
+				"Homebrew_brew": 468525200,
+				"mastodon_mastodon": 213499900
+			}
+		},
+		{
+			"pair": 13,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3078119200,
+			"control_wall_ns": 3173054500,
+			"candidate_cpu_ns": 3078125000,
+			"control_cpu_ns": 3156250000,
+			"candidate_corpora": {
+				"rails_rails": 590230500,
+				"ruby_ruby": 1557685600,
+				"rubocop_rubocop": 258652700,
+				"Homebrew_brew": 463786500,
+				"mastodon_mastodon": 207763900
+			},
+			"control_corpora": {
+				"rails_rails": 601559200,
+				"ruby_ruby": 1622240900,
+				"rubocop_rubocop": 264328900,
+				"Homebrew_brew": 469479100,
+				"mastodon_mastodon": 215446400
+			}
+		},
+		{
+			"pair": 14,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3076004500,
+			"control_wall_ns": 3159258400,
+			"candidate_cpu_ns": 3062500000,
+			"control_cpu_ns": 3140625000,
+			"candidate_corpora": {
+				"rails_rails": 591112700,
+				"ruby_ruby": 1557578100,
+				"rubocop_rubocop": 258969700,
+				"Homebrew_brew": 459193900,
+				"mastodon_mastodon": 209150100
+			},
+			"control_corpora": {
+				"rails_rails": 606791500,
+				"ruby_ruby": 1609626600,
+				"rubocop_rubocop": 264972500,
+				"Homebrew_brew": 466538200,
+				"mastodon_mastodon": 211329600
+			}
+		},
+		{
+			"pair": 15,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3096443300,
+			"control_wall_ns": 3236304200,
+			"candidate_cpu_ns": 3093750000,
+			"control_cpu_ns": 3234375000,
+			"candidate_corpora": {
+				"rails_rails": 598413200,
+				"ruby_ruby": 1568531800,
+				"rubocop_rubocop": 258488500,
+				"Homebrew_brew": 461060600,
+				"mastodon_mastodon": 209949200
+			},
+			"control_corpora": {
+				"rails_rails": 601599600,
+				"ruby_ruby": 1634365800,
+				"rubocop_rubocop": 304271700,
+				"Homebrew_brew": 480753900,
+				"mastodon_mastodon": 215313200
+			}
+		},
+		{
+			"pair": 16,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3133492800,
+			"control_wall_ns": 3197540000,
+			"candidate_cpu_ns": 3125000000,
+			"control_cpu_ns": 3187500000,
+			"candidate_corpora": {
+				"rails_rails": 602831600,
+				"ruby_ruby": 1595055600,
+				"rubocop_rubocop": 259076200,
+				"Homebrew_brew": 466997800,
+				"mastodon_mastodon": 209531600
+			},
+			"control_corpora": {
+				"rails_rails": 603098900,
+				"ruby_ruby": 1633162100,
+				"rubocop_rubocop": 266636000,
+				"Homebrew_brew": 482190800,
+				"mastodon_mastodon": 212452200
+			}
+		},
+		{
+			"pair": 17,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3110680200,
+			"control_wall_ns": 3205658600,
+			"candidate_cpu_ns": 3078125000,
+			"control_cpu_ns": 3203125000,
+			"candidate_corpora": {
+				"rails_rails": 597825700,
+				"ruby_ruby": 1578403300,
+				"rubocop_rubocop": 260324200,
+				"Homebrew_brew": 465042600,
+				"mastodon_mastodon": 209084400
+			},
+			"control_corpora": {
+				"rails_rails": 607868000,
+				"ruby_ruby": 1636909900,
+				"rubocop_rubocop": 274966500,
+				"Homebrew_brew": 474016800,
+				"mastodon_mastodon": 211897400
+			}
+		},
+		{
+			"pair": 18,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3147422800,
+			"control_wall_ns": 3210537000,
+			"candidate_cpu_ns": 3125000000,
+			"control_cpu_ns": 3203125000,
+			"candidate_corpora": {
+				"rails_rails": 594104800,
+				"ruby_ruby": 1584296900,
+				"rubocop_rubocop": 265648500,
+				"Homebrew_brew": 483120200,
+				"mastodon_mastodon": 220252400
+			},
+			"control_corpora": {
+				"rails_rails": 623041700,
+				"ruby_ruby": 1629345900,
+				"rubocop_rubocop": 266712700,
+				"Homebrew_brew": 477271800,
+				"mastodon_mastodon": 214164900
+			}
+		},
+		{
+			"pair": 19,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3185465100,
+			"control_wall_ns": 3212139300,
+			"candidate_cpu_ns": 3171875000,
+			"control_cpu_ns": 3187500000,
+			"candidate_corpora": {
+				"rails_rails": 596130200,
+				"ruby_ruby": 1617728100,
+				"rubocop_rubocop": 264284600,
+				"Homebrew_brew": 484623500,
+				"mastodon_mastodon": 222698700
+			},
+			"control_corpora": {
+				"rails_rails": 615069800,
+				"ruby_ruby": 1637066700,
+				"rubocop_rubocop": 266773200,
+				"Homebrew_brew": 476095800,
+				"mastodon_mastodon": 217133800
+			}
+		},
+		{
+			"pair": 20,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3265685900,
+			"control_wall_ns": 3298238200,
+			"candidate_cpu_ns": 3265625000,
+			"control_cpu_ns": 3296875000,
+			"candidate_corpora": {
+				"rails_rails": 649454500,
+				"ruby_ruby": 1663410100,
+				"rubocop_rubocop": 264357700,
+				"Homebrew_brew": 476259400,
+				"mastodon_mastodon": 212204200
+			},
+			"control_corpora": {
+				"rails_rails": 616942700,
+				"ruby_ruby": 1687204200,
+				"rubocop_rubocop": 271758100,
+				"Homebrew_brew": 509244100,
+				"mastodon_mastodon": 213089100
+			}
+		},
+		{
+			"pair": 21,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3191285700,
+			"control_wall_ns": 3715658500,
+			"candidate_cpu_ns": 3187500000,
+			"control_cpu_ns": 3703125000,
+			"candidate_corpora": {
+				"rails_rails": 609965200,
+				"ruby_ruby": 1629629800,
+				"rubocop_rubocop": 264511600,
+				"Homebrew_brew": 474136600,
+				"mastodon_mastodon": 213042500
+			},
+			"control_corpora": {
+				"rails_rails": 614448700,
+				"ruby_ruby": 2109011400,
+				"rubocop_rubocop": 282103800,
+				"Homebrew_brew": 491695300,
+				"mastodon_mastodon": 218399300
+			}
+		},
+		{
+			"pair": 22,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3340899100,
+			"control_wall_ns": 3302071800,
+			"candidate_cpu_ns": 3343750000,
+			"control_cpu_ns": 3296875000,
+			"candidate_corpora": {
+				"rails_rails": 618375000,
+				"ruby_ruby": 1742144900,
+				"rubocop_rubocop": 279436100,
+				"Homebrew_brew": 485543600,
+				"mastodon_mastodon": 215399500
+			},
+			"control_corpora": {
+				"rails_rails": 629983500,
+				"ruby_ruby": 1709777500,
+				"rubocop_rubocop": 273790500,
+				"Homebrew_brew": 473913200,
+				"mastodon_mastodon": 214607100
+			}
+		},
+		{
+			"pair": 23,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3138408900,
+			"control_wall_ns": 3277081200,
+			"candidate_cpu_ns": 3125000000,
+			"control_cpu_ns": 3265625000,
+			"candidate_corpora": {
+				"rails_rails": 610212600,
+				"ruby_ruby": 1586053400,
+				"rubocop_rubocop": 260882200,
+				"Homebrew_brew": 470658400,
+				"mastodon_mastodon": 210602300
+			},
+			"control_corpora": {
+				"rails_rails": 610406100,
+				"ruby_ruby": 1672099900,
+				"rubocop_rubocop": 272640700,
+				"Homebrew_brew": 490554000,
+				"mastodon_mastodon": 231380500
+			}
+		},
+		{
+			"pair": 24,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3114340400,
+			"control_wall_ns": 3245627600,
+			"candidate_cpu_ns": 3109375000,
+			"control_cpu_ns": 3250000000,
+			"candidate_corpora": {
+				"rails_rails": 601807000,
+				"ruby_ruby": 1574255200,
+				"rubocop_rubocop": 260244700,
+				"Homebrew_brew": 467647700,
+				"mastodon_mastodon": 210385800
+			},
+			"control_corpora": {
+				"rails_rails": 612231400,
+				"ruby_ruby": 1655357700,
+				"rubocop_rubocop": 272893600,
+				"Homebrew_brew": 482363300,
+				"mastodon_mastodon": 222781600
+			}
+		},
+		{
+			"pair": 25,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3121467500,
+			"control_wall_ns": 3207701200,
+			"candidate_cpu_ns": 3125000000,
+			"control_cpu_ns": 3203125000,
+			"candidate_corpora": {
+				"rails_rails": 595266200,
+				"ruby_ruby": 1578941400,
+				"rubocop_rubocop": 264938700,
+				"Homebrew_brew": 469268100,
+				"mastodon_mastodon": 213053100
+			},
+			"control_corpora": {
+				"rails_rails": 620915900,
+				"ruby_ruby": 1632470900,
+				"rubocop_rubocop": 266781100,
+				"Homebrew_brew": 472366800,
+				"mastodon_mastodon": 215166500
+			}
+		},
+		{
+			"pair": 26,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3124309400,
+			"control_wall_ns": 3183839400,
+			"candidate_cpu_ns": 3125000000,
+			"control_cpu_ns": 3156250000,
+			"candidate_corpora": {
+				"rails_rails": 605698500,
+				"ruby_ruby": 1567992900,
+				"rubocop_rubocop": 268525600,
+				"Homebrew_brew": 470804200,
+				"mastodon_mastodon": 211288200
+			},
+			"control_corpora": {
+				"rails_rails": 608457500,
+				"ruby_ruby": 1623246200,
+				"rubocop_rubocop": 265850300,
+				"Homebrew_brew": 475165000,
+				"mastodon_mastodon": 211120400
+			}
+		},
+		{
+			"pair": 27,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3111739500,
+			"control_wall_ns": 3218983100,
+			"candidate_cpu_ns": 3109375000,
+			"control_cpu_ns": 3218750000,
+			"candidate_corpora": {
+				"rails_rails": 602501000,
+				"ruby_ruby": 1578144700,
+				"rubocop_rubocop": 259515800,
+				"Homebrew_brew": 462812600,
+				"mastodon_mastodon": 208765400
+			},
+			"control_corpora": {
+				"rails_rails": 608604800,
+				"ruby_ruby": 1616763700,
+				"rubocop_rubocop": 269020500,
+				"Homebrew_brew": 504635500,
+				"mastodon_mastodon": 219958600
+			}
+		},
+		{
+			"pair": 28,
+			"order": ["candidate", "control"],
+			"candidate_wall_ns": 3103662700,
+			"control_wall_ns": 3213805500,
+			"candidate_cpu_ns": 3109375000,
+			"control_cpu_ns": 3203125000,
+			"candidate_corpora": {
+				"rails_rails": 598319300,
+				"ruby_ruby": 1575476800,
+				"rubocop_rubocop": 260358400,
+				"Homebrew_brew": 461452900,
+				"mastodon_mastodon": 208055300
+			},
+			"control_corpora": {
+				"rails_rails": 606525800,
+				"ruby_ruby": 1640896800,
+				"rubocop_rubocop": 271043200,
+				"Homebrew_brew": 480734500,
+				"mastodon_mastodon": 214605200
+			}
+		},
+		{
+			"pair": 29,
+			"order": ["control", "candidate"],
+			"candidate_wall_ns": 3075973500,
+			"control_wall_ns": 3218476800,
+			"candidate_cpu_ns": 3078125000,
+			"control_cpu_ns": 3218750000,
+			"candidate_corpora": {
+				"rails_rails": 590763000,
+				"ruby_ruby": 1554191100,
+				"rubocop_rubocop": 258150600,
+				"Homebrew_brew": 465181700,
+				"mastodon_mastodon": 207687100
+			},
+			"control_corpora": {
+				"rails_rails": 611666200,
+				"ruby_ruby": 1646697400,
+				"rubocop_rubocop": 268852800,
+				"Homebrew_brew": 478079800,
+				"mastodon_mastodon": 213180600
+			}
+		}
+	]
 }

@@ -1,104 +1,94 @@
 {
-  "date": "2026-10-31",
-  "timezone": "Asia/Tokyo",
-  "os": "Windows 11 Home 10.0.26300",
-  "cpu": "AMD Ryzen 7 5700X (8 cores, 16 logical processors)",
-  "rust": "1.99.1",
-  "msvc": "19.51.36260",
-  "target": "x86_64-pc-windows-msvc",
-  "python": "3.15.1",
-  "node": "26.12.1",
-  "pnpm": "12.15.0",
-  "cli": "0.27.1",
-  "dependencies": {
-    "tree-sitter": "0.27.1",
-    "ruby-prism": "2.1.0",
-    "ruby-prism-sys": "2.1.0",
-    "Prism C": "2.1.0",
-    "cc": "1.10.0"
-  },
-  "latest_stable_verification": {
-    "crates": "https://crates.io/api/v1/crates/ruby-prism",
-    "release": "https://github.com/ruby/prism/releases/tag/v2.1.0",
-    "created_at": "2026-10-28T05:17:17.67499Z",
-    "crate_source_sha": "ca15cb3d8b30144b8589e053db24c9be5a204fcf",
-    "reference_checkout_sha": "37d2d0d273eb23ab486e1f656888c8837068010d",
-    "reference_checkout_clean": true
-  },
-  "baseline": "12e6f527702e7a98a3b02bc0125e0861d39be36a",
-  "integrated_base": "756a95ab135dfc64aa9a2dafab80a8405f95150f",
-  "source_sha256": {
-    "grammar.js": "6dad4f7dfcf34742f428bf0a11db4bbb7eb15e4963e04fd2e4a2a931dba59ba6",
-    "src/parser.c": "44c261497dd1fb4b628851191670f828681fead4c5605baa7a7de80402ca34c9",
-    "src/scanner.c": "4b053a2de494da34d555fdf42a062d509c6ec69197dedf0dd37c187a7bbf42f0",
-    "src/node-types.json": "dd74b523f724373fea9ee6fd2d90c0e8a1b633f62be89190a4055c9eb03f6b8c",
-    "bindings/rust/build.rs": "6ea973594572d0f1ebe3bb1d8a201e41e13ffb57fc8c24e63d082b8f41fc994f",
-    "bindings/rust/build_support.rs": "00fc932ed46a8d41e66acc45f18491dec11d30d82de37600df32b25a3aa4383f",
-    "Cargo.toml": "084422ac176c89384e106d68ebef2cc64db374c0958a2bf186d2a0192dc47599",
-    "Cargo.lock": "1014efbd6b10fb6d48ecc9476a2a6019243ded7894c0b2852336b027f707876b",
-    "tools/parse-benchmark/Cargo.toml": "b194f172a2364b8180db22f42f53e6e4cb95499152f70e92b04480c6003458ab",
-    "tools/parse-benchmark/Cargo.lock": "583c0072914a32f3b6389cc097286e5f00725186f43e9877d133f058aa454b14",
-    "tools/parse-benchmark/src/main.rs": "4c05a5f9018079025e27fb985147f53b4f7c153aa08950a81191548086bef046",
-    "tools/parse-benchmark/run.py": "3353fb655fa228407e00f1af59061dec69edb81a41d547b8b99508720373b9c2",
-    "tools/parse-benchmark/paired.py": "743ccd6e7d4c182c2cca61dad339693010d7cef46fad17e0b78f9b18150e38d1",
-    "tools/parse-benchmark/sample_profile.py": "bcc8439db4a5ac0286fd43694ef36a995ffe2f774cb7174405738ebe72c7e3d6"
-  },
-  "binaries": {
-    "control": {
-      "sha256": "b6c1325b06a96cf00de02a8b289031a7a4db491d85e72b6d3e87e7f5562cafe1",
-      "bytes": 4474880
-    },
-    "first-tail": {
-      "sha256": "7d7759e434e45d75ca22eed72399157592d4be655840054aec4cecb863caf10b",
-      "bytes": 4487680
-    },
-    "final": {
-      "sha256": "c33dff1f912fce73040d200e1be381c7a59285c57522a0b292fc9e145b9955de",
-      "bytes": 4487680
-    }
-  },
-  "measurements": {
-    "mode": "fresh parser; initialization, language setup, tree construction and destruction included; input I/O, AST output, queries and Ruby VM excluded",
-    "warmups": 2,
-    "rounds": 7,
-    "engines": [
-      "ts",
-      "prism",
-      "control"
-    ],
-    "reverse_every_round": true,
-    "input_response_timeout_s": 600,
-    "later_response_timeout_s": 60,
-    "rss_commit_limit_bytes": 6442450944,
-    "independent_processes_per_engine": true,
-    "memory_note": "Peaks include preloaded inputs, warmups and earlier corpora; commit is not virtual address space."
-  },
-  "paired": {
-    "pairs": 30,
-    "cpus": [
-      6,
-      10
-    ],
-    "sample_offsets": [
-      0,
-      2
-    ],
-    "stride": 4,
-    "bootstrap_seed": 20261030,
-    "bootstrap_samples": 5000
-  },
-  "depup": {
-    "command": "depup --install --include-pinned",
-    "updates": 0,
-    "skips": 14,
-    "exit": 1,
-    "reason": "Prism 2.1.0 was already locked but is newer than the age filter; no rollback was performed"
-  },
-  "compatibility": {
-    "all_inputs": 18532,
-    "tree_hash_changes": 0,
-    "acceptance_diagnostic_changes": 0,
-    "node_types_unchanged": true
-  },
-  "build": "Release C -O2 on both implementations; generated disabling pragmas removed only in OUT_DIR; default allocator; no custom CPU flags or LTO"
+	"date": "2026-10-31",
+	"timezone": "Asia/Tokyo",
+	"os": "Windows 11 Home 10.0.26300",
+	"cpu": "AMD Ryzen 7 5700X (8 cores, 16 logical processors)",
+	"rust": "1.99.1",
+	"msvc": "19.51.36260",
+	"target": "x86_64-pc-windows-msvc",
+	"python": "3.15.1",
+	"node": "26.12.1",
+	"pnpm": "12.15.0",
+	"cli": "0.27.1",
+	"dependencies": {
+		"tree-sitter": "0.27.1",
+		"ruby-prism": "2.1.0",
+		"ruby-prism-sys": "2.1.0",
+		"Prism C": "2.1.0",
+		"cc": "1.10.0"
+	},
+	"latest_stable_verification": {
+		"crates": "https://crates.io/api/v1/crates/ruby-prism",
+		"release": "https://github.com/ruby/prism/releases/tag/v2.1.0",
+		"created_at": "2026-10-28T05:17:17.67499Z",
+		"crate_source_sha": "ca15cb3d8b30144b8589e053db24c9be5a204fcf",
+		"reference_checkout_sha": "37d2d0d273eb23ab486e1f656888c8837068010d",
+		"reference_checkout_clean": true
+	},
+	"baseline": "12e6f527702e7a98a3b02bc0125e0861d39be36a",
+	"integrated_base": "756a95ab135dfc64aa9a2dafab80a8405f95150f",
+	"source_sha256": {
+		"grammar.js": "6dad4f7dfcf34742f428bf0a11db4bbb7eb15e4963e04fd2e4a2a931dba59ba6",
+		"src/parser.c": "44c261497dd1fb4b628851191670f828681fead4c5605baa7a7de80402ca34c9",
+		"src/scanner.c": "4b053a2de494da34d555fdf42a062d509c6ec69197dedf0dd37c187a7bbf42f0",
+		"src/node-types.json": "dd74b523f724373fea9ee6fd2d90c0e8a1b633f62be89190a4055c9eb03f6b8c",
+		"bindings/rust/build.rs": "6ea973594572d0f1ebe3bb1d8a201e41e13ffb57fc8c24e63d082b8f41fc994f",
+		"bindings/rust/build_support.rs": "00fc932ed46a8d41e66acc45f18491dec11d30d82de37600df32b25a3aa4383f",
+		"Cargo.toml": "084422ac176c89384e106d68ebef2cc64db374c0958a2bf186d2a0192dc47599",
+		"Cargo.lock": "1014efbd6b10fb6d48ecc9476a2a6019243ded7894c0b2852336b027f707876b",
+		"tools/parse-benchmark/Cargo.toml": "b194f172a2364b8180db22f42f53e6e4cb95499152f70e92b04480c6003458ab",
+		"tools/parse-benchmark/Cargo.lock": "583c0072914a32f3b6389cc097286e5f00725186f43e9877d133f058aa454b14",
+		"tools/parse-benchmark/src/main.rs": "4c05a5f9018079025e27fb985147f53b4f7c153aa08950a81191548086bef046",
+		"tools/parse-benchmark/run.py": "3353fb655fa228407e00f1af59061dec69edb81a41d547b8b99508720373b9c2",
+		"tools/parse-benchmark/paired.py": "743ccd6e7d4c182c2cca61dad339693010d7cef46fad17e0b78f9b18150e38d1",
+		"tools/parse-benchmark/sample_profile.py": "bcc8439db4a5ac0286fd43694ef36a995ffe2f774cb7174405738ebe72c7e3d6"
+	},
+	"binaries": {
+		"control": {
+			"sha256": "b6c1325b06a96cf00de02a8b289031a7a4db491d85e72b6d3e87e7f5562cafe1",
+			"bytes": 4474880
+		},
+		"first-tail": {
+			"sha256": "7d7759e434e45d75ca22eed72399157592d4be655840054aec4cecb863caf10b",
+			"bytes": 4487680
+		},
+		"final": {
+			"sha256": "c33dff1f912fce73040d200e1be381c7a59285c57522a0b292fc9e145b9955de",
+			"bytes": 4487680
+		}
+	},
+	"measurements": {
+		"mode": "fresh parser; initialization, language setup, tree construction and destruction included; input I/O, AST output, queries and Ruby VM excluded",
+		"warmups": 2,
+		"rounds": 7,
+		"engines": ["ts", "prism", "control"],
+		"reverse_every_round": true,
+		"input_response_timeout_s": 600,
+		"later_response_timeout_s": 60,
+		"rss_commit_limit_bytes": 6442450944,
+		"independent_processes_per_engine": true,
+		"memory_note": "Peaks include preloaded inputs, warmups and earlier corpora; commit is not virtual address space."
+	},
+	"paired": {
+		"pairs": 30,
+		"cpus": [6, 10],
+		"sample_offsets": [0, 2],
+		"stride": 4,
+		"bootstrap_seed": 20261030,
+		"bootstrap_samples": 5000
+	},
+	"depup": {
+		"command": "depup --install --include-pinned",
+		"updates": 0,
+		"skips": 14,
+		"exit": 1,
+		"reason": "Prism 2.1.0 was already locked but is newer than the age filter; no rollback was performed"
+	},
+	"compatibility": {
+		"all_inputs": 18532,
+		"tree_hash_changes": 0,
+		"acceptance_diagnostic_changes": 0,
+		"node_types_unchanged": true
+	},
+	"build": "Release C -O2 on both implementations; generated disabling pragmas removed only in OUT_DIR; default allocator; no custom CPU flags or LTO"
 }

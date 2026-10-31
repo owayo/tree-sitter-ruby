@@ -1,90 +1,62 @@
 {
-  "c_compilations": [
-    {
-      "package": "ruby-prism-sys 2.1.0",
-      "compiler": "cl.exe",
-      "source": "arena.c",
-      "flags": [
-        "-nologo",
-        "-MD",
-        "-O2",
-        "-Z7",
-        "-Brepro",
-        "-W4",
-        "-c"
-      ]
-    },
-    {
-      "package": "tree-sitter 0.27.1",
-      "compiler": "cl.exe",
-      "source": "lib.c",
-      "flags": [
-        "-nologo",
-        "-MD",
-        "-O2",
-        "-Z7",
-        "-Brepro",
-        "-std:c11",
-        "-c"
-      ]
-    },
-    {
-      "package": "tree-sitter-ruby 26.10.106",
-      "compiler": "cl.exe",
-      "source": "parser-optimized.c",
-      "flags": [
-        "-nologo",
-        "-MD",
-        "-O2",
-        "-Z7",
-        "-Brepro",
-        "-std:c11",
-        "-W4",
-        "-utf-8",
-        "-c"
-      ]
-    },
-    {
-      "package": "tree-sitter-ruby 26.10.106",
-      "compiler": "cl.exe",
-      "source": "scanner.c",
-      "flags": [
-        "-nologo",
-        "-MD",
-        "-O2",
-        "-Z7",
-        "-Brepro",
-        "-std:c11",
-        "-W4",
-        "-utf-8",
-        "-c"
-      ]
-    }
-  ],
-  "original_parser_sha256": "44c261497dd1fb4b628851191670f828681fead4c5605baa7a7de80402ca34c9",
-  "optimized_copy_sha256": "b20ceea1103083459a3813d1ed6e696b1331996690c16aa59192a1d03480b980",
-  "optimization_disabling_pragmas_removed": true,
-  "release_opt_level": 3,
-  "lto": false,
-  "debug": 1,
-  "generator_seconds": 8.3318497,
-  "original_metadata": [
-    [
-      "STATE_COUNT",
-      "9415"
-    ],
-    [
-      "LARGE_STATE_COUNT",
-      "3556"
-    ],
-    [
-      "SYMBOL_COUNT",
-      "378"
-    ],
-    [
-      "PRODUCTION_ID_COUNT",
-      "164"
-    ]
-  ],
-  "parser_bytes": 26238906
+	"c_compilations": [
+		{
+			"package": "ruby-prism-sys 2.1.0",
+			"compiler": "cl.exe",
+			"source": "arena.c",
+			"flags": ["-nologo", "-MD", "-O2", "-Z7", "-Brepro", "-W4", "-c"]
+		},
+		{
+			"package": "tree-sitter 0.27.1",
+			"compiler": "cl.exe",
+			"source": "lib.c",
+			"flags": ["-nologo", "-MD", "-O2", "-Z7", "-Brepro", "-std:c11", "-c"]
+		},
+		{
+			"package": "tree-sitter-ruby 26.10.106",
+			"compiler": "cl.exe",
+			"source": "parser-optimized.c",
+			"flags": [
+				"-nologo",
+				"-MD",
+				"-O2",
+				"-Z7",
+				"-Brepro",
+				"-std:c11",
+				"-W4",
+				"-utf-8",
+				"-c"
+			]
+		},
+		{
+			"package": "tree-sitter-ruby 26.10.106",
+			"compiler": "cl.exe",
+			"source": "scanner.c",
+			"flags": [
+				"-nologo",
+				"-MD",
+				"-O2",
+				"-Z7",
+				"-Brepro",
+				"-std:c11",
+				"-W4",
+				"-utf-8",
+				"-c"
+			]
+		}
+	],
+	"original_parser_sha256": "44c261497dd1fb4b628851191670f828681fead4c5605baa7a7de80402ca34c9",
+	"optimized_copy_sha256": "b20ceea1103083459a3813d1ed6e696b1331996690c16aa59192a1d03480b980",
+	"optimization_disabling_pragmas_removed": true,
+	"release_opt_level": 3,
+	"lto": false,
+	"debug": 1,
+	"generator_seconds": 8.3318497,
+	"original_metadata": [
+		["STATE_COUNT", "9415"],
+		["LARGE_STATE_COUNT", "3556"],
+		["SYMBOL_COUNT", "378"],
+		["PRODUCTION_ID_COUNT", "164"]
+	],
+	"parser_bytes": 26238906
 }

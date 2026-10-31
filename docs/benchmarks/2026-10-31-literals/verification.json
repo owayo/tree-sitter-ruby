@@ -1,31 +1,31 @@
 {
-  "corpus": {
-    "total": 432,
-    "passed": 432
-  },
-  "rust_debug": {
-    "total": 109,
-    "passed": 109
-  },
-  "rust_release": {
-    "total": 109,
-    "passed": 109
-  },
-  "python": {
-    "total": 165,
-    "passed": 164,
-    "skipped": 1
-  },
-  "new_literal_tests": 3,
-  "lint": true,
-  "ruff_check": true,
-  "ruff_format": true,
-  "cargo_fmt": true,
-  "astro_sight": {
-    "api_changes": 0,
-    "unresolved_impacts": 0
-  },
-  "tree_sitter_test_used": false,
-  "c_binding_local": "CMake unavailable, bindings unchanged; Unix CI covers the C binding",
-  "sonicop": "No syntax or capture changes; no Sonicop-derived defect, extra comparison not required"
+	"corpus": {
+		"total": 432,
+		"passed": 432
+	},
+	"rust_debug": {
+		"total": 109,
+		"passed": 109
+	},
+	"rust_release": {
+		"total": 109,
+		"passed": 109
+	},
+	"python": {
+		"total": 165,
+		"passed": 164,
+		"skipped": 1
+	},
+	"new_literal_tests": 3,
+	"lint": true,
+	"ruff_check": true,
+	"ruff_format": true,
+	"cargo_fmt": true,
+	"astro_sight": {
+		"api_changes": 0,
+		"unresolved_impacts": 0
+	},
+	"tree_sitter_test_used": false,
+	"c_binding_local": "CMake unavailable, bindings unchanged; Unix CI covers the C binding",
+	"sonicop": "No syntax or capture changes; no Sonicop-derived defect, extra comparison not required"
 }

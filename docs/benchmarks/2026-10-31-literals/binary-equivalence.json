@@ -1,19 +1,19 @@
 {
-  "same_length": true,
-  "differing_bytes": 24,
-  "debug_records": [
-    {
-      "type": 2,
-      "size": 49
-    },
-    {
-      "type": 12,
-      "size": 20
-    },
-    {
-      "type": 13,
-      "size": 812
-    }
-  ],
-  "only_build_timestamps_and_codeview_diff": true
+	"same_length": true,
+	"differing_bytes": 24,
+	"debug_records": [
+		{
+			"type": 2,
+			"size": 49
+		},
+		{
+			"type": 12,
+			"size": 20
+		},
+		{
+			"type": 13,
+			"size": 812
+		}
+	],
+	"only_build_timestamps_and_codeview_diff": true
 }

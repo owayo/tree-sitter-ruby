@@ -1,425 +1,116 @@
 {
- "samples": 17765,
- "elapsed_s": 27.876656300009927,
- "rounds": 2,
- "by_module": [
-  [
-   "final.exe",
-   15094
-  ],
-  [
-   "ntdll.dll",
-   2260
-  ],
-  [
-   "VCRUNTIME140.dll",
-   277
-  ],
-  [
-   "ucrtbase.dll",
-   134
-  ]
- ],
- "by_function": [
-  [
-   "final.exe!stack_node_new",
-   1634
-  ],
-  [
-   "ntdll.dll!RtlSizeHeap",
-   1332
-  ],
-  [
-   "final.exe!ts_subtree_new_node",
-   1306
-  ],
-  [
-   "final.exe!stack__iter",
-   1248
-  ],
-  [
-   "final.exe!ts_language_lookup",
-   1182
-  ],
-  [
-   "final.exe!ts_subtree_summarize_children",
-   971
-  ],
-  [
-   "final.exe!ts_subtree_release",
-   920
-  ],
-  [
-   "final.exe!ts_parser__advance",
-   755
-  ],
-  [
-   "final.exe!ts_lexer__advance",
-   742
-  ],
-  [
-   "final.exe!ts_parser__lex",
-   628
-  ],
-  [
-   "final.exe!ts_parser__reduce",
-   606
-  ],
-  [
-   "ntdll.dll!RtlFreeHeap",
-   478
-  ],
-  [
-   "final.exe!ts_parser__balance_subtree",
-   452
-  ],
-  [
-   "final.exe!ts_lex",
-   449
-  ],
-  [
-   "final.exe!ts_subtree_total_size",
-   448
-  ],
-  [
-   "final.exe!ts_stack__add_version",
-   357
-  ],
-  [
-   "final.exe!ts_subtree_new_leaf",
-   277
-  ],
-  [
-   "ntdll.dll!RtlUpcaseUnicodeString",
-   255
-  ],
-  [
-   "final.exe!ts_lexer__mark_end",
-   241
-  ],
-  [
-   "VCRUNTIME140.dll!memmove",
-   231
-  ],
-  [
-   "final.exe!ts_subtree_array_remove_trailing_extras",
-   225
-  ],
-  [
-   "final.exe!scan",
-   209
-  ],
-  [
-   "final.exe!scan_whitespace",
-   205
-  ],
-  [
-   "final.exe!stack_node_release",
-   197
-  ],
-  [
-   "final.exe!ts_parser__condense_stack",
-   145
-  ],
-  [
-   "final.exe!ts_stack_renumber_version",
-   142
-  ],
-  [
-   "final.exe!ts_lexer_goto",
-   127
-  ],
-  [
-   "final.exe!ts_lex_keywords",
-   123
-  ],
-  [
-   "final.exe!ts_subtree_array_reverse",
-   105
-  ],
-  [
-   "ntdll.dll!RtlAllocateHeap",
-   95
-  ],
-  [
-   "final.exe!scan_literal_content",
-   84
-  ],
-  [
-   "final.exe!ts_lexer__eof",
-   83
-  ],
-  [
-   "final.exe!ts_parser__set_cached_token",
-   82
-  ],
-  [
-   "final.exe!ts_parser_parse",
-   78
-  ],
-  [
-   "final.exe!deserialize",
-   75
-  ],
-  [
-   "final.exe!ts_malloc_default",
-   74
-  ],
-  [
-   "final.exe!pop_count_callback",
-   74
-  ],
-  [
-   "final.exe!ts_lexer__do_advance",
-   72
-  ],
-  [
-   "final.exe!ts_parser__version_status",
-   58
-  ],
-  [
-   "final.exe!ts_subtree_compress",
-   48
-  ],
-  [
-   "final.exe!ts_language_next_state",
-   46
-  ],
-  [
-   "final.exe!stack__subtree_node_count",
-   46
-  ],
-  [
-   "final.exe!ts_parser__shift",
-   44
-  ],
-  [
-   "ucrtbase.dll!malloc_base",
-   42
-  ],
-  [
-   "final.exe!ts_stack_push",
-   39
-  ],
-  [
-   "ucrtbase.dll!free",
-   35
-  ],
-  [
-   "VCRUNTIME140.dll!memchr",
-   34
-  ],
-  [
-   "final.exe!ts_lexer__get_lookahead",
-   34
-  ],
-  [
-   "ntdll.dll!NtFreeVirtualMemory",
-   34
-  ],
-  [
-   "final.exe!serialize",
-   32
-  ],
-  [
-   "final.exe!reset",
-   31
-  ],
-  [
-   "ucrtbase.dll!free_base",
-   31
-  ],
-  [
-   "final.exe!ts_parser__reuse_node",
-   28
-  ],
-  [
-   "final.exe!ts_language_table_entry",
-   28
-  ],
-  [
-   "ntdll.dll!NtProtectVirtualMemory",
-   27
-  ],
-  [
-   "final.exe!ts_lexer_start",
-   23
-  ],
-  [
-   "ucrtbase.dll!malloc",
-   23
-  ],
-  [
-   "final.exe!scan_open_delimiter",
-   22
-  ],
-  [
-   "final.exe!free",
-   22
-  ],
-  [
-   "final.exe!ts_stack_set_last_external_token",
-   21
-  ],
-  [
-   "final.exe!pending_heredoc",
-   20
-  ],
-  [
-   "final.exe!ts_lexer__is_at_included_range_start",
-   19
-  ],
-  [
-   "final.exe!ts_stack_node_count_since_error",
-   18
-  ],
-  [
-   "final.exe!ts_stack_error_cost",
-   18
-  ],
-  [
-   "final.exe!__security_check_cookie",
-   16
-  ],
-  [
-   "final.exe!ts_parser__can_reuse_first_leaf",
-   15
-  ],
-  [
-   "final.exe!ts_stack_can_merge",
-   14
-  ],
-  [
-   "final.exe!ts_parser__do_all_potential_reductions",
-   12
-  ],
-  [
-   "final.exe!memmove",
-   12
-  ],
-  [
-   "final.exe!ts_subtree_external_scanner_state_eq",
-   12
-  ],
-  [
-   "ntdll.dll!RtlGetSuiteMask",
-   11
-  ],
-  [
-   "final.exe!scan_heredoc_content",
-   10
-  ],
-  [
-   "VCRUNTIME140.dll!memset",
-   9
-  ],
-  [
-   "ntdll.dll!NtAllocateVirtualMemory",
-   8
-  ],
-  [
-   "final.exe!scan_symbol_identifier",
-   7
-  ],
-  [
-   "final.exe!tree_sitter_ruby_external_scanner_deserialize",
-   7
-  ],
-  [
-   "final.exe!ts_stack_merge",
-   7
-  ],
-  [
-   "final.exe!stack__subtree_is_equivalent",
-   6
-  ],
-  [
-   "final.exe!open_literal",
-   6
-  ],
-  [
-   "final.exe!stack_head_delete",
-   6
-  ],
-  [
-   "ntdll.dll!ExpInterlockedPopEntrySListEnd",
-   5
-  ],
-  [
-   "ntdll.dll!ExpInterlockedPopEntrySListResume",
-   4
-  ],
-  [
-   "final.exe!tree_sitter_ruby_external_scanner_scan",
-   4
-  ],
-  [
-   "ntdll.dll!strncpy",
-   4
-  ],
-  [
-   "final.exe!last_frame_head",
-   4
-  ],
-  [
-   "final.exe!stack_node_add_link",
-   4
-  ],
-  [
-   "final.exe!ts_stack_clear",
-   3
-  ],
-  [
-   "final.exe!ts_subtree_array_copy",
-   3
-  ],
-  [
-   "final.exe!ruby_parse_benchmark::main",
-   3
-  ],
-  [
-   "ntdll.dll!RtlTryEnterCriticalSection",
-   2
-  ],
-  [
-   "VCRUNTIME140.dll!memcmp",
-   2
-  ],
-  [
-   "ntdll.dll!RtlMoveMemory",
-   2
-  ],
-  [
-   "final.exe!ts_parser__accept",
-   2
-  ],
-  [
-   "final.exe!summarize_stack_callback",
-   2
-  ],
-  [
-   "final.exe!ts_realloc_default",
-   2
-  ],
-  [
-   "final.exe!alloc::vec::spec_from_iter_nested::impl$0::from_iter<ref$<ruby_parse_benchmark::Input>,core::iter::adapters::filter::Filter<core::slice::iter::Iter<ruby_parse_benchmark::Input>,ruby_parse_benchmark::bench::closure_env$0> >",
-   1
-  ],
-  [
-   "final.exe!ts_stack_remove_version",
-   1
-  ],
-  [
-   "final.exe!ts_parser__better_version_exists",
-   1
-  ],
-  [
-   "final.exe!tree_sitter::Parser::set_logger_unchecked",
-   1
-  ],
-  [
-   "ucrtbase.dll!calloc_base",
-   1
-  ]
- ]
+	"samples": 17765,
+	"elapsed_s": 27.876656300009927,
+	"rounds": 2,
+	"by_module": [
+		["final.exe", 15094],
+		["ntdll.dll", 2260],
+		["VCRUNTIME140.dll", 277],
+		["ucrtbase.dll", 134]
+	],
+	"by_function": [
+		["final.exe!stack_node_new", 1634],
+		["ntdll.dll!RtlSizeHeap", 1332],
+		["final.exe!ts_subtree_new_node", 1306],
+		["final.exe!stack__iter", 1248],
+		["final.exe!ts_language_lookup", 1182],
+		["final.exe!ts_subtree_summarize_children", 971],
+		["final.exe!ts_subtree_release", 920],
+		["final.exe!ts_parser__advance", 755],
+		["final.exe!ts_lexer__advance", 742],
+		["final.exe!ts_parser__lex", 628],
+		["final.exe!ts_parser__reduce", 606],
+		["ntdll.dll!RtlFreeHeap", 478],
+		["final.exe!ts_parser__balance_subtree", 452],
+		["final.exe!ts_lex", 449],
+		["final.exe!ts_subtree_total_size", 448],
+		["final.exe!ts_stack__add_version", 357],
+		["final.exe!ts_subtree_new_leaf", 277],
+		["ntdll.dll!RtlUpcaseUnicodeString", 255],
+		["final.exe!ts_lexer__mark_end", 241],
+		["VCRUNTIME140.dll!memmove", 231],
+		["final.exe!ts_subtree_array_remove_trailing_extras", 225],
+		["final.exe!scan", 209],
+		["final.exe!scan_whitespace", 205],
+		["final.exe!stack_node_release", 197],
+		["final.exe!ts_parser__condense_stack", 145],
+		["final.exe!ts_stack_renumber_version", 142],
+		["final.exe!ts_lexer_goto", 127],
+		["final.exe!ts_lex_keywords", 123],
+		["final.exe!ts_subtree_array_reverse", 105],
+		["ntdll.dll!RtlAllocateHeap", 95],
+		["final.exe!scan_literal_content", 84],
+		["final.exe!ts_lexer__eof", 83],
+		["final.exe!ts_parser__set_cached_token", 82],
+		["final.exe!ts_parser_parse", 78],
+		["final.exe!deserialize", 75],
+		["final.exe!ts_malloc_default", 74],
+		["final.exe!pop_count_callback", 74],
+		["final.exe!ts_lexer__do_advance", 72],
+		["final.exe!ts_parser__version_status", 58],
+		["final.exe!ts_subtree_compress", 48],
+		["final.exe!ts_language_next_state", 46],
+		["final.exe!stack__subtree_node_count", 46],
+		["final.exe!ts_parser__shift", 44],
+		["ucrtbase.dll!malloc_base", 42],
+		["final.exe!ts_stack_push", 39],
+		["ucrtbase.dll!free", 35],
+		["VCRUNTIME140.dll!memchr", 34],
+		["final.exe!ts_lexer__get_lookahead", 34],
+		["ntdll.dll!NtFreeVirtualMemory", 34],
+		["final.exe!serialize", 32],
+		["final.exe!reset", 31],
+		["ucrtbase.dll!free_base", 31],
+		["final.exe!ts_parser__reuse_node", 28],
+		["final.exe!ts_language_table_entry", 28],
+		["ntdll.dll!NtProtectVirtualMemory", 27],
+		["final.exe!ts_lexer_start", 23],
+		["ucrtbase.dll!malloc", 23],
+		["final.exe!scan_open_delimiter", 22],
+		["final.exe!free", 22],
+		["final.exe!ts_stack_set_last_external_token", 21],
+		["final.exe!pending_heredoc", 20],
+		["final.exe!ts_lexer__is_at_included_range_start", 19],
+		["final.exe!ts_stack_node_count_since_error", 18],
+		["final.exe!ts_stack_error_cost", 18],
+		["final.exe!__security_check_cookie", 16],
+		["final.exe!ts_parser__can_reuse_first_leaf", 15],
+		["final.exe!ts_stack_can_merge", 14],
+		["final.exe!ts_parser__do_all_potential_reductions", 12],
+		["final.exe!memmove", 12],
+		["final.exe!ts_subtree_external_scanner_state_eq", 12],
+		["ntdll.dll!RtlGetSuiteMask", 11],
+		["final.exe!scan_heredoc_content", 10],
+		["VCRUNTIME140.dll!memset", 9],
+		["ntdll.dll!NtAllocateVirtualMemory", 8],
+		["final.exe!scan_symbol_identifier", 7],
+		["final.exe!tree_sitter_ruby_external_scanner_deserialize", 7],
+		["final.exe!ts_stack_merge", 7],
+		["final.exe!stack__subtree_is_equivalent", 6],
+		["final.exe!open_literal", 6],
+		["final.exe!stack_head_delete", 6],
+		["ntdll.dll!ExpInterlockedPopEntrySListEnd", 5],
+		["ntdll.dll!ExpInterlockedPopEntrySListResume", 4],
+		["final.exe!tree_sitter_ruby_external_scanner_scan", 4],
+		["ntdll.dll!strncpy", 4],
+		["final.exe!last_frame_head", 4],
+		["final.exe!stack_node_add_link", 4],
+		["final.exe!ts_stack_clear", 3],
+		["final.exe!ts_subtree_array_copy", 3],
+		["final.exe!ruby_parse_benchmark::main", 3],
+		["ntdll.dll!RtlTryEnterCriticalSection", 2],
+		["VCRUNTIME140.dll!memcmp", 2],
+		["ntdll.dll!RtlMoveMemory", 2],
+		["final.exe!ts_parser__accept", 2],
+		["final.exe!summarize_stack_callback", 2],
+		["final.exe!ts_realloc_default", 2],
+		[
+			"final.exe!alloc::vec::spec_from_iter_nested::impl$0::from_iter<ref$<ruby_parse_benchmark::Input>,core::iter::adapters::filter::Filter<core::slice::iter::Iter<ruby_parse_benchmark::Input>,ruby_parse_benchmark::bench::closure_env$0> >",
+			1
+		],
+		["final.exe!ts_stack_remove_version", 1],
+		["final.exe!ts_parser__better_version_exists", 1],
+		["final.exe!tree_sitter::Parser::set_logger_unchecked", 1],
+		["ucrtbase.dll!calloc_base", 1]
+	]
 }

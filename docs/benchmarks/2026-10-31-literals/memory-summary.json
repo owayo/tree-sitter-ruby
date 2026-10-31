@@ -1,23 +1,23 @@
 {
-  "ts": {
-    "cpu_median_ms": 12140.625,
-    "peaks": {
-      "peak_commit_bytes": 248049664,
-      "peak_rss_bytes": 244207616
-    }
-  },
-  "control": {
-    "cpu_median_ms": 12296.875,
-    "peaks": {
-      "peak_commit_bytes": 255442944,
-      "peak_rss_bytes": 251539456
-    }
-  },
-  "prism": {
-    "cpu_median_ms": 812.5,
-    "peaks": {
-      "peak_commit_bytes": 118824960,
-      "peak_rss_bytes": 113418240
-    }
-  }
+	"ts": {
+		"cpu_median_ms": 12140.625,
+		"peaks": {
+			"peak_commit_bytes": 248049664,
+			"peak_rss_bytes": 244207616
+		}
+	},
+	"control": {
+		"cpu_median_ms": 12296.875,
+		"peaks": {
+			"peak_commit_bytes": 255442944,
+			"peak_rss_bytes": 251539456
+		}
+	},
+	"prism": {
+		"cpu_median_ms": 812.5,
+		"peaks": {
+			"peak_commit_bytes": 118824960,
+			"peak_rss_bytes": 113418240
+		}
+	}
 }

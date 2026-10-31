@@ -1,59 +1,59 @@
 {
-  "scope": "single diagnostic parse, no tree destruction; not primary benchmark",
-  "size_band_lower_bytes": {
-    "baseline": {
-      "0": {
-        "files": 7857,
-        "median_ms": 0.066,
-        "p95_ms": 0.177
-      },
-      "1024": {
-        "files": 6283,
-        "median_ms": 0.2884,
-        "p95_ms": 0.661
-      },
-      "4096": {
-        "files": 3423,
-        "median_ms": 0.9187,
-        "p95_ms": 2.2703
-      },
-      "16384": {
-        "files": 862,
-        "median_ms": 3.5587999999999997,
-        "p95_ms": 9.1622
-      },
-      "65536": {
-        "files": 102,
-        "median_ms": 13.6553,
-        "p95_ms": 71.805
-      }
-    },
-    "final": {
-      "0": {
-        "files": 7857,
-        "median_ms": 0.0635,
-        "p95_ms": 0.1702
-      },
-      "1024": {
-        "files": 6283,
-        "median_ms": 0.2797,
-        "p95_ms": 0.6381
-      },
-      "4096": {
-        "files": 3423,
-        "median_ms": 0.8896,
-        "p95_ms": 2.2141
-      },
-      "16384": {
-        "files": 862,
-        "median_ms": 3.348,
-        "p95_ms": 8.4443
-      },
-      "65536": {
-        "files": 102,
-        "median_ms": 12.632200000000001,
-        "p95_ms": 63.3153
-      }
-    }
-  }
+	"scope": "single diagnostic parse, no tree destruction; not primary benchmark",
+	"size_band_lower_bytes": {
+		"baseline": {
+			"0": {
+				"files": 7857,
+				"median_ms": 0.066,
+				"p95_ms": 0.177
+			},
+			"1024": {
+				"files": 6283,
+				"median_ms": 0.2884,
+				"p95_ms": 0.661
+			},
+			"4096": {
+				"files": 3423,
+				"median_ms": 0.9187,
+				"p95_ms": 2.2703
+			},
+			"16384": {
+				"files": 862,
+				"median_ms": 3.5587999999999997,
+				"p95_ms": 9.1622
+			},
+			"65536": {
+				"files": 102,
+				"median_ms": 13.6553,
+				"p95_ms": 71.805
+			}
+		},
+		"final": {
+			"0": {
+				"files": 7857,
+				"median_ms": 0.0635,
+				"p95_ms": 0.1702
+			},
+			"1024": {
+				"files": 6283,
+				"median_ms": 0.2797,
+				"p95_ms": 0.6381
+			},
+			"4096": {
+				"files": 3423,
+				"median_ms": 0.8896,
+				"p95_ms": 2.2141
+			},
+			"16384": {
+				"files": 862,
+				"median_ms": 3.348,
+				"p95_ms": 8.4443
+			},
+			"65536": {
+				"files": 102,
+				"median_ms": 12.632200000000001,
+				"p95_ms": 63.3153
+			}
+		}
+	}
 }
