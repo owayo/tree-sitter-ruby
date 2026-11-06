@@ -11,7 +11,8 @@ CMakeLists.txt linguist-generated
 Makefile linguist-generated
 
 # Rust bindings
-bindings/rust/* linguist-generated
+# bindings/rust/ (build.rs・lib.rs・build_support.rs) はこのリポジトリで手で保守するので、
+# 生成物にしない (GitHub の差分で畳まれず、astro-sight などの解析からも外れない)
 Cargo.toml linguist-generated
 Cargo.lock linguist-generated
 
